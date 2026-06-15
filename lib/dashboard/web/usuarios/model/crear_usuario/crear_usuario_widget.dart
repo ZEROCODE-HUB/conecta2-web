@@ -154,8 +154,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
         ),
         Expanded(
           child: Padding(
-            padding:
-                const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 0.0, 0.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 0.0, 0.0),
             child: Text(
               'Crear Usuario',
               style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -182,8 +181,8 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                      0.0, 0.0, 10.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
                   child: AuthUserStreamWidget(
                     builder: (context) => ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
@@ -208,18 +207,17 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                 AuthUserStreamWidget(
                   builder: (context) => Text(
                     currentUserDisplayName,
-                    style:
-                        FlutterFlowTheme.of(context).bodyMedium.override(
-                              font: GoogleFonts.inter(
-                                fontWeight: FontWeight.w600,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .fontStyle,
-                              ),
-                              fontSize: 18.0,
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                          fontSize: 18.0,
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                 ),
               ],
@@ -245,13 +243,10 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
             _buildAvatarStack(context),
             if (_model.tipoValue == 'Adolescente')
               AdolescenteSidebarFields(
-                acudienteController: () =>
-                    _model.dropDownValueController1 ??=
-                        FormFieldController<String>(
-                            _model.dropDownValue1 ??= ''),
-                profesionalController: () =>
-                    _model.dropDownValueController2 ??=
-                        FormFieldController<String>(null),
+                acudienteController: () => _model.dropDownValueController1 ??=
+                    FormFieldController<String>(_model.dropDownValue1 ??= ''),
+                profesionalController: () => _model.dropDownValueController2 ??=
+                    FormFieldController<String>(null),
                 onAcudienteChanged: (val) =>
                     safeSetState(() => _model.dropDownValue1 = val),
                 onProfesionalChanged: (val) =>
@@ -259,13 +254,10 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
               )
             else if (_model.tipoValue == 'Acudiente')
               AcudienteSidebarFields(
-                adolescenteController: () =>
-                    _model.dropDownValueController1 ??=
-                        FormFieldController<String>(
-                            _model.dropDownValue1 ??= ''),
-                profesionalController: () =>
-                    _model.dropDownValueController2 ??=
-                        FormFieldController<String>(null),
+                adolescenteController: () => _model.dropDownValueController1 ??=
+                    FormFieldController<String>(_model.dropDownValue1 ??= ''),
+                profesionalController: () => _model.dropDownValueController2 ??=
+                    FormFieldController<String>(null),
                 onAdolescenteChanged: (val) =>
                     safeSetState(() => _model.dropDownValue1 = val),
                 onProfesionalChanged: (val) =>
@@ -422,8 +414,8 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
             children: [
               buildFieldLabel(context, 'Tipo de usuario'),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    0.0, 20.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                 child: buildStyledDropDown(
                   context: context,
                   controller: _model.tipoValueController ??=
@@ -441,12 +433,11 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
         ),
         Expanded(
           child: LabeledTextField(
-            label: 'Nombres y Apellidos',
+            label: 'Nombres y Apellidos *',
             controller: _model.textController1,
             focusNode: _model.textFieldFocusNode1,
             autofocus: true,
-            validator:
-                _model.textController1Validator.asValidator(context),
+            validator: _model.textController1Validator.asValidator(context),
           ),
         ),
       ].divide(const SizedBox(width: 25.0)),
@@ -461,7 +452,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
         children: [
           Expanded(
             child: LabeledTextField(
-              label: 'Correo electrónico',
+              label: 'Correo electrónico *',
               controller: _model.emailTextController,
               focusNode: _model.emailFocusNode,
               autofocus: true,
@@ -478,8 +469,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
               autofocus: true,
               maxLength: 12,
               fontWeight: FontWeight.w500,
-              validator:
-                  _model.textController2Validator.asValidator(context),
+              validator: _model.textController2Validator.asValidator(context),
             ),
           ),
         ].divide(const SizedBox(width: 25.0)),
@@ -495,12 +485,11 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
         children: [
           Expanded(
             child: LabeledTextField(
-              label: 'Documento de identidad',
+              label: 'Documento de identidad *',
               controller: _model.textController3,
               focusNode: _model.textFieldFocusNode3,
               useErrorColor: false,
-              validator:
-                  _model.textController3Validator.asValidator(context),
+              validator: _model.textController3Validator.asValidator(context),
             ),
           ),
           Expanded(
@@ -509,8 +498,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
               controller: _model.textController4,
               focusNode: _model.textFieldFocusNode4,
               autofocus: true,
-              validator:
-                  _model.textController4Validator.asValidator(context),
+              validator: _model.textController4Validator.asValidator(context),
             ),
           ),
         ].divide(const SizedBox(width: 25.0)),
@@ -526,7 +514,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
         children: [
           Expanded(
             child: LabeledTextField(
-              label: 'Contraseña',
+              label: 'Contraseña *',
               controller: _model.passwordTextController,
               focusNode: _model.passwordFocusNode,
               obscureText: !_model.passwordVisibility,
@@ -548,7 +536,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
           ),
           Expanded(
             child: LabeledTextField(
-              label: 'Repetir contraseña',
+              label: 'Repetir contraseña *',
               controller: _model.repeatepasswordTextController,
               focusNode: _model.repeatepasswordFocusNode,
               obscureText: !_model.repeatepasswordVisibility,
@@ -601,17 +589,45 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
   }
 
   Future<void> _onCreatePressed() async {
+    if (_model.tipoValue == null ||
+        _model.tipoValue!.isEmpty ||
+        _model.textController1.text.trim().isEmpty ||
+        _model.textController3.text.trim().isEmpty) {
+      await showDialog(
+        context: context,
+        builder: (alertDialogContext) => WebViewAware(
+          child: AlertDialog(
+            title: const Text('Campos obligatorios incompletos',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: const Text(
+                'Por favor, asegúrate de seleccionar el "Tipo de usuario", e ingresar los "Nombres y Apellidos" y el "Documento de identidad" para registrar al usuario.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(alertDialogContext),
+                child: const Text('Entendido'),
+              ),
+            ],
+          ),
+        ),
+      );
+      safeSetState(() {});
+      return;
+    }
+
     if (_model.passwordTextController.text !=
         _model.repeatepasswordTextController.text) {
       await showDialog(
         context: context,
         builder: (alertDialogContext) => WebViewAware(
           child: AlertDialog(
-            title: const Text('Las contraseñas no coinciden'),
+            title: const Text('Error en la contraseña',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: const Text(
+                'Las contraseñas ingresadas no coinciden. Por favor, verifícalas e inténtalo nuevamente.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(alertDialogContext),
-                child: const Text('Ok'),
+                child: const Text('Entendido'),
               ),
             ],
           ),
@@ -647,30 +663,30 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
 
     // Actualizar todo en un solo paso usando user.uid (no requiere query adicional)
     await UsersRecord.collection.doc(user.uid).update(createUsersRecordData(
-      createdTime: getCurrentTimestamp,
-      email: _model.emailTextController.text,
-      displayName: _model.textController1.text,
-      photoUrl: '',
-      rol: _model.tipoValue,
-      phoneNumber: _model.textController2.text,
-      address: _model.textController4.text,
-      acudiente: updateAcudienteStruct(
-        AcudienteStruct(
-          nombre: _model.dropDownValue1,
-          ref: _model.getRefAcud?.reference,
-          correo: _model.getRefAcud?.email,
-        ),
-        clearUnsetFields: false,
-      ),
-      profesionales: updateProfesionalesStruct(
-        ProfesionalesStruct(
-          nombre: _model.dropDownValue2,
-          ref: _model.getRefProf?.reference,
-        ),
-        clearUnsetFields: false,
-      ),
-      identidad: _model.textController3.text,
-    ));
+          createdTime: getCurrentTimestamp,
+          email: _model.emailTextController.text,
+          displayName: _model.textController1.text,
+          photoUrl: '',
+          rol: _model.tipoValue,
+          phoneNumber: _model.textController2.text,
+          address: _model.textController4.text,
+          acudiente: updateAcudienteStruct(
+            AcudienteStruct(
+              nombre: _model.dropDownValue1,
+              ref: _model.getRefAcud?.reference,
+              correo: _model.getRefAcud?.email,
+            ),
+            clearUnsetFields: false,
+          ),
+          profesionales: updateProfesionalesStruct(
+            ProfesionalesStruct(
+              nombre: _model.dropDownValue2,
+              ref: _model.getRefProf?.reference,
+            ),
+            clearUnsetFields: false,
+          ),
+          identidad: _model.textController3.text,
+        ));
 
     await showDialog(
       context: context,
