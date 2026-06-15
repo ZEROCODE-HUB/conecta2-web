@@ -347,10 +347,10 @@ class _MenuPcWidgetState extends State<MenuPcWidget> {
                   children: [
                     Builder(
                       builder: (context) {
-                        final enEstadisticas =
-                            _model.select == WebSection.estadisticas.legacySelect ||
-                                _model.select == WebSection.mapa.legacySelect ||
-                                _model.select == WebSection.excel.legacySelect;
+                        final enEstadisticas = _model.select ==
+                                WebSection.estadisticas.legacySelect ||
+                            _model.select == WebSection.mapa.legacySelect ||
+                            _model.select == WebSection.excel.legacySelect;
                         final tema = FlutterFlowTheme.of(context);
                         return InkWell(
                           splashColor: Colors.transparent,
@@ -366,9 +366,7 @@ class _MenuPcWidgetState extends State<MenuPcWidget> {
                             height: 44.0,
                             decoration: BoxDecoration(
                               color: valueOrDefault<Color>(
-                                enEstadisticas
-                                    ? tema.alternate
-                                    : tema.menuWeb,
+                                enEstadisticas ? tema.alternate : tema.menuWeb,
                                 tema.menuWeb,
                               ),
                               borderRadius: BorderRadius.circular(10.0),
@@ -389,7 +387,8 @@ class _MenuPcWidgetState extends State<MenuPcWidget> {
                                       'Estadisticas',
                                       style: tema.bodyMedium.override(
                                         font: GoogleFonts.inter(
-                                          fontWeight: tema.bodyMedium.fontWeight,
+                                          fontWeight:
+                                              tema.bodyMedium.fontWeight,
                                           fontStyle: tema.bodyMedium.fontStyle,
                                         ),
                                         color: valueOrDefault<Color>(
@@ -443,7 +442,8 @@ class _MenuPcWidgetState extends State<MenuPcWidget> {
                                     size: 18.0,
                                   ),
                                   text: 'Graficos',
-                                  activeKey: WebSection.estadisticas.legacySelect,
+                                  activeKey:
+                                      WebSection.estadisticas.legacySelect,
                                   select: _model.select,
                                 ),
                               ),

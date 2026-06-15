@@ -652,6 +652,65 @@ extension _Editarencuesta2WidgetBuildSections1 on _Editarencuesta2WidgetState {
                                                                                 ),
                                                                               ),
                                                                               EncuestaFormHelpers.buildFormularioEspecifico(context, _model, () => safeSetState(() {}), encuestaID: widget.docencuestas2?.reference),
+                                                                              Padding(
+                                                                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                                                                                child: Row(
+                                                                                  mainAxisSize: MainAxisSize.max,
+                                                                                  mainAxisAlignment: MainAxisAlignment.end,
+                                                                                  children: [
+                                                                                    Container(
+                                                                                      width: 153.0,
+                                                                                      height: 44.0,
+                                                                                      decoration: BoxDecoration(
+                                                                                        color: Colors.white,
+                                                                                        borderRadius: BorderRadius.circular(10.0),
+                                                                                      ),
+                                                                                      child: Padding(
+                                                                                        padding: EdgeInsets.all(5.0),
+                                                                                        child: Row(
+                                                                                          mainAxisSize: MainAxisSize.max,
+                                                                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                                                          children: [
+                                                                                            Theme(
+                                                                                              data: ThemeData(
+                                                                                                checkboxTheme: CheckboxThemeData(
+                                                                                                  visualDensity: VisualDensity.compact,
+                                                                                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                                                                  shape: RoundedRectangleBorder(
+                                                                                                    borderRadius: BorderRadius.circular(4.0),
+                                                                                                  ),
+                                                                                                ),
+                                                                                                unselectedWidgetColor: FlutterFlowTheme.of(context).secondaryText,
+                                                                                              ),
+                                                                                              child: Checkbox(
+                                                                                                value: _model.checkboxNPValue1 ??= false,
+                                                                                                onChanged: (val) {
+                                                                                                  _model.checkboxNPValue1 = val!;
+                                                                                                  safeSetState(() {});
+                                                                                                },
+                                                                                                side: BorderSide(
+                                                                                                  width: 2,
+                                                                                                  color: FlutterFlowTheme.of(context).secondaryText,
+                                                                                                ),
+                                                                                                activeColor: Color(0xFF265294),
+                                                                                                checkColor: FlutterFlowTheme.of(context).info,
+                                                                                              ),
+                                                                                            ),
+                                                                                            Text(
+                                                                                              'Obligatorio',
+                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                    fontFamily: 'Inter',
+                                                                                                    letterSpacing: 0.0,
+                                                                                                    fontWeight: FontWeight.normal,
+                                                                                                  ),
+                                                                                            ),
+                                                                                          ],
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                              ),
                                                                             ],
                                                                           ),
                                                                         ),

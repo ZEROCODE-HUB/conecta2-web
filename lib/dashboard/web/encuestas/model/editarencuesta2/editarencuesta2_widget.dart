@@ -11,7 +11,6 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
@@ -53,24 +52,8 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
     super.initState();
     _model = createModel(context, () => Editarencuesta2Model());
 
-    // On component load action.
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      safeSetState(() {
-        _model.textController1?.text = widget.docencuestas2!.titulo;
-      });
-      safeSetState(() {
-        _model.descTextController?.text = widget.docencuestas2!.descripcion;
-      });
-      safeSetState(() {
-        _model.roleValueController?.value = widget.docencuestas2!.roles;
-        _model.roleValue = List.from(widget.docencuestas2!.roles);
-      });
-      safeSetState(() {
-        _model.categoriaValue = widget.docencuestas2!.categoria;
-        _model.categoriaValueController ??=
-            FormFieldController<String>(_model.categoriaValue);
-      });
-      final doc = widget.docencuestas2!;
+    final doc = widget.docencuestas2;
+    if (doc != null) {
       final cat = doc.categoria;
       if (cat == 'CDI' || cat == 'Escala autoestima') {
         if (doc.alertas.length >= 3) {
@@ -88,17 +71,23 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
           FFAppState().listaAlertasEnvio =
               alertasTripletePorDefecto(cat);
         }
-        safeSetState(() {});
       } else if (doc.alertas.length > 2) {
         FFAppState().listaAlertasEnvio =
             doc.alertas.toList().cast<AlertaStruct>();
-        safeSetState(() {});
       } else {
         FFAppState().listaAlertasEnvio =
             FFAppState().listaAlertas.toList().cast<AlertaStruct>();
-        safeSetState(() {});
       }
-    });
+
+      _model.textController1 = TextEditingController(text: doc.titulo);
+      _model.descTextController = TextEditingController(text: doc.descripcion);
+      _model.roleValue = List.from(doc.roles);
+      _model.roleValueController =
+          FormFieldController<List<String>>(_model.roleValue);
+      _model.categoriaValue = doc.categoria;
+      _model.categoriaValueController =
+          FormFieldController<String>(_model.categoriaValue);
+    }
 
     _model.textController1 ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();

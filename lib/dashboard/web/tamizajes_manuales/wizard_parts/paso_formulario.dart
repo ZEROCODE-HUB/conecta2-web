@@ -376,6 +376,9 @@ class _RespuestaState {
   ];
 
   bool estaCompleto() {
+    if (pregunta.nPregunta != 1) {
+      return true;
+    }
     switch (tipoKind) {
       case PreguntaTipo.descriptiva:
         return true;

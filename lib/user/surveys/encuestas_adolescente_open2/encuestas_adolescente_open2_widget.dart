@@ -477,31 +477,59 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                                           20.0,
                                                                           0.0,
                                                                           0.0),
-                                                              child: Text(
-                                                                preguntasindeexItem
-                                                                    .pregunta,
-                                                                style: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .inter(
-                                                                        fontWeight:
-                                                                            FontWeight.w600,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      letterSpacing:
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                    preguntasindeexItem
+                                                                        .pregunta,
+                                                                    style: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .override(
+                                                                          font:
+                                                                              GoogleFonts.inter(
+                                                                            fontWeight:
+                                                                                FontWeight.w600,
+                                                                            fontStyle:
+                                                                                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                          ),
+                                                                          letterSpacing:
+                                                                              0.0,
+                                                                          fontWeight:
+                                                                              FontWeight.w600,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                  ),
+                                                                  if (preguntasindeexItem
+                                                                              .nPregunta ==
+                                                                          1 &&
+                                                                      preguntasindeexItem
+                                                                              .tipo !=
+                                                                          'Descriptiva')
+                                                                    Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
                                                                           0.0,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontStyle,
+                                                                          4.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                      child:
+                                                                          Text(
+                                                                        '* Obligatoria',
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              11.0,
+                                                                          color:
+                                                                              Colors.red,
+                                                                        ),
+                                                                      ),
                                                                     ),
+                                                                ],
                                                               ),
                                                             ),
                                                           ),
@@ -550,31 +578,59 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                               MainAxisSize.max,
                                                           children: [
                                                             Flexible(
-                                                              child: Text(
-                                                                preguntasindeexItem
-                                                                    .pregunta,
-                                                                style: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .outfit(
-                                                                        fontWeight:
-                                                                            FontWeight.w600,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      letterSpacing:
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                    preguntasindeexItem
+                                                                        .pregunta,
+                                                                    style: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .override(
+                                                                          font:
+                                                                              GoogleFonts.outfit(
+                                                                            fontWeight:
+                                                                                FontWeight.w600,
+                                                                            fontStyle:
+                                                                                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                          ),
+                                                                          letterSpacing:
+                                                                              0.0,
+                                                                          fontWeight:
+                                                                              FontWeight.w600,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                  ),
+                                                                  if (preguntasindeexItem
+                                                                              .nPregunta ==
+                                                                          1 &&
+                                                                      preguntasindeexItem
+                                                                              .tipo !=
+                                                                          'Descriptiva')
+                                                                    Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
                                                                           0.0,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontStyle,
+                                                                          4.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                      child:
+                                                                          Text(
+                                                                        '* Obligatoria',
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              11.0,
+                                                                          color:
+                                                                              Colors.red,
+                                                                        ),
+                                                                      ),
                                                                     ),
+                                                                ],
                                                               ),
                                                             ),
                                                           ],
@@ -625,31 +681,59 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                               MainAxisSize.max,
                                                           children: [
                                                             Flexible(
-                                                              child: Text(
-                                                                preguntasindeexItem
-                                                                    .pregunta,
-                                                                style: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .outfit(
-                                                                        fontWeight:
-                                                                            FontWeight.w600,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      letterSpacing:
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                    preguntasindeexItem
+                                                                        .pregunta,
+                                                                    style: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .override(
+                                                                          font:
+                                                                              GoogleFonts.outfit(
+                                                                            fontWeight:
+                                                                                FontWeight.w600,
+                                                                            fontStyle:
+                                                                                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                          ),
+                                                                          letterSpacing:
+                                                                              0.0,
+                                                                          fontWeight:
+                                                                              FontWeight.w600,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                  ),
+                                                                  if (preguntasindeexItem
+                                                                              .nPregunta ==
+                                                                          1 &&
+                                                                      preguntasindeexItem
+                                                                              .tipo !=
+                                                                          'Descriptiva')
+                                                                    Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
                                                                           0.0,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontStyle,
+                                                                          4.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                      child:
+                                                                          Text(
+                                                                        '* Obligatoria',
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              11.0,
+                                                                          color:
+                                                                              Colors.red,
+                                                                        ),
+                                                                      ),
                                                                     ),
+                                                                ],
                                                               ),
                                                             ),
                                                           ],
@@ -726,31 +810,59 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                               MainAxisSize.max,
                                                           children: [
                                                             Flexible(
-                                                              child: Text(
-                                                                preguntasindeexItem
-                                                                    .pregunta,
-                                                                style: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .outfit(
-                                                                        fontWeight:
-                                                                            FontWeight.w600,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      letterSpacing:
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                    preguntasindeexItem
+                                                                        .pregunta,
+                                                                    style: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .override(
+                                                                          font:
+                                                                              GoogleFonts.outfit(
+                                                                            fontWeight:
+                                                                                FontWeight.w600,
+                                                                            fontStyle:
+                                                                                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                          ),
+                                                                          letterSpacing:
+                                                                              0.0,
+                                                                          fontWeight:
+                                                                              FontWeight.w600,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                  ),
+                                                                  if (preguntasindeexItem
+                                                                              .nPregunta ==
+                                                                          1 &&
+                                                                      preguntasindeexItem
+                                                                              .tipo !=
+                                                                          'Descriptiva')
+                                                                    Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
                                                                           0.0,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontStyle,
+                                                                          4.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                      child:
+                                                                          Text(
+                                                                        '* Obligatoria',
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              11.0,
+                                                                          color:
+                                                                              Colors.red,
+                                                                        ),
+                                                                      ),
                                                                     ),
+                                                                ],
                                                               ),
                                                             ),
                                                           ],
@@ -782,8 +894,7 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                       ),
                                                     ],
                                                   ),
-                                                if ((preguntasindeexItem.tipo ==
-                                                        'Tamizaje autoestima') ||
+                                                if ((preguntasindeexItem.tipo == 'Tamizaje autoestima') ||
                                                     (preguntasindeexItem.tipo ==
                                                         'Tamizaje CDI') ||
                                                     (preguntasindeexItem.tipo ==
@@ -807,35 +918,62 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                               MainAxisSize.max,
                                                           children: [
                                                             Flexible(
-                                                              child: Text(
-                                                                preguntasindeexItem
-                                                                            .tipo ==
-                                                                        'Tamizaje CRQ / SRQ'
-                                                                    ? '${preguntasindeexItem.numeroPregunta}. ${preguntasindeexItem.pregunta}'
-                                                                    : preguntasindeexItem
-                                                                        .pregunta,
-                                                                style: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .outfit(
-                                                                        fontWeight:
-                                                                            FontWeight.w600,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      letterSpacing:
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                    preguntasindeexItem.tipo ==
+                                                                            'Tamizaje CRQ / SRQ'
+                                                                        ? '${preguntasindeexItem.numeroPregunta}. ${preguntasindeexItem.pregunta}'
+                                                                        : preguntasindeexItem
+                                                                            .pregunta,
+                                                                    style: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .override(
+                                                                          font:
+                                                                              GoogleFonts.outfit(
+                                                                            fontWeight:
+                                                                                FontWeight.w600,
+                                                                            fontStyle:
+                                                                                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                          ),
+                                                                          letterSpacing:
+                                                                              0.0,
+                                                                          fontWeight:
+                                                                              FontWeight.w600,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                  ),
+                                                                  if (preguntasindeexItem
+                                                                              .nPregunta ==
+                                                                          1 &&
+                                                                      preguntasindeexItem
+                                                                              .tipo !=
+                                                                          'Descriptiva')
+                                                                    Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
                                                                           0.0,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontStyle,
+                                                                          4.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                      child:
+                                                                          Text(
+                                                                        '* Obligatoria',
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              11.0,
+                                                                          color:
+                                                                              Colors.red,
+                                                                        ),
+                                                                      ),
                                                                     ),
+                                                                ],
                                                               ),
                                                             ),
                                                           ],
@@ -872,69 +1010,19 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                   Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                0.0,
-                                                                24.0,
-                                                                0.0,
-                                                                0.0),
+                                                            .fromSTEB(0.0, 24.0,
+                                                                0.0, 0.0),
                                                     child: Row(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
                                                       children: [
                                                         Flexible(
-                                                          child: Text(
-                                                            preguntasindeexItem
-                                                                .pregunta,
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .outfit(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                if (preguntasindeexItem.tipo ==
-                                                    'abiertas')
-                                                  Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0.0,
-                                                                    24.0,
-                                                                    0.0,
-                                                                    0.0),
-                                                        child: Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          children: [
-                                                            Flexible(
-                                                              child: Text(
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
                                                                 preguntasindeexItem
                                                                     .pregunta,
                                                                 style: FlutterFlowTheme.of(
@@ -959,6 +1047,109 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                                           .bodyMedium
                                                                           .fontStyle,
                                                                     ),
+                                                              ),
+                                                              if (preguntasindeexItem
+                                                                          .nPregunta ==
+                                                                      1 &&
+                                                                  preguntasindeexItem
+                                                                          .tipo !=
+                                                                      'Descriptiva')
+                                                                Padding(
+                                                                  padding: EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          4.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                  child: Text(
+                                                                    '* Obligatoria',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          11.0,
+                                                                      color: Colors
+                                                                          .red,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                if (preguntasindeexItem.tipo ==
+                                                    'abiertas')
+                                                  Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    0.0,
+                                                                    24.0,
+                                                                    0.0,
+                                                                    0.0),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          children: [
+                                                            Flexible(
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                    preguntasindeexItem
+                                                                        .pregunta,
+                                                                    style: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .override(
+                                                                          font:
+                                                                              GoogleFonts.outfit(
+                                                                            fontWeight:
+                                                                                FontWeight.w600,
+                                                                            fontStyle:
+                                                                                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                          ),
+                                                                          letterSpacing:
+                                                                              0.0,
+                                                                          fontWeight:
+                                                                              FontWeight.w600,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .bodyMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                  ),
+                                                                  if (preguntasindeexItem
+                                                                              .nPregunta ==
+                                                                          1 &&
+                                                                      preguntasindeexItem
+                                                                              .tipo !=
+                                                                          'Descriptiva')
+                                                                    Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          0.0,
+                                                                          4.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                      child:
+                                                                          Text(
+                                                                        '* Obligatoria',
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              11.0,
+                                                                          color:
+                                                                              Colors.red,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                ],
                                                               ),
                                                             ),
                                                           ],
@@ -1048,6 +1239,39 @@ class _EncuestasAdolescenteOpen2WidgetState
                                     child: RegistartionButtonWidget(
                                       btnText: 'Siguiente',
                                       btnAction: () async {
+                                        // Validar preguntas Condicionantes obligatorias en el paso 1
+                                        final preguntas =
+                                            columnEncuestasRecord.preguntas;
+                                        for (int i = 0;
+                                            i < preguntas.length;
+                                            i++) {
+                                          final p = preguntas[i];
+                                          if (p.tipo == 'Condicionante' &&
+                                              p.nPregunta == 1) {
+                                            final r = i <
+                                                    FFAppState()
+                                                        .RespuestaEnc
+                                                        .length
+                                                ? FFAppState().RespuestaEnc[i]
+                                                : null;
+                                            final respondida = r != null &&
+                                                r.respuestasSeleccionadas
+                                                    .isNotEmpty;
+                                            if (!respondida) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                      'Falta responder la pregunta: ${p.pregunta}'),
+                                                  backgroundColor: Colors.red,
+                                                  duration: const Duration(
+                                                      seconds: 3),
+                                                ),
+                                              );
+                                              return;
+                                            }
+                                          }
+                                        }
                                         _model.step = 2;
                                         safeSetState(() {});
                                       },
@@ -1065,6 +1289,78 @@ class _EncuestasAdolescenteOpen2WidgetState
                                     child: RegistartionButtonWidget(
                                       btnText: 'Enviar',
                                       btnAction: () async {
+                                        // Validar todas las preguntas obligatorias
+                                        final preguntas =
+                                            columnEncuestasRecord.preguntas;
+                                        for (int i = 0;
+                                            i < preguntas.length;
+                                            i++) {
+                                          final p = preguntas[i];
+                                          if (p.nPregunta != 1) continue;
+                                          if (p.tipo == 'Descriptiva') continue;
+
+                                          final r = i <
+                                                  FFAppState()
+                                                      .RespuestaEnc
+                                                      .length
+                                              ? FFAppState().RespuestaEnc[i]
+                                              : null;
+
+                                          bool respondida = false;
+                                          if (r != null) {
+                                            final tipo = p.tipo;
+                                            if (tipo == 'abiertas') {
+                                              respondida =
+                                                  r.respuesta.trim().isNotEmpty;
+                                            } else if (tipo ==
+                                                'Verdadero o falso') {
+                                              respondida = r.hasTrueAndFalse();
+                                            } else if (tipo ==
+                                                'Selección única') {
+                                              respondida = r
+                                                  .respuestaSeleccionUnica
+                                                  .isNotEmpty;
+                                            } else if (tipo == 'selección' ||
+                                                tipo == 'Condicionante') {
+                                              respondida = r
+                                                  .respuestasSeleccionadas
+                                                  .isNotEmpty;
+                                            } else if (tipo == 'Tamizaje') {
+                                              final visible = FFAppState()
+                                                  .TamizajeSustanciaPermitidas
+                                                  .contains(p.sustancia);
+                                              respondida = !visible ||
+                                                  r.respuestaTamizaje
+                                                      .isNotEmpty;
+                                            } else if (tipo ==
+                                                    'Tamizaje autoestima' ||
+                                                tipo == 'Tamizaje CDI' ||
+                                                tipo ==
+                                                    'Tamizajes Depresion Beck' ||
+                                                tipo == 'Tamizaje CRQ / SRQ') {
+                                              respondida = r
+                                                  .respuestaTamizaje.isNotEmpty;
+                                            } else {
+                                              respondida = r
+                                                  .respuestaTamizaje.isNotEmpty;
+                                            }
+                                          }
+
+                                          if (!respondida) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                    'Falta responder la pregunta: ${p.pregunta}'),
+                                                backgroundColor: Colors.red,
+                                                duration:
+                                                    const Duration(seconds: 3),
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                        }
+
                                         await RespuestasRecord.createDoc(
                                                 widget.encuesta!)
                                             .set({

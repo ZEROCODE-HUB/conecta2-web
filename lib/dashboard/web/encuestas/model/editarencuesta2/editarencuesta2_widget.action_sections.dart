@@ -984,6 +984,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                                                                       ocultarRespuesta:
                                                                           _model
                                                                               .ocultarRespuestaValue,
+                                                                      nPregunta: _model.checkboxNPValue1 == true ? 1 : 0,
                                                                       fieldValues: {
                                                                         'RespuestaSelection':
                                                                             _model.respuestaSelection,
@@ -1025,6 +1026,8 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                                                           });
                                                           safeSetState(() {
                                                             _model.ocultarRespuestaValue =
+                                                                false;
+                                                            _model.checkboxNPValue1 =
                                                                 false;
                                                           });
                                                           safeSetState(() {

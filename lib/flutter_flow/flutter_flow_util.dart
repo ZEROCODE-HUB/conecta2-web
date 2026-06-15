@@ -395,7 +395,7 @@ bool responsiveVisibility({
   } else if (width < kBreakpointLarge) {
     return tabletLandscape;
   } else {
-    return desktop;
+    return kIsWeb ? desktop : tabletLandscape;
   }
 }
 

@@ -305,12 +305,6 @@ class _EncuestasAndTamizajesWidgetState
                                                       .elementAtOrNull(
                                                           _model.retryCount!)
                                                       ?.respuestasSeleccionUnica,
-                                              respuestaSeleccionUnica:
-                                                  surveyLists1EncuestasRecord
-                                                      .preguntas
-                                                      .elementAtOrNull(
-                                                          _model.retryCount!)
-                                                      ?.respuestaSUnicaCorrecta,
                                             ));
                                             safeSetState(() {});
                                             _model.retryCount =

@@ -48,6 +48,17 @@ class _TextFieldAlertaWidgetState extends State<TextFieldAlertaWidget> {
   }
 
   @override
+  void didUpdateWidget(covariant TextFieldAlertaWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.parameter1 != widget.parameter1) {
+      final newText = widget.parameter1?.toString() ?? '';
+      if (_model.textFieldMin1TextController.text != newText) {
+        _model.textFieldMin1TextController.text = newText;
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _model.maybeDispose();
 

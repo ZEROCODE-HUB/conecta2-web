@@ -121,9 +121,7 @@ class _PreguntaCardState extends State<PreguntaCard> {
           border: Border(left: BorderSide(color: typeColor, width: 5.0)),
           boxShadow: const [
             BoxShadow(
-                blurRadius: 8.0,
-                color: Color(0x18000000),
-                offset: Offset(0, 2))
+                blurRadius: 8.0, color: Color(0x18000000), offset: Offset(0, 2))
           ],
         ),
         child: Padding(
@@ -163,15 +161,14 @@ class _PreguntaCardState extends State<PreguntaCard> {
                           widget.pregunta.pregunta.isEmpty
                               ? 'Sin pregunta'
                               : widget.pregunta.pregunta,
-                          style: FlutterFlowTheme.of(context)
-                              .bodyMedium
-                              .override(
-                                font: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w600),
-                                fontSize: 15.0,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    font: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w600),
+                                    fontSize: 15.0,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         if (widget.pregunta.variable.isNotEmpty) ...[
                           const SizedBox(height: 4.0),
@@ -195,8 +192,8 @@ class _PreguntaCardState extends State<PreguntaCard> {
                       decoration: BoxDecoration(
                         color: Colors.red.shade50,
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                            color: Colors.red.shade300, width: 0.8),
+                        border:
+                            Border.all(color: Colors.red.shade300, width: 0.8),
                       ),
                       child: const Text(
                         '* Obligatoria',
@@ -241,14 +238,13 @@ class _PreguntaCardState extends State<PreguntaCard> {
                         const SizedBox(width: 6.0),
                         Text(
                           'Obligatorio',
-                          style: FlutterFlowTheme.of(context)
-                              .bodySmall
-                              .override(
-                                font: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w500),
-                                fontSize: 12.0,
-                                letterSpacing: 0.0,
-                              ),
+                          style:
+                              FlutterFlowTheme.of(context).bodySmall.override(
+                                    font: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w500),
+                                    fontSize: 12.0,
+                                    letterSpacing: 0.0,
+                                  ),
                         ),
                       ],
                     ),
@@ -302,8 +298,7 @@ class _PreguntaCardState extends State<PreguntaCard> {
 
   Widget _buildTypeBadge(String tipo, Color color) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20.0),
@@ -349,8 +344,7 @@ class _PreguntaCardState extends State<PreguntaCard> {
               color: Colors.red.shade50,
               borderRadius: BorderRadius.circular(8.0)),
           child: Text('Tipo no reconocido: ${widget.pregunta.tipo}',
-              style:
-                  TextStyle(color: Colors.red.shade700, fontSize: 12.0)),
+              style: TextStyle(color: Colors.red.shade700, fontSize: 12.0)),
         );
     }
   }
@@ -360,8 +354,7 @@ class _PreguntaCardState extends State<PreguntaCard> {
   Widget _contentAbiertas() {
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(8.0),
@@ -388,8 +381,7 @@ class _PreguntaCardState extends State<PreguntaCard> {
     final opciones = widget.pregunta.respuestaCondicionante;
     if (opciones.isEmpty) {
       return Text('Sin opciones definidas',
-          style:
-              TextStyle(color: Colors.grey.shade500, fontSize: 13.0));
+          style: TextStyle(color: Colors.grey.shade500, fontSize: 13.0));
     }
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -435,21 +427,18 @@ class _PreguntaCardState extends State<PreguntaCard> {
     final opciones = widget.pregunta.respuestaSelection;
     if (opciones.isEmpty) {
       return Text('Sin opciones definidas',
-          style:
-              TextStyle(color: Colors.grey.shade500, fontSize: 13.0));
+          style: TextStyle(color: Colors.grey.shade500, fontSize: 13.0));
     }
     return Wrap(
       spacing: 8.0,
       runSpacing: 6.0,
       children: opciones
           .map((op) => Chip(
-                label:
-                    Text(op, style: const TextStyle(fontSize: 12.0)),
+                label: Text(op, style: const TextStyle(fontSize: 12.0)),
                 backgroundColor: const Color(0xFFF3E5F5),
-                side: const BorderSide(
-                    color: Color(0xFF9C27B0), width: 1.0),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 4.0, vertical: 0.0),
+                side: const BorderSide(color: Color(0xFF9C27B0), width: 1.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
               ))
@@ -461,13 +450,11 @@ class _PreguntaCardState extends State<PreguntaCard> {
     final opciones = widget.pregunta.respuestaTamizaje;
     if (opciones.isEmpty) {
       return Text('Sin opciones definidas',
-          style:
-              TextStyle(color: Colors.grey.shade500, fontSize: 13.0));
+          style: TextStyle(color: Colors.grey.shade500, fontSize: 13.0));
     }
-    final Color color =
-        widget.pregunta.tipo == 'Tamizaje autoestima'
-            ? const Color(0xFFE91E63)
-            : const Color(0xFF009688);
+    final Color color = widget.pregunta.tipo == 'Tamizaje autoestima'
+        ? const Color(0xFFE91E63)
+        : const Color(0xFF009688);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: opciones
@@ -513,8 +500,7 @@ class _PreguntaCardState extends State<PreguntaCard> {
     final opciones = widget.pregunta.respuestaTamizaje;
     if (opciones.isEmpty) {
       return Text('Sin opciones definidas',
-          style:
-              TextStyle(color: Colors.grey.shade500, fontSize: 13.0));
+          style: TextStyle(color: Colors.grey.shade500, fontSize: 13.0));
     }
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -528,8 +514,7 @@ class _PreguntaCardState extends State<PreguntaCard> {
                     color: const Color(0xFFE8EAF6),
                     borderRadius: BorderRadius.circular(8.0),
                     border: op.ideacionSuicida
-                        ? Border.all(
-                            color: const Color(0xFFE53935), width: 1.0)
+                        ? Border.all(color: const Color(0xFFE53935), width: 1.0)
                         : null,
                   ),
                   child: Row(
@@ -592,20 +577,18 @@ class _PreguntaCardState extends State<PreguntaCard> {
       children: [
         if (widget.pregunta.numeroPregunta > 0) ...[
           Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 10.0, vertical: 6.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
             decoration: BoxDecoration(
               color: const Color(0xFFE8F5E9),
               borderRadius: BorderRadius.circular(8.0),
-              border: Border.all(
-                  color: const Color(0xFF4CAF50), width: 1.0),
+              border: Border.all(color: const Color(0xFF4CAF50), width: 1.0),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text('N°',
-                    style: TextStyle(
-                        fontSize: 10.0, color: Color(0xFF4CAF50))),
+                    style: TextStyle(fontSize: 10.0, color: Color(0xFF4CAF50))),
                 Text('${widget.pregunta.numeroPregunta}',
                     style: const TextStyle(
                         fontSize: 16.0,
@@ -634,34 +617,25 @@ class _PreguntaCardState extends State<PreguntaCard> {
 
   Widget _siNoChip(String label, bool isSi) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
       decoration: BoxDecoration(
-        color: isSi
-            ? const Color(0xFFE8F5E9)
-            : const Color(0xFFFFEBEE),
+        color: isSi ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
         borderRadius: BorderRadius.circular(20.0),
         border: Border.all(
-            color: isSi
-                ? const Color(0xFF4CAF50)
-                : const Color(0xFFEF5350),
+            color: isSi ? const Color(0xFF4CAF50) : const Color(0xFFEF5350),
             width: 1.0),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-              isSi ? Icons.check : Icons.close,
-              color: isSi
-                  ? const Color(0xFF4CAF50)
-                  : const Color(0xFFEF5350),
+          Icon(isSi ? Icons.check : Icons.close,
+              color: isSi ? const Color(0xFF4CAF50) : const Color(0xFFEF5350),
               size: 14.0),
           const SizedBox(width: 4.0),
           Text(label,
               style: TextStyle(
-                  color: isSi
-                      ? const Color(0xFF388E3C)
-                      : const Color(0xFFD32F2F),
+                  color:
+                      isSi ? const Color(0xFF388E3C) : const Color(0xFFD32F2F),
                   fontWeight: FontWeight.bold,
                   fontSize: 13.0)),
         ],
@@ -672,44 +646,32 @@ class _PreguntaCardState extends State<PreguntaCard> {
   Widget _siNoChipValor(AtributosStruct op) {
     final isSi = op.valor == 1;
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
       decoration: BoxDecoration(
-        color: isSi
-            ? const Color(0xFFE8F5E9)
-            : const Color(0xFFFFEBEE),
+        color: isSi ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
         borderRadius: BorderRadius.circular(20.0),
         border: Border.all(
-            color: isSi
-                ? const Color(0xFF4CAF50)
-                : const Color(0xFFEF5350),
+            color: isSi ? const Color(0xFF4CAF50) : const Color(0xFFEF5350),
             width: 1.0),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-              isSi ? Icons.check : Icons.close,
-              color: isSi
-                  ? const Color(0xFF4CAF50)
-                  : const Color(0xFFEF5350),
+          Icon(isSi ? Icons.check : Icons.close,
+              color: isSi ? const Color(0xFF4CAF50) : const Color(0xFFEF5350),
               size: 14.0),
           const SizedBox(width: 4.0),
           Text(op.etiqueta,
               style: TextStyle(
-                  color: isSi
-                      ? const Color(0xFF388E3C)
-                      : const Color(0xFFD32F2F),
+                  color:
+                      isSi ? const Color(0xFF388E3C) : const Color(0xFFD32F2F),
                   fontWeight: FontWeight.bold,
                   fontSize: 13.0)),
           const SizedBox(width: 4.0),
           Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 4.0, vertical: 1.0),
+            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 1.0),
             decoration: BoxDecoration(
-              color: isSi
-                  ? const Color(0xFF4CAF50)
-                  : const Color(0xFFEF5350),
+              color: isSi ? const Color(0xFF4CAF50) : const Color(0xFFEF5350),
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Text('${op.valor}',
@@ -740,13 +702,11 @@ class _PreguntaCardState extends State<PreguntaCard> {
       spacing: 12.0,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(
-              horizontal: 16.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           decoration: BoxDecoration(
             color: const Color(0xFFE3F2FD),
             borderRadius: BorderRadius.circular(8.0),
-            border: Border.all(
-                color: const Color(0xFF1976D2), width: 1.0),
+            border: Border.all(color: const Color(0xFF1976D2), width: 1.0),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -763,19 +723,16 @@ class _PreguntaCardState extends State<PreguntaCard> {
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(
-              horizontal: 16.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           decoration: BoxDecoration(
             color: const Color(0xFFFFEBEE),
             borderRadius: BorderRadius.circular(8.0),
-            border: Border.all(
-                color: const Color(0xFFD32F2F), width: 1.0),
+            border: Border.all(color: const Color(0xFFD32F2F), width: 1.0),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: const [
-              Icon(Icons.cancel_outlined,
-                  color: Color(0xFFD32F2F), size: 16.0),
+              Icon(Icons.cancel_outlined, color: Color(0xFFD32F2F), size: 16.0),
               SizedBox(width: 6.0),
               Text('Falso',
                   style: TextStyle(
@@ -807,11 +764,16 @@ class _PreguntaCardState extends State<PreguntaCard> {
           const SizedBox(width: 8.0),
           Expanded(
             child: Text(
-              texto.isNotEmpty ? texto : 'Texto descriptivo (solo lectura, sin respuesta)',
+              texto.isNotEmpty
+                  ? texto
+                  : 'Texto descriptivo (solo lectura, sin respuesta)',
               style: TextStyle(
-                  color: texto.isNotEmpty ? const Color(0xFF37474F) : const Color(0xFF546E7A),
+                  color: texto.isNotEmpty
+                      ? const Color(0xFF37474F)
+                      : const Color(0xFF546E7A),
                   fontSize: 13.0,
-                  fontStyle: texto.isNotEmpty ? FontStyle.normal : FontStyle.italic),
+                  fontStyle:
+                      texto.isNotEmpty ? FontStyle.normal : FontStyle.italic),
             ),
           ),
         ],

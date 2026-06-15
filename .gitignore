@@ -116,3 +116,6 @@ docs/
 Widget _buildBarrio*
 *.tmp
 *.bak
+
+# Analisis inicial del proyecto
+analisis_proyecto.md

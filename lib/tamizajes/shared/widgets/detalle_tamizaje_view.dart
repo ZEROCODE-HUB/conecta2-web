@@ -47,16 +47,16 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
   Future<void> _cargarDatos() async {
     // Cargar encuesta
     try {
-      final encuesta =
-          await EncuestasRecord.getDocumentOnce(widget.respuesta.parentReference);
+      final encuesta = await EncuestasRecord.getDocumentOnce(
+          widget.respuesta.parentReference);
       if (mounted) setState(() => _encuesta = encuesta);
     } catch (_) {}
 
     // Cargar adolescente si no fue proporcionado
     if (widget.adolescente == null && widget.respuesta.userRespuesta != null) {
       try {
-        final user = await UsersRecord.getDocumentOnce(
-            widget.respuesta.userRespuesta!);
+        final user =
+            await UsersRecord.getDocumentOnce(widget.respuesta.userRespuesta!);
         if (mounted) setState(() => _adolescenteCargado = user);
       } catch (_) {}
     }
@@ -160,12 +160,16 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
 
   Color _colorNivel(String nivel) {
     final n = nivel.toLowerCase();
-    if (n.contains('baja') || n.contains('sin ') || n.contains('mínima') ||
+    if (n.contains('baja') ||
+        n.contains('sin ') ||
+        n.contains('mínima') ||
         n.contains('minima')) return kSuccess;
     if (n.contains('media') || n.contains('moderad') || n.contains('leve')) {
       return const Color(0xFFF6BD33);
     }
-    if (n.contains('elevada') || n.contains('alto') || n.contains('grave') ||
+    if (n.contains('elevada') ||
+        n.contains('alto') ||
+        n.contains('grave') ||
         n.contains('severo')) return const Color(0xFFD92D20);
     return kNavy;
   }
@@ -205,25 +209,34 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
   String _descripcionNivel(String categoria, String nivel) {
     final n = nivel.toLowerCase();
     if (categoria == 'Escala autoestima') {
-      if (n.contains('baja')) return 'Autoestima baja. Requiere intervención y apoyo.';
-      if (n.contains('media')) return 'Autoestima media. Seguimiento preventivo.';
+      if (n.contains('baja'))
+        return 'Autoestima baja. Requiere intervención y apoyo.';
+      if (n.contains('media'))
+        return 'Autoestima media. Seguimiento preventivo.';
       if (n.contains('elevada')) return 'Autoestima saludable.';
     }
     if (categoria == 'CDI') {
       if (n.contains('sin ')) return 'Sin sintomatología depresiva relevante.';
-      if (n.contains('leve')) return 'Sintomatología leve. Seguimiento recomendado.';
-      if (n.contains('severo')) return 'Sintomatología severa. Requiere intervención clínica.';
+      if (n.contains('leve'))
+        return 'Sintomatología leve. Seguimiento recomendado.';
+      if (n.contains('severo'))
+        return 'Sintomatología severa. Requiere intervención clínica.';
     }
     if (categoria == 'Depresión Beck') {
-      if (n.contains('mínima') || n.contains('minima')) return 'Sin depresión clínicamente significativa.';
+      if (n.contains('mínima') || n.contains('minima'))
+        return 'Sin depresión clínicamente significativa.';
       if (n.contains('leve')) return 'Depresión leve. Seguimiento cercano.';
-      if (n.contains('moderad')) return 'Depresión moderada. Derivar a evaluación clínica.';
-      if (n.contains('grave')) return 'Depresión grave. Intervención clínica prioritaria.';
+      if (n.contains('moderad'))
+        return 'Depresión moderada. Derivar a evaluación clínica.';
+      if (n.contains('grave'))
+        return 'Depresión grave. Intervención clínica prioritaria.';
     }
     if (categoria == 'Consumo de SPA') {
       if (n.contains('sin ')) return 'Sin indicios de consumo problemático.';
-      if (n.contains('moderad')) return 'Consumo moderado. Requiere seguimiento.';
-      if (n.contains('severo')) return 'Consumo severo. Intervención especializada.';
+      if (n.contains('moderad'))
+        return 'Consumo moderado. Requiere seguimiento.';
+      if (n.contains('severo'))
+        return 'Consumo severo. Intervención especializada.';
     }
     if (categoria == 'CRQ / SRQ') {
       if (n.contains('sin ')) return 'Sin alerta psicosocial.';
@@ -392,6 +405,13 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
                       _SectionTitle(
                           title: 'Notas del profesional',
                           icon: Icons.edit_note),
+                      const SizedBox(height: 12.0),
+                      Text(
+                        'Espacio destinado para el registro del plan de intervención y direccionamiento clínico, incluyendo la ruta de atención sugerida (urgencias, consulta prioritaria o externa), o servicio de remisión (si aplica) y las indicaciones para la red de apoyo del paciente (familia, acudiente o institución educativa)',
+                        style: GoogleFonts.inter(
+                            fontSize: 13, color: theme.secondaryText),
+                        textAlign: TextAlign.justify,
+                      ),
                       const SizedBox(height: 12.0),
                       Container(
                         decoration: BoxDecoration(
@@ -620,8 +640,7 @@ class _InfoCard extends StatelessWidget {
           ),
           // Puntaje
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
               color: kNavy.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(12),
@@ -646,8 +665,7 @@ class _InfoCard extends StatelessWidget {
           const SizedBox(width: 12),
           // Estado
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: invalidado
                   ? const Color(0xFFFFC4C4)
@@ -847,8 +865,8 @@ class _AlertasEspecialesCard extends StatelessWidget {
             children: [
               for (final a in alertas)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -977,9 +995,15 @@ class _CdiSubescalasCard extends StatelessWidget {
             children: [
               _SubescalaChip(label: 'G (Total)', valor: g, color: kNavy),
               const SizedBox(width: 10),
-              _SubescalaChip(label: 'D (Disforia)', valor: d, color: const Color(0xFF7B5EA7)),
+              _SubescalaChip(
+                  label: 'D (Disforia)',
+                  valor: d,
+                  color: const Color(0xFF7B5EA7)),
               const SizedBox(width: 10),
-              _SubescalaChip(label: 'A (Autoestima)', valor: a, color: const Color(0xFF2E7D88)),
+              _SubescalaChip(
+                  label: 'A (Autoestima)',
+                  valor: a,
+                  color: const Color(0xFF2E7D88)),
             ],
           ),
         ],

@@ -65,7 +65,7 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
                 FFAppConstants.Profesional,
                 'Profesional',
               )) &&
-          (MediaQuery.sizeOf(context).width < kBreakpointSmall)) {
+          (MediaQuery.sizeOf(context).width < kBreakpointLarge || !isWeb)) {
         context.goNamed(
           PacientesWidget.routeName,
           extra: <String, dynamic>{

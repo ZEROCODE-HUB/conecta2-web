@@ -1019,41 +1019,45 @@ class _EncuestasAdolescenteOpenWidgetState
                                   child: RegistartionButtonWidget(
                                     btnText: 'Enviar',
                                     btnAction: () async {
-                                      // B3: Validar que todas las preguntas visibles tengan respuesta
+                                      // B3: Validar que todas las preguntas obligatorias tengan respuesta
                                       final preguntas = columnEncuestasRecord.preguntas;
                                       for (int i = 0; i < preguntas.length; i++) {
-                                        final tipo = preguntas[i].tipo;
-                                        if (tipo == 'Descriptiva') continue;
+                                        final p = preguntas[i];
+                                        if (p.nPregunta != 1) continue;
+                                        if (p.tipo == 'Descriptiva') continue;
 
                                         final r = i < FFAppState().RespuestaEnc.length
                                             ? FFAppState().RespuestaEnc[i]
                                             : null;
 
-                                        bool respondida;
-                                        if (r == null) {
-                                          respondida = false;
-                                        } else if (tipo == 'abiertas') {
-                                          respondida = r.respuesta.isNotEmpty;
-                                        } else if (tipo == 'Verdadero o falso') {
-                                          respondida = r.hasTrueAndFalse();
-                                        } else if (tipo == 'Selección única') {
-                                          respondida = r.respuestaSeleccionUnica.isNotEmpty;
-                                        } else if (tipo == 'selección' || tipo == 'Condicionante') {
-                                          respondida = r.respuestasSeleccionadas.isNotEmpty;
-                                        } else if (tipo == 'Tamizaje') {
-                                          if (FFAppState().TamizajeSustanciaPermitidas.any((s) => s == preguntas[i].sustancia)) {
+                                        bool respondida = false;
+                                        if (r != null) {
+                                          final tipo = p.tipo;
+                                          if (tipo == 'abiertas') {
+                                            respondida = r.respuesta.trim().isNotEmpty;
+                                          } else if (tipo == 'Verdadero o falso') {
+                                            respondida = r.hasTrueAndFalse();
+                                          } else if (tipo == 'Selección única') {
+                                            respondida = r.respuestaSeleccionUnica.isNotEmpty;
+                                          } else if (tipo == 'selección' || tipo == 'Condicionante') {
+                                            respondida = r.respuestasSeleccionadas.isNotEmpty;
+                                          } else if (tipo == 'Tamizaje') {
+                                            final visible = FFAppState().TamizajeSustanciaPermitidas.contains(p.sustancia);
+                                            respondida = !visible || r.respuestaTamizaje.isNotEmpty;
+                                          } else if (tipo == 'Tamizaje autoestima' ||
+                                                     tipo == 'Tamizaje CDI' ||
+                                                     tipo == 'Tamizajes Depresion Beck' ||
+                                                     tipo == 'Tamizaje CRQ / SRQ') {
                                             respondida = r.respuestaTamizaje.isNotEmpty;
                                           } else {
-                                            respondida = true;
+                                            respondida = r.respuestaTamizaje.isNotEmpty;
                                           }
-                                        } else {
-                                          respondida = r.respuestaTamizaje.isNotEmpty;
                                         }
 
                                         if (!respondida) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(
-                                              content: Text('Falta responder la pregunta ${i + 1}'),
+                                              content: Text('Falta responder la pregunta: ${p.pregunta}'),
                                               backgroundColor: Colors.red,
                                               duration: const Duration(seconds: 3),
                                             ),

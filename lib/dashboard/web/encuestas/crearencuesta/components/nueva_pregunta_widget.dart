@@ -172,6 +172,7 @@ class NuevaPreguntaWidget extends StatelessWidget {
                         ? int.tryParse(
                             model.crqNumeroPreguntaTextController?.text ?? '')
                         : null,
+                    nPregunta: model.checkboxNPValue1 == true ? 1 : 0,
                     clearUnsetFields: false,
                   )
                     ..respuestaTamizaje = respuestaTamizaje
@@ -194,6 +195,7 @@ class NuevaPreguntaWidget extends StatelessWidget {
                   model.ideacionSuicidaValue = false;
                   model.ocultarRespuestaValue = false;
                   model.dropDownSustanciaValue = null;
+                  model.checkboxNPValue1 = false;
                   model.dropDownSustanciaValueController?.value = null;
                   model.variableCDIValueController?.value = null;
 

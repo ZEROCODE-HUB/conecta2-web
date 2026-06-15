@@ -92,173 +92,176 @@ class _ResultadosTamiWidgetState extends State<ResultadosTamiWidget> {
               color: FlutterFlowTheme.of(context).primaryBackground,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Header ──────────────────────────────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0, vertical: 10.0),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    bottom: BorderSide(color: Color(0xFFE4E7EC), width: 1.0),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      iconSize: 20.0,
-                      padding: const EdgeInsets.all(6.0),
-                      constraints: const BoxConstraints(),
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Color(0xFF265294),
+                children: [
+                  // ── Header ──────────────────────────────────────────────────
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 10.0),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        bottom:
+                            BorderSide(color: Color(0xFFE4E7EC), width: 1.0),
                       ),
-                      onPressed: () {
-                        if (widget.onClose != null) {
-                          widget.onClose!();
-                        } else if (Navigator.of(context).canPop()) {
-                          Navigator.of(context).pop();
-                        }
-                      },
                     ),
-                    const SizedBox(width: 8.0),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Resultados del tamizaje',
-                            style: GoogleFonts.inter(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15.0,
-                              letterSpacing: 0.0,
-                            ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          iconSize: 20.0,
+                          padding: const EdgeInsets.all(6.0),
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Color(0xFF265294),
                           ),
-                          if (encuesta != null) ...[
-                            const SizedBox(height: 2.0),
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    encuesta.titulo,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.inter(
-                                      color: const Color(0xFF265294),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                                  ),
+                          onPressed: () {
+                            if (widget.onClose != null) {
+                              widget.onClose!();
+                            } else if (Navigator.of(context).canPop()) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                        ),
+                        const SizedBox(width: 8.0),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Resultados del tamizaje',
+                                style: GoogleFonts.inter(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15.0,
+                                  letterSpacing: 0.0,
                                 ),
-                                if (encuesta.categoria.isNotEmpty) ...[
-                                  const SizedBox(width: 8.0),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0, vertical: 2.0),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF265294)
-                                          .withValues(alpha: 0.12),
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
-                                    child: Text(
-                                      encuesta.categoria,
-                                      style: GoogleFonts.inter(
-                                        color: const Color(0xFF265294),
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 10.0,
-                                        letterSpacing: 0.0,
+                              ),
+                              if (encuesta != null) ...[
+                                const SizedBox(height: 2.0),
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        encuesta.titulo,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.inter(
+                                          color: const Color(0xFF265294),
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12.0,
+                                          letterSpacing: 0.0,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    if (encuesta.categoria.isNotEmpty) ...[
+                                      const SizedBox(width: 8.0),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0, vertical: 2.0),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF265294)
+                                              .withValues(alpha: 0.12),
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                        ),
+                                        child: Text(
+                                          encuesta.categoria,
+                                          style: GoogleFonts.inter(
+                                            color: const Color(0xFF265294),
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 10.0,
+                                            letterSpacing: 0.0,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                               ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    _ExportarTamizajeBoton(
-                      encuestaID: widget.encuestaID,
-                      hasIdeacionSuicida: _hasIdeacionSuicida,
-                      formatDate: _formatDate,
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Body ─────────────────────────────────────────────────────
-              Expanded(
-                child: StreamBuilder<List<RespuestasRecord>>(
-                  stream: queryRespuestasRecord(
-                    parent: widget.encuestaID,
-                    queryBuilder: (q) => q.orderBy('Fecha', descending: true),
-                  ),
-                  builder: (context, respuestasSnapshot) {
-                    if (!respuestasSnapshot.hasData) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            FlutterFlowTheme.of(context).primary,
+                            ],
                           ),
                         ),
-                      );
-                    }
-
-                    final respuestas = respuestasSnapshot.data!;
-
-                    if (respuestas.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.assignment_outlined,
-                              size: 64.0,
-                              color: FlutterFlowTheme.of(context)
-                                  .secondaryText
-                                  .withValues(alpha: 0.4),
-                            ),
-                            const SizedBox(height: 16.0),
-                            Text(
-                              'No hay resultados registrados',
-                              style: FlutterFlowTheme.of(context)
-                                  .titleMedium
-                                  .override(
-                                    font: GoogleFonts.inter(),
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    letterSpacing: 0.0,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: const EdgeInsets.all(24.0),
-                      itemCount: respuestas.length,
-                      itemBuilder: (context, index) {
-                        final respuesta = respuestas[index];
-                        return _RespuestaCard(
-                          respuesta: respuesta,
-                          model: _model,
-                          onUpdateNotas: _updateNotasProfesional,
-                          onInvalidar: _invalidarTamizaje,
-                          hasIdeacionSuicida:
-                              _hasIdeacionSuicida(respuesta.test),
+                        _ExportarTamizajeBoton(
+                          encuestaID: widget.encuestaID,
+                          hasIdeacionSuicida: _hasIdeacionSuicida,
                           formatDate: _formatDate,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Body ─────────────────────────────────────────────────────
+                  Expanded(
+                    child: StreamBuilder<List<RespuestasRecord>>(
+                      stream: queryRespuestasRecord(
+                        parent: widget.encuestaID,
+                        queryBuilder: (q) =>
+                            q.orderBy('Fecha', descending: true),
+                      ),
+                      builder: (context, respuestasSnapshot) {
+                        if (!respuestasSnapshot.hasData) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                FlutterFlowTheme.of(context).primary,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final respuestas = respuestasSnapshot.data!;
+
+                        if (respuestas.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.assignment_outlined,
+                                  size: 64.0,
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText
+                                      .withValues(alpha: 0.4),
+                                ),
+                                const SizedBox(height: 16.0),
+                                Text(
+                                  'No hay resultados registrados',
+                                  style: FlutterFlowTheme.of(context)
+                                      .titleMedium
+                                      .override(
+                                        font: GoogleFonts.inter(),
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryText,
+                                        letterSpacing: 0.0,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          padding: const EdgeInsets.all(24.0),
+                          itemCount: respuestas.length,
+                          itemBuilder: (context, index) {
+                            final respuesta = respuestas[index];
+                            return _RespuestaCard(
+                              respuesta: respuesta,
+                              model: _model,
+                              onUpdateNotas: _updateNotasProfesional,
+                              onInvalidar: _invalidarTamizaje,
+                              hasIdeacionSuicida:
+                                  _hasIdeacionSuicida(respuesta.test),
+                              formatDate: _formatDate,
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
             );
           },
         ),
@@ -400,8 +403,8 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                               future: UsersRecord.getDocumentOnce(
                                   widget.respuesta.userRespuesta!),
                               builder: (context, userSnap) {
-                                final name = userSnap.data?.displayName ??
-                                    'Cargando...';
+                                final name =
+                                    userSnap.data?.displayName ?? 'Cargando...';
                                 return Text(
                                   name,
                                   style: GoogleFonts.inter(
@@ -493,7 +496,8 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFFFE0A8),
                                   borderRadius: BorderRadius.circular(20.0),
-                                  border: Border.all(color: Colors.orange.shade300),
+                                  border:
+                                      Border.all(color: Colors.orange.shade300),
                                 ),
                                 child: Text(
                                   '⚠ $alerta',
@@ -625,11 +629,9 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                   ),
                   const SizedBox(height: 10.0),
                   FFButtonWidget(
-                    onPressed:
-                        _invalidating ? null : _confirmarInvalidar,
-                    text: _invalidating
-                        ? 'Invalidando...'
-                        : 'Invalidar tamizaje',
+                    onPressed: _invalidating ? null : _confirmarInvalidar,
+                    text:
+                        _invalidating ? 'Invalidando...' : 'Invalidar tamizaje',
                     options: FFButtonOptions(
                       height: 36.0,
                       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -707,17 +709,12 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
       decoration: BoxDecoration(
-        color: invalidado
-            ? const Color(0xFFFFC4C4)
-            : const Color(0xFFE5F9F1),
+        color: invalidado ? const Color(0xFFFFC4C4) : const Color(0xFFE5F9F1),
         borderRadius: BorderRadius.circular(20.0),
         border: Border.all(
-          color: invalidado
-              ? const Color(0xFFE53935)
-              : const Color(0xFF34A853),
+          color: invalidado ? const Color(0xFFE53935) : const Color(0xFF34A853),
           width: 1.0,
         ),
       ),
@@ -726,9 +723,7 @@ class _StatusBadge extends StatelessWidget {
         style: GoogleFonts.inter(
           fontSize: 12.0,
           fontWeight: FontWeight.w600,
-          color: invalidado
-              ? const Color(0xFFE53935)
-              : const Color(0xFF34A853),
+          color: invalidado ? const Color(0xFFE53935) : const Color(0xFF34A853),
         ),
       ),
     );
@@ -829,8 +824,7 @@ class _ExportarTamizajeBoton extends StatefulWidget {
   final String Function(DateTime?) formatDate;
 
   @override
-  State<_ExportarTamizajeBoton> createState() =>
-      _ExportarTamizajeBotonState();
+  State<_ExportarTamizajeBoton> createState() => _ExportarTamizajeBotonState();
 }
 
 class _ExportarTamizajeBotonState extends State<_ExportarTamizajeBoton> {
@@ -854,8 +848,7 @@ class _ExportarTamizajeBotonState extends State<_ExportarTamizajeBoton> {
     setState(() => _exporting = true);
     try {
       // Carga el encuesta document
-      final encuesta = await EncuestasRecord.getDocumentOnce(
-          widget.encuestaID);
+      final encuesta = await EncuestasRecord.getDocumentOnce(widget.encuestaID);
 
       // Carga las respuestas
       final respuestas = await queryRespuestasRecordOnce(
@@ -866,8 +859,7 @@ class _ExportarTamizajeBotonState extends State<_ExportarTamizajeBoton> {
       if (respuestas.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('No hay respuestas para exportar')),
+            const SnackBar(content: Text('No hay respuestas para exportar')),
           );
         }
         return;
@@ -879,8 +871,8 @@ class _ExportarTamizajeBotonState extends State<_ExportarTamizajeBoton> {
       String nombre = 'Paciente';
       if (respuesta.userRespuesta != null) {
         try {
-          final user = await UsersRecord.getDocumentOnce(
-              respuesta.userRespuesta!);
+          final user =
+              await UsersRecord.getDocumentOnce(respuesta.userRespuesta!);
           if (user.displayName.isNotEmpty) nombre = user.displayName;
         } catch (_) {}
       }
@@ -901,8 +893,7 @@ class _ExportarTamizajeBotonState extends State<_ExportarTamizajeBoton> {
         notas: respuesta.notasProfesional,
         preguntas: preguntas,
         invalidado: respuesta.invalidado,
-        hayIdeacionSuicida:
-            widget.hasIdeacionSuicida(respuesta.test),
+        hayIdeacionSuicida: widget.hasIdeacionSuicida(respuesta.test),
       );
     } catch (e) {
       if (mounted) {
@@ -933,8 +924,7 @@ class _ExportarTamizajeBotonState extends State<_ExportarTamizajeBoton> {
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF34A853),
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(
-            horizontal: 16.0, vertical: 10.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
         textStyle: GoogleFonts.inter(
           fontSize: 13.0,
           fontWeight: FontWeight.w600,
