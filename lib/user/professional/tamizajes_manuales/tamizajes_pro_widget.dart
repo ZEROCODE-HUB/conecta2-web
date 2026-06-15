@@ -55,16 +55,20 @@ class _TamizajesProWidgetState extends State<TamizajesProWidget> {
         child: Scaffold(
           key: scaffoldKey,
           backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => context.pushNamed('wizardTamizajePro'),
-            backgroundColor: kNavy,
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: Text(
-              'Nuevo',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 14.0,
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(bottom: 65.0),
+            child: FloatingActionButton.extended(
+              onPressed: () => context.pushNamed('wizardTamizajePro'),
+              backgroundColor: kNavy,
+              icon: const Icon(Icons.add, color: Colors.white),
+              elevation: 4.0,
+              label: Text(
+                'Nuevo',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14.0,
+                ),
               ),
             ),
           ),
@@ -157,8 +161,7 @@ class _TamizajesProWidgetState extends State<TamizajesProWidget> {
                                         horizontal: 12.0, vertical: 6.0),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFFF3F3F3),
-                                      borderRadius:
-                                          BorderRadius.circular(20.0),
+                                      borderRadius: BorderRadius.circular(20.0),
                                       border: Border.all(
                                           color: const Color(0xFFE0E0E0)),
                                     ),
@@ -264,8 +267,7 @@ class _SearchBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(24.0),
         ),
         child: Padding(
-          padding:
-              const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 8.0, 0.0),
+          padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 8.0, 0.0),
           child: Row(
             children: [
               const Icon(Icons.search, color: Color(0xFF959595), size: 22.0),

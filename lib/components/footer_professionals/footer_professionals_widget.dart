@@ -124,18 +124,18 @@ class _FooterProfessionalsWidgetState extends State<FooterProfessionalsWidget> {
                 if (widget.active != 2)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
-                    child: Image.asset(
-                      'assets/images/Alarm_clock.png',
+                    child: SvgPicture.asset(
+                      'assets/images/Alarm_Clock.svg',
                       width: 30.0,
                       height: 30.0,
-                      fit: BoxFit.none,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 if (widget.active == 2)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
-                    child: Image.asset(
-                      'assets/images/Alarm_clock.png',
+                    child: SvgPicture.asset(
+                      'assets/images/Alarm_ClockGray.svg',
                       width: 30.0,
                       height: 30.0,
                       fit: BoxFit.cover,
@@ -167,20 +167,20 @@ class _FooterProfessionalsWidgetState extends State<FooterProfessionalsWidget> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: SvgPicture.asset(
-                      'assets/images/BookGrey.svg',
-                      width: 30.0,
-                      height: 30.0,
-                      fit: BoxFit.none,
+                      'assets/images/TabletGray.svg',
+                      width: 50.0,
+                      height: 50.0,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 if (widget.active == 3)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: SvgPicture.asset(
-                      'assets/images/Book.svg',
-                      width: 30.0,
-                      height: 30.0,
-                      fit: BoxFit.none,
+                      'assets/images/Tablet.svg',
+                      width: 50.0,
+                      height: 50.0,
+                      fit: BoxFit.cover,
                     ),
                   ),
               ],
@@ -209,20 +209,20 @@ class _FooterProfessionalsWidgetState extends State<FooterProfessionalsWidget> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: SvgPicture.asset(
-                      'assets/images/DocumentGrey.svg',
+                      'assets/images/BookGrey.svg',
                       width: 30.0,
                       height: 30.0,
-                      fit: BoxFit.none,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 if (widget.active == 4)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: SvgPicture.asset(
-                      'assets/images/Document_2.svg',
+                      'assets/images/Book.svg',
                       width: 30.0,
                       height: 30.0,
-                      fit: BoxFit.none,
+                      fit: BoxFit.cover,
                     ),
                   ),
               ],
@@ -245,12 +245,29 @@ class _FooterProfessionalsWidgetState extends State<FooterProfessionalsWidget> {
                 },
               );
             },
-            child: Icon(
-              Icons.assignment_outlined,
-              color: widget.active == 5
-                  ? Colors.white
-                  : Colors.white.withValues(alpha: 0.5),
-              size: 28.0,
+            child: Stack(
+              children: [
+                if (widget.active != 5)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: SvgPicture.asset(
+                      'assets/images/DocumentGrey.svg',
+                      width: 30.0,
+                      height: 30.0,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                if (widget.active == 5)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: SvgPicture.asset(
+                      'assets/images/Document_2.svg',
+                      width: 30.0,
+                      height: 30.0,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+              ],
             ),
           ),
         ],

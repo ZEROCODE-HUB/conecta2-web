@@ -1,0 +1,21 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="clock-mask">
+      <rect width="120" height="120" fill="white" />
+      <line x1="60" y1="60" x2="60" y2="35" stroke="black" stroke-width="6" stroke-linecap="round" />
+      <line x1="60" y1="60" x2="85" y2="60" stroke="black" stroke-width="6" stroke-linecap="round" />
+    </mask>
+  </defs>
+
+  <g mask="url(#clock-mask)" fill="#6E98D7">
+    <circle cx="60" cy="60" r="45" />
+
+    <rect x="25" y="15" width="25" height="8" rx="4" transform="rotate(-30 30 19)" />
+
+    <rect x="75" y="15" width="25" height="8" rx="4" transform="rotate(30 90 19)" />
+
+    <rect x="30" y="90" width="10" height="20" rx="4" transform="rotate(30 30 100)" />
+
+    <rect x="80" y="90" width="10" height="20" rx="4" transform="rotate(-30 90 101)" />
+  </g>
+</svg>
