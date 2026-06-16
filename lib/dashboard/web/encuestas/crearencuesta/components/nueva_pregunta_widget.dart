@@ -138,7 +138,9 @@ class NuevaPreguntaWidget extends StatelessWidget {
                   // de los getters del struct.
                   final esCDIoBeck = model.tipoValue == 'Tamizaje CDI' ||
                       model.tipoValue == 'Tamizajes Depresion Beck';
-                  final esCRQ = model.tipoValue == 'Tamizaje CRQ / SRQ';
+                  final esCRQ = model.tipoValue == 'Tamizaje CRQ / SRQ' ||
+                      model.tipoValue == 'Tamizaje CRQ' ||
+                      model.tipoValue == 'Tamizaje SRQ';
                   final respuestaTamizaje = esCDIoBeck
                       ? model.respuestaCDI.toList()
                       : esCRQ
@@ -357,6 +359,8 @@ class NuevaPreguntaWidget extends StatelessWidget {
                           'Tamizaje autoestima',
                           'Tamizaje CDI',
                           'Tamizajes Depresion Beck',
+                          'Tamizaje CRQ',
+                          'Tamizaje SRQ',
                           'Tamizaje CRQ / SRQ',
                           'Descriptiva'
                         ];

@@ -62,6 +62,8 @@ class _EditarEncuestaWidgetState extends State<EditarEncuestaWidget> {
     'Tamizaje autoestima',
     'Tamizaje CDI',
     'Tamizajes Depresion Beck',
+    'Tamizaje CRQ',
+    'Tamizaje SRQ',
     'Tamizaje CRQ / SRQ',
     'Descriptiva',
   ];
@@ -263,6 +265,8 @@ class _EditarEncuestaWidgetState extends State<EditarEncuestaWidget> {
                     'CDI',
                     'Depresión Beck',
                     'CRQ / SRQ',
+                    'CRQ',
+                    'SRQ',
                   ],
                   onChanged: (val) {
                     _model.categoriaValue = val;
@@ -473,6 +477,8 @@ class _EditarEncuestaWidgetState extends State<EditarEncuestaWidget> {
       case 'Tamizajes Depresion Beck':
         return FormTamizajeCDI(model: _model, onUpdate: _update);
       case 'Tamizaje CRQ / SRQ':
+      case 'Tamizaje CRQ':
+      case 'Tamizaje SRQ':
         return FormTamizajeCRQ(model: _model);
       case 'Descriptiva':
         return FormDescriptiva(model: _model);

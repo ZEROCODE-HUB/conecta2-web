@@ -597,7 +597,9 @@ class _EncuestasParentsOpenWidgetState
                                                 } else if (tipo == 'Tamizaje autoestima' ||
                                                            tipo == 'Tamizaje CDI' ||
                                                            tipo == 'Tamizajes Depresion Beck' ||
-                                                           tipo == 'Tamizaje CRQ / SRQ') {
+                                                           tipo == 'Tamizaje CRQ / SRQ' ||
+                                                           tipo == 'Tamizaje CRQ' ||
+                                                           tipo == 'Tamizaje SRQ') {
                                                   respondida = r.respuestaTamizaje.isNotEmpty;
                                                 } else {
                                                   respondida = r.respuestaTamizaje.isNotEmpty;

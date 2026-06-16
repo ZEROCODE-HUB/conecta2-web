@@ -417,7 +417,9 @@ class _EncuestaPreguntasTWidgetState extends State<EncuestaPreguntasTWidget> {
           if ((widget.pregunta?.tipo == 'Tamizaje autoestima') ||
               (widget.pregunta?.tipo == 'Tamizaje CDI') ||
               (widget.pregunta?.tipo == 'Tamizajes Depresion Beck') ||
-              (widget.pregunta?.tipo == 'Tamizaje CRQ / SRQ'))
+              (widget.pregunta?.tipo == 'Tamizaje CRQ / SRQ') ||
+              (widget.pregunta?.tipo == 'Tamizaje CRQ') ||
+              (widget.pregunta?.tipo == 'Tamizaje SRQ'))
             Column(
               mainAxisSize: MainAxisSize.max,
               children: [
@@ -428,7 +430,9 @@ class _EncuestaPreguntasTWidgetState extends State<EncuestaPreguntasTWidget> {
                     children: [
                       Flexible(
                         child: Text(
-                          widget.pregunta?.tipo == 'Tamizaje CRQ / SRQ'
+                          (widget.pregunta?.tipo == 'Tamizaje CRQ / SRQ' ||
+                                  widget.pregunta?.tipo == 'Tamizaje CRQ' ||
+                                  widget.pregunta?.tipo == 'Tamizaje SRQ')
                               ? '${widget.pregunta?.numeroPregunta}. ${widget.pregunta?.pregunta ?? 'Pregunta'}'
                               : valueOrDefault<String>(
                                   widget.pregunta?.pregunta,

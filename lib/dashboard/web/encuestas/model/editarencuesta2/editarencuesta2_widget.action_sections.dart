@@ -15,7 +15,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
     // in AlertasEspecialesConfig used by the modular editor). For the legacy
     // editor we render the substance-style panel so the user can still edit
     // min/max per level as a fallback.
-    if (categoria == 'CRQ / SRQ') {
+    if (categoria == 'CRQ / SRQ' || categoria == 'CRQ' || categoria == 'SRQ') {
       return _buildTamizajesAlertsPanelNiveles(context, categoria);
     }
     // Default: keep legacy Sustancias panel to stay backwards compatible.
@@ -170,7 +170,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                   ],
                 ),
               ),
-            if (categoria == 'CRQ / SRQ') ...[
+            if (categoria == 'CRQ / SRQ' || categoria == 'CRQ' || categoria == 'SRQ') ...[
               const SizedBox(height: 8.0),
               Container(
                 padding: const EdgeInsets.all(10.0),

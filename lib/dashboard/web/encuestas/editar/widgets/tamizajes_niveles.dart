@@ -39,6 +39,16 @@ const Map<String, List<String>> kNivelesPorCategoria = {
     'Moderada',
     'Severo',
   ],
+  'CRQ': [
+    'Sin alerta',
+    'Moderada',
+    'Severo',
+  ],
+  'SRQ': [
+    'Sin alerta',
+    'Moderada',
+    'Severo',
+  ],
   // Consumo de SPA uses per-substance levels (Bajo/Moderado/Alto) handled
   // separately in the sustancias panel.
   'Consumo de SPA': [

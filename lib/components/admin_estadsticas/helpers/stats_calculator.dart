@@ -19,7 +19,8 @@ enum TamizajeTipo {
   autoestima,
   cdi,
   beck,
-  crqSrq,
+  crq,
+  srq,
   sustancias,
 }
 
@@ -34,8 +35,10 @@ extension TamizajeTipoX on TamizajeTipo {
         return 'CDI';
       case TamizajeTipo.beck:
         return 'Beck';
-      case TamizajeTipo.crqSrq:
-        return 'CRQ/SRQ';
+      case TamizajeTipo.crq:
+        return 'CRQ';
+      case TamizajeTipo.srq:
+        return 'SRQ';
       case TamizajeTipo.sustancias:
         return 'Sustancias';
     }
@@ -50,7 +53,9 @@ extension TamizajeTipoX on TamizajeTipo {
         return const ['Sin sintomatología', 'Leve', 'Severo'];
       case TamizajeTipo.beck:
         return const ['Mínima', 'Leve', 'Moderada', 'Grave'];
-      case TamizajeTipo.crqSrq:
+      case TamizajeTipo.crq:
+        return const ['Sin alerta', 'Moderada', 'Severo'];
+      case TamizajeTipo.srq:
         return const ['Sin alerta', 'Moderada', 'Severo'];
       case TamizajeTipo.sustancias:
         return const ['Sin alerta', 'Moderada', 'Severo'];
@@ -63,6 +68,7 @@ extension TamizajeTipoX on TamizajeTipo {
 bool _matchesTipo(TamizajeTipo tipo, String titulo) {
   if (tipo == TamizajeTipo.todas) return true;
   final key = tipoKeyFromTitulo(titulo);
+  final isLegacy = titulo.toLowerCase().contains('crq / srq') || titulo.toLowerCase().contains('crq/srq');
   switch (tipo) {
     case TamizajeTipo.autoestima:
       return key == 'autoestima';
@@ -70,8 +76,10 @@ bool _matchesTipo(TamizajeTipo tipo, String titulo) {
       return key == 'cdi';
     case TamizajeTipo.beck:
       return key == 'bdi';
-    case TamizajeTipo.crqSrq:
-      return key == 'srq';
+    case TamizajeTipo.crq:
+      return key == 'crq' || isLegacy;
+    case TamizajeTipo.srq:
+      return key == 'srq' || isLegacy;
     case TamizajeTipo.sustancias:
       return key == 'sustancias';
     case TamizajeTipo.todas:
@@ -80,18 +88,24 @@ bool _matchesTipo(TamizajeTipo tipo, String titulo) {
 }
 
 TamizajeTipo _resolveTipoForTitulo(String titulo) {
-  switch (tipoKeyFromTitulo(titulo)) {
+  final key = tipoKeyFromTitulo(titulo);
+  switch (key) {
     case 'autoestima':
       return TamizajeTipo.autoestima;
     case 'cdi':
       return TamizajeTipo.cdi;
     case 'bdi':
       return TamizajeTipo.beck;
+    case 'crq':
+      return TamizajeTipo.crq;
     case 'srq':
-      return TamizajeTipo.crqSrq;
+      return TamizajeTipo.srq;
     case 'sustancias':
       return TamizajeTipo.sustancias;
     default:
+      if (titulo.toLowerCase().contains('crq') && titulo.toLowerCase().contains('srq')) {
+        return TamizajeTipo.srq;
+      }
       return TamizajeTipo.todas;
   }
 }
@@ -151,8 +165,10 @@ String? categoriaForTipo(TamizajeTipo tipo) {
       return 'CDI';
     case TamizajeTipo.beck:
       return 'Depresión Beck';
-    case TamizajeTipo.crqSrq:
-      return 'CRQ / SRQ';
+    case TamizajeTipo.crq:
+      return 'CRQ';
+    case TamizajeTipo.srq:
+      return 'SRQ';
     case TamizajeTipo.sustancias:
       return 'Consumo de SPA';
     case TamizajeTipo.todas:

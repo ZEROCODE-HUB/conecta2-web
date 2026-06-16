@@ -404,7 +404,9 @@ class _TamizajeRespuesta2WidgetState extends State<TamizajeRespuesta2Widget> {
                 ),
               ],
             ),
-          if (widget.respuesta?.tipo == 'Tamizaje CRQ / SRQ')
+          if (widget.respuesta?.tipo == 'Tamizaje CRQ / SRQ' ||
+              widget.respuesta?.tipo == 'Tamizaje CRQ' ||
+              widget.respuesta?.tipo == 'Tamizaje SRQ')
             Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,

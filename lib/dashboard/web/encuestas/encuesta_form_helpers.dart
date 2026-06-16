@@ -12,7 +12,9 @@ const Map<String, List<String>> kTiposPorCategoria = {
   'Escala autoestima': ['Tamizaje autoestima', 'Descriptiva'],
   'CDI': ['Tamizaje CDI', 'Descriptiva'],
   'Depresión Beck': ['Tamizajes Depresion Beck', 'Descriptiva'],
-  'CRQ / SRQ': ['Tamizaje CRQ / SRQ', 'Descriptiva'],
+  'CRQ / SRQ': ['Tamizaje CRQ / SRQ', 'Tamizaje CRQ', 'Tamizaje SRQ', 'Descriptiva'],
+  'CRQ': ['Tamizaje CRQ', 'Descriptiva'],
+  'SRQ': ['Tamizaje SRQ', 'Descriptiva'],
 };
 
 /// Variables para preguntas tipo *Tamizajes Depresion Beck*: los 21 ítems del
@@ -93,6 +95,8 @@ class EncuestaFormHelpers {
             case 'Tamizajes Depresion Beck':
               return _buildCDIForm(model, onUpdate);
             case 'Tamizaje CRQ / SRQ':
+            case 'Tamizaje CRQ':
+            case 'Tamizaje SRQ':
               return _buildCRQSRQForm(model);
             case 'Descriptiva':
               return _buildDescriptivaForm(model);

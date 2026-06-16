@@ -56,7 +56,8 @@ String tipoKeyFromTitulo(String titulo) {
   if (t.contains('rosemberg') ||
       t.contains('rosenberg') ||
       t.contains('autoestima')) return 'autoestima';
-  if (t.contains('srq') || t.contains('crq')) return 'srq';
+  if (t.contains('crq')) return 'crq';
+  if (t.contains('srq')) return 'srq';
   if (t.contains('beck') || t.contains('bdi')) return 'bdi';
   if (t.contains('sustancia') ||
       t.contains('assist') ||
@@ -178,6 +179,7 @@ String classifyNivel(
       if (total >= 20) return 'Moderada';
       if (total >= 14) return 'Leve';
       return 'Mínima';
+    case 'crq':
     case 'srq':
       if (total >= 11) return 'Severo';
       if (total >= 4) return 'Moderada';

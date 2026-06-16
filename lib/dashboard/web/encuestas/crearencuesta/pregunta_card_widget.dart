@@ -21,7 +21,8 @@ Color colorForTipo(String tipo) {
     case 'Tamizaje CDI':
     case 'Tamizajes Depresion Beck':
       return const Color(0xFF3F51B5);
-    case 'Tamizaje CRQ / SRQ':
+    case 'Tamizaje CRQ':
+    case 'Tamizaje SRQ':
       return const Color(0xFF4CAF50);
     case 'Selección única':
       return const Color(0xFFFF5722);
@@ -53,8 +54,10 @@ String labelForTipo(String tipo) {
       return 'CDI';
     case 'Tamizajes Depresion Beck':
       return 'Beck';
-    case 'Tamizaje CRQ / SRQ':
-      return 'CRQ/SRQ';
+    case 'Tamizaje CRQ':
+      return 'CRQ';
+    case 'Tamizaje SRQ':
+      return 'SRQ';
     case 'Selección única':
       return 'Sel. Única';
     case 'Verdadero o falso':
@@ -329,7 +332,8 @@ class _PreguntaCardState extends State<PreguntaCard> {
       case 'Tamizaje CDI':
       case 'Tamizajes Depresion Beck':
         return _contentTamizajeCDI();
-      case 'Tamizaje CRQ / SRQ':
+      case 'Tamizaje CRQ':
+      case 'Tamizaje SRQ':
         return _contentTamizajeCRQ();
       case 'Selección única':
         return _contentSeleccionUnica();

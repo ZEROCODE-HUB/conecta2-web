@@ -600,6 +600,8 @@ extension _Editarencuesta2WidgetBuildSections1 on _Editarencuesta2WidgetState {
                                                                                                 if (widget.tipo == 'Tamizajes') 'Tamizaje autoestima',
                                                                                                 if (widget.tipo == 'Tamizajes') 'Tamizaje CDI',
                                                                                                 if (widget.tipo == 'Tamizajes') 'Tamizajes Depresion Beck',
+                                                                                                if (widget.tipo == 'Tamizajes') 'Tamizaje CRQ',
+                                                                                                if (widget.tipo == 'Tamizajes') 'Tamizaje SRQ',
                                                                                                 if (widget.tipo == 'Tamizajes') 'Tamizaje CRQ / SRQ',
                                                                                                 if (widget.tipo == 'Tamizajes') 'Condicionante',
                                                                                                 if (widget.tipo == 'Tamizajes') 'Descriptiva',
@@ -858,6 +860,8 @@ extension _Editarencuesta2WidgetBuildSections1 on _Editarencuesta2WidgetState {
       'CDI',
       'Depresión Beck',
       'CRQ / SRQ',
+      'CRQ',
+      'SRQ',
     ];
 
     return Padding(

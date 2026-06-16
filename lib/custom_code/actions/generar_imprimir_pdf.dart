@@ -66,7 +66,7 @@ Future generarImprimirPDF(String userUid) async {
     try {
       print('PASO 2: Obteniendo respuestas de tamizaje...');
       var resultado = await _obtenerRespuestasTamizajeSeguro(userUid);
-      respuestasTamizaje = resultado['respuestas'];
+      respuestasTamizaje = List<RespustaTamizajeStruct>.from(resultado['respuestas'] ?? []);
       tamizajeCompletadoSinRespuestas = resultado['completadoSinRespuestas'];
 
       if (respuestasTamizaje.isNotEmpty) {
@@ -510,19 +510,19 @@ Future<Map<String, dynamic>> _obtenerRespuestasTamizajeSeguro(
               print(
                   '  ✓ Tamizaje con ${respuestasData.length} respuestas reales');
 
-              // Si es una lista de maps, intentar convertir a RespustaTamizajeStruct
-              if (respuestasData is List<Map<String, dynamic>>) {
-                for (var respuestaData in respuestasData) {
-                  try {
+              // Iterar sobre la lista de forma segura sin forzar el tipo a List<Map<String, dynamic>>
+              for (var respuestaData in respuestasData) {
+                try {
+                  if (respuestaData is Map) {
                     respuestas.add(RespustaTamizajeStruct(
                       pregunta: respuestaData['pregunta']?.toString() ??
                           'Pregunta no disponible',
                       respuesta: respuestaData['respuesta']?.toString() ??
                           'No respondida',
                     ));
-                  } catch (e) {
-                    print('Error al convertir respuesta: $e');
                   }
+                } catch (e) {
+                  print('Error al convertir respuesta: $e');
                 }
               }
             } catch (e) {
@@ -555,13 +555,13 @@ Future<Map<String, dynamic>> _obtenerRespuestasTamizajeSeguro(
 
     // Por defecto retorna sin datos de tamizaje
     return {
-      'respuestas': [],
+      'respuestas': <RespustaTamizajeStruct>[],
       'completadoSinRespuestas': false,
     };
   } catch (e) {
     print('  ERROR al obtener respuestas de tamizaje: $e');
     return {
-      'respuestas': [],
+      'respuestas': <RespustaTamizajeStruct>[],
       'completadoSinRespuestas': false,
     };
   }

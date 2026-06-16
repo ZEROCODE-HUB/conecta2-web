@@ -238,7 +238,7 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
       if (n.contains('severo'))
         return 'Consumo severo. Intervención especializada.';
     }
-    if (categoria == 'CRQ / SRQ') {
+    if (categoria == 'CRQ / SRQ' || categoria == 'CRQ' || categoria == 'SRQ') {
       if (n.contains('sin ')) return 'Sin alerta psicosocial.';
       if (n.contains('moderad')) return 'Alerta psicosocial moderada.';
       if (n.contains('severo')) return 'Alerta psicosocial alta.';

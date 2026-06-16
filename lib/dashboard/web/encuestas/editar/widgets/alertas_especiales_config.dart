@@ -41,7 +41,9 @@ class AlertasEspecialesConfig extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox.shrink();
         final encuesta = snapshot.data!;
-        if (encuesta.categoria != 'CRQ / SRQ') {
+        if (encuesta.categoria != 'CRQ / SRQ' &&
+            encuesta.categoria != 'CRQ' &&
+            encuesta.categoria != 'SRQ') {
           return const SizedBox.shrink();
         }
 

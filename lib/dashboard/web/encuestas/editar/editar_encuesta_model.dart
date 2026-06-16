@@ -235,6 +235,8 @@ class EditarEncuestaModel {
         tamizaje = respuestaCDI;
         break;
       case 'Tamizaje CRQ / SRQ':
+      case 'Tamizaje CRQ':
+      case 'Tamizaje SRQ':
         tamizaje = [
           AtributosStruct(
             etiqueta: 'Sí',
@@ -251,7 +253,9 @@ class EditarEncuestaModel {
     }
 
     final String? respuestaSUnicaCorrecta = seleccionUnicaCorrectaValue;
-    final int? numeroPregunta = tipo == 'Tamizaje CRQ / SRQ'
+    final int? numeroPregunta = (tipo == 'Tamizaje CRQ / SRQ' ||
+            tipo == 'Tamizaje CRQ' ||
+            tipo == 'Tamizaje SRQ')
         ? int.tryParse(crqNumeroPreguntaController.text)
         : null;
     final String? variable =

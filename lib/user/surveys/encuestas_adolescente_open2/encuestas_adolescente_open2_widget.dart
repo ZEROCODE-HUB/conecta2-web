@@ -900,7 +900,11 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                     (preguntasindeexItem.tipo ==
                                                         'Tamizajes Depresion Beck') ||
                                                     (preguntasindeexItem.tipo ==
-                                                        'Tamizaje CRQ / SRQ'))
+                                                        'Tamizaje CRQ / SRQ') ||
+                                                    (preguntasindeexItem.tipo ==
+                                                        'Tamizaje CRQ') ||
+                                                    (preguntasindeexItem.tipo ==
+                                                        'Tamizaje SRQ'))
                                                   Column(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
@@ -924,8 +928,12 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                                         .start,
                                                                 children: [
                                                                   Text(
-                                                                    preguntasindeexItem.tipo ==
-                                                                            'Tamizaje CRQ / SRQ'
+                                                                    (preguntasindeexItem.tipo ==
+                                                                                'Tamizaje CRQ / SRQ' ||
+                                                                            preguntasindeexItem.tipo ==
+                                                                                'Tamizaje CRQ' ||
+                                                                            preguntasindeexItem.tipo ==
+                                                                                'Tamizaje SRQ')
                                                                         ? '${preguntasindeexItem.numeroPregunta}. ${preguntasindeexItem.pregunta}'
                                                                         : preguntasindeexItem
                                                                             .pregunta,
@@ -1202,11 +1210,18 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                                             ),
                                                                             action:
                                                                                 () async {
-                                                                              FFAppState().updateRespuestaEncAtIndex(
-                                                                                preguntasindeexIndex,
-                                                                                (e) => e..respuesta = FFAppState().updateText,
-                                                                              );
-                                                                              safeSetState(() {});
+                                                                              if (preguntasindeexItem.tipo ==
+                                                                                      'Tamizaje CRQ / SRQ' ||
+                                                                                  preguntasindeexItem.tipo ==
+                                                                                      'Tamizaje CRQ' ||
+                                                                                  preguntasindeexItem.tipo ==
+                                                                                      'Tamizaje SRQ') {
+                                                                                FFAppState().updateRespuestaEncAtIndex(
+                                                                                  preguntasindeexIndex,
+                                                                                  (e) => e..respuesta = FFAppState().updateText,
+                                                                                );
+                                                                                safeSetState(() {});
+                                                                              }
                                                                             },
                                                                           ),
                                                                         ),
@@ -1337,7 +1352,9 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                 tipo == 'Tamizaje CDI' ||
                                                 tipo ==
                                                     'Tamizajes Depresion Beck' ||
-                                                tipo == 'Tamizaje CRQ / SRQ') {
+                                                tipo == 'Tamizaje CRQ / SRQ' ||
+                                                tipo == 'Tamizaje CRQ' ||
+                                                tipo == 'Tamizaje SRQ') {
                                               respondida = r
                                                   .respuestaTamizaje.isNotEmpty;
                                             } else {

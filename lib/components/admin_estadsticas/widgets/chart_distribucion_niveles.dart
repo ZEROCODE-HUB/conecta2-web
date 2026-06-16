@@ -70,8 +70,10 @@ class _ChartDistribucionNivelesState extends State<ChartDistribucionNiveles> {
         return 'Nivel de depresión (CDI)';
       case TamizajeTipo.beck:
         return 'Nivel de depresión (Beck)';
-      case TamizajeTipo.crqSrq:
-        return 'Nivel de ansiedad (CRQ/SRQ)';
+      case TamizajeTipo.crq:
+        return 'Nivel de ansiedad (CRQ)';
+      case TamizajeTipo.srq:
+        return 'Nivel de ansiedad (SRQ)';
       case TamizajeTipo.sustancias:
         return 'Nivel de consumo (Sustancias)';
       case TamizajeTipo.todas:

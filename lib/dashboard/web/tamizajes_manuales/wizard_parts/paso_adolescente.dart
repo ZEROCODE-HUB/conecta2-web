@@ -62,8 +62,8 @@ class _PasoSeleccionAdolescenteState extends State<_PasoSeleccionAdolescente> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF265294),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -85,8 +85,7 @@ class _PasoSeleccionAdolescenteState extends State<_PasoSeleccionAdolescente> {
                     ),
                     builder: (context, snap) {
                       if (!snap.hasData) {
-                        return const Center(
-                            child: CircularProgressIndicator());
+                        return const Center(child: CircularProgressIndicator());
                       }
                       final filtrados = snap.data!.where((u) {
                         final n = u.displayName.toLowerCase();
@@ -300,8 +299,7 @@ class _DialogoRegistrarAdolescenteState
         return opciones.where((n) => n.toLowerCase().contains(q));
       },
       onSelected: onSeleccionado,
-      fieldViewBuilder:
-          (context, controller, focusNode, onFieldSubmitted) {
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
         return TextField(
           controller: controller,
           focusNode: focusNode,
@@ -320,8 +318,7 @@ class _DialogoRegistrarAdolescenteState
             elevation: 4,
             borderRadius: BorderRadius.circular(8),
             child: ConstrainedBox(
-              constraints:
-                  const BoxConstraints(maxHeight: 240, maxWidth: 492),
+              constraints: const BoxConstraints(maxHeight: 240, maxWidth: 492),
               child: ListView.builder(
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
@@ -446,8 +443,7 @@ class _DialogoRegistrarAdolescenteState
                 items: const [
                   DropdownMenuItem(
                       value: 'Masculino', child: Text('Masculino')),
-                  DropdownMenuItem(
-                      value: 'Femenino', child: Text('Femenino')),
+                  DropdownMenuItem(value: 'Femenino', child: Text('Femenino')),
                   DropdownMenuItem(value: 'Otro', child: Text('Otro')),
                 ],
                 onChanged: (v) => setState(() => _genero = v),
@@ -504,7 +500,7 @@ class _DialogoRegistrarAdolescenteState
                         border: Border.all(color: const Color(0xFFD0D5DD)),
                       ),
                       child: Text(
-                        '$_edadCalculada anios',
+                        '$_edadCalculada años',
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF6366F1),
@@ -538,8 +534,7 @@ class _DialogoRegistrarAdolescenteState
                 hint: 'Seleccionar colegio',
                 opciones: _colegiosOpciones,
                 valorSeleccionado: _colegioSeleccionado,
-                onSeleccionado: (v) =>
-                    setState(() => _colegioSeleccionado = v),
+                onSeleccionado: (v) => setState(() => _colegioSeleccionado = v),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
@@ -548,8 +543,7 @@ class _DialogoRegistrarAdolescenteState
                 decoration: _inputDecoration('EPS', hint: 'Seleccionar EPS'),
                 hint: const Text('Seleccionar EPS'),
                 items: kListaEPS
-                    .map((e) =>
-                        DropdownMenuItem(value: e, child: Text(e)))
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (v) => setState(() => _epsSeleccionada = v),
               ),
@@ -559,8 +553,7 @@ class _DialogoRegistrarAdolescenteState
                 hint: 'Seleccionar barrio',
                 opciones: _barriosOpciones,
                 valorSeleccionado: _barrioSeleccionado,
-                onSeleccionado: (v) =>
-                    setState(() => _barrioSeleccionado = v),
+                onSeleccionado: (v) => setState(() => _barrioSeleccionado = v),
               ),
 
               // ── Acudiente ──
@@ -568,21 +561,18 @@ class _DialogoRegistrarAdolescenteState
               _sectionHeader('Acudiente (Tutor)'),
               TextField(
                 controller: _acudienteNombre,
-                decoration:
-                    _inputDecoration('Nombre del acudiente'),
+                decoration: _inputDecoration('Nombre del acudiente'),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _acudienteTelefono,
-                decoration:
-                    _inputDecoration('Telefono del acudiente'),
+                decoration: _inputDecoration('Telefono del acudiente'),
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _acudienteCorreo,
-                decoration:
-                    _inputDecoration('Email del acudiente'),
+                decoration: _inputDecoration('Email del acudiente'),
                 keyboardType: TextInputType.emailAddress,
               ),
             ],
@@ -599,10 +589,9 @@ class _DialogoRegistrarAdolescenteState
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF6366F1),
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8)),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
           child: _guardando
               ? const SizedBox(
@@ -621,4 +610,3 @@ class _DialogoRegistrarAdolescenteState
 // ─────────────────────────────────────────────────────────────────────────────
 // Paso 2 — selección del tamizaje
 // ─────────────────────────────────────────────────────────────────────────────
-

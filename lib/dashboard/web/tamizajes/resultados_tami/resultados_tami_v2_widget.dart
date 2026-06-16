@@ -235,6 +235,8 @@ class _RespuestaCardState extends State<_RespuestaCard> {
         titulo = 'beck';
         break;
       case 'CRQ / SRQ':
+      case 'CRQ':
+      case 'SRQ':
         titulo = 'srq';
         break;
     }

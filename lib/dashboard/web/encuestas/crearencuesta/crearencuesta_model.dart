@@ -70,6 +70,8 @@ class CrearencuestaModel extends FlutterFlowModel<CrearencuestaWidget> {
     'Selección única',
     'Selección',
     'Verdadero o falso',
+    'Tamizaje CRQ',
+    'Tamizaje SRQ',
     'Tamizaje CRQ / SRQ'
   ];
   void addToTipospreguntas(String item) => tipospreguntas.add(item);

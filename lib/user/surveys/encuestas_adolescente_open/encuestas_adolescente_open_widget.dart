@@ -575,7 +575,11 @@ class _EncuestasAdolescenteOpenWidgetState
                                               (preguntasindeexItem.tipo ==
                                                   'Tamizajes Depresion Beck') ||
                                               (preguntasindeexItem.tipo ==
-                                                  'Tamizaje CRQ / SRQ'))
+                                                  'Tamizaje CRQ / SRQ') ||
+                                              (preguntasindeexItem.tipo ==
+                                                  'Tamizaje CRQ') ||
+                                              (preguntasindeexItem.tipo ==
+                                                  'Tamizaje SRQ'))
                                             Column(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
@@ -589,9 +593,12 @@ class _EncuestasAdolescenteOpenWidgetState
                                                     children: [
                                                       Flexible(
                                                         child: Text(
-                                                          preguntasindeexItem
-                                                              .tipo ==
-                                                              'Tamizaje CRQ / SRQ'
+                                                          (preguntasindeexItem.tipo ==
+                                                                  'Tamizaje CRQ / SRQ' ||
+                                                              preguntasindeexItem.tipo ==
+                                                                  'Tamizaje CRQ' ||
+                                                              preguntasindeexItem.tipo ==
+                                                                  'Tamizaje SRQ')
                                                               ? '${preguntasindeexItem.numeroPregunta}. ${preguntasindeexItem.pregunta}'
                                                               : preguntasindeexItem
                                                                   .pregunta,
@@ -1047,7 +1054,9 @@ class _EncuestasAdolescenteOpenWidgetState
                                           } else if (tipo == 'Tamizaje autoestima' ||
                                                      tipo == 'Tamizaje CDI' ||
                                                      tipo == 'Tamizajes Depresion Beck' ||
-                                                     tipo == 'Tamizaje CRQ / SRQ') {
+                                                     tipo == 'Tamizaje CRQ / SRQ' ||
+                                                     tipo == 'Tamizaje CRQ' ||
+                                                     tipo == 'Tamizaje SRQ') {
                                             respondida = r.respuestaTamizaje.isNotEmpty;
                                           } else {
                                             respondida = r.respuestaTamizaje.isNotEmpty;

@@ -812,7 +812,9 @@ class SidebarAccionesWidget extends StatelessWidget {
                                           ),
                                           Builder(
                                             builder: (context) {
-                                              if (_model.categoriaValue != 'CRQ / SRQ') {
+                                              if (_model.categoriaValue != 'CRQ / SRQ' &&
+                                                  _model.categoriaValue != 'CRQ' &&
+                                                  _model.categoriaValue != 'SRQ') {
                                                 return SizedBox.shrink();
                                               }
                                               return Padding(
