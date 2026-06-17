@@ -343,21 +343,64 @@ class _DialogoRegistrarAdolescenteState
   }
 
   Future<void> _guardar() async {
-    if (_nombre.text.trim().isEmpty) {
+    final nombre = _nombre.text.trim();
+    final identidad = _identidad.text.trim();
+    final email = _email.text.trim();
+    final telefono = _telefono.text.trim();
+    final acudienteNombre = _acudienteNombre.text.trim();
+    final acudienteTelefono = _acudienteTelefono.text.trim();
+    final acudienteCorreo = _acudienteCorreo.text.trim();
+    
+    if (nombre.isEmpty ||
+        identidad.isEmpty ||
+        _genero == null || _genero!.isEmpty ||
+        _fechaNacimiento == null ||
+        email.isEmpty ||
+        _colegioSeleccionado == null || _colegioSeleccionado!.isEmpty ||
+        _epsSeleccionada == null || _epsSeleccionada!.isEmpty ||
+        _barrioSeleccionado == null || _barrioSeleccionado!.isEmpty ||
+        acudienteNombre.isEmpty ||
+        acudienteTelefono.isEmpty ||
+        acudienteCorreo.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('El nombre es obligatorio')),
+        const SnackBar(content: Text('Por favor, complete todos los campos obligatorios (solo el teléfono del adolescente es opcional)')),
       );
       return;
     }
+    
+    // Validar correo
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, ingrese un correo válido')),
+      );
+      return;
+    }
+
     setState(() => _guardando = true);
     try {
+      // Verificar si el correo ya existe
+      final usuariosExistentes = await queryUsersRecordOnce(
+        queryBuilder: (q) => q.where('email', isEqualTo: email),
+        limit: 1,
+      );
+      
+      if (usuariosExistentes.isNotEmpty) {
+         if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('El correo ingresado ya se encuentra registrado')),
+            );
+            setState(() => _guardando = false);
+         }
+         return;
+      }
+
       final ref = FirebaseFirestore.instance.collection('users').doc();
       final data = createUsersRecordData(
-        email: _email.text.trim(),
-        displayName: _nombre.text.trim(),
-        phoneNumber: _telefono.text.trim(),
+        email: email,
+        displayName: nombre,
+        phoneNumber: telefono,
         rol: 'Adolescente',
-        identidad: _identidad.text.trim(),
+        identidad: identidad,
         genero: _genero ?? '',
         fechaNacimiento: _fechaNacimiento,
         colegio: _colegioSeleccionado ?? '',
@@ -365,9 +408,9 @@ class _DialogoRegistrarAdolescenteState
         barrio: _barrioSeleccionado ?? '',
         createdTime: DateTime.now(),
         acudiente: AcudienteStruct(
-          nombre: _acudienteNombre.text.trim(),
-          telefono: _acudienteTelefono.text.trim(),
-          correo: _acudienteCorreo.text.trim(),
+          nombre: acudienteNombre,
+          telefono: acudienteTelefono,
+          correo: acudienteCorreo,
         ),
         profesionales: ProfesionalesStruct(
           ref: currentUserReference,

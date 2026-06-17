@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 import '/components/rich_text_notas/rich_text_notas_widget.dart'
     show quillDeltaToPlainText;
@@ -32,6 +33,9 @@ Future<void> exportarResultadosPDF({
   required bool invalidado,
   required bool hayIdeacionSuicida,
 }) async {
+  final logoData = await rootBundle.load('assets/pdf/logo.png');
+  final logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+
   final pdf = pw.Document();
 
   // Nivel de riesgo derivado del puntaje y la ideación suicida.
@@ -51,7 +55,7 @@ Future<void> exportarResultadosPDF({
         return [
           pw.SizedBox(height: 14),
           // ── Encabezado institucional ────────────────────────────────
-          _buildInstitutionalHeader(),
+          _buildInstitutionalHeader(logoImage),
           pw.SizedBox(height: 24),
 
           // ── Título del tamizaje + subtítulo ─────────────────────────
@@ -114,7 +118,7 @@ pw.Widget _buildTopBar() {
   );
 }
 
-pw.Widget _buildInstitutionalHeader() {
+pw.Widget _buildInstitutionalHeader(pw.MemoryImage logoImage) {
   return pw.Row(
     crossAxisAlignment: pw.CrossAxisAlignment.start,
     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -123,7 +127,7 @@ pw.Widget _buildInstitutionalHeader() {
       pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          _logoPlaceholder(50),
+          pw.Image(logoImage, width: 50, height: 50),
           pw.SizedBox(height: 6),
           pw.Text(
             'NIT 0123456789',

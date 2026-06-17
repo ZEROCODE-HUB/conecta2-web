@@ -178,13 +178,14 @@ String? categoriaForTipo(TamizajeTipo tipo) {
 
 /// Loads published encuestas for the selector. When [tipo] is [TamizajeTipo.todas],
 /// returns every tamizaje; otherwise filters by family (Autoestima, CDI, etc.).
-Future<List<({String titulo, DocumentReference ref})>> loadEncuestasByTipo(
+Future<List<String>> loadEncuestasByTipo(
   TamizajeTipo tipo,
 ) async {
   try {
     final snap = await FirebaseFirestore.instance
         .collection('Encuestas')
         .where('tipo', isEqualTo: 'Tamizajes')
+        .where('Publicado', isEqualTo: true)
         .get()
         .timeout(const Duration(seconds: 10));
     final rawDocs = snap.docs;
@@ -194,15 +195,13 @@ Future<List<({String titulo, DocumentReference ref})>> loadEncuestasByTipo(
             final titulo = (d.data()['titulo'] ?? '').toString();
             return _matchesTipo(tipo, titulo);
           });
-    final list = filteredDocs
-        .map((d) => (
-              titulo: (d.data()['titulo'] ?? '').toString(),
-              ref: d.reference,
-            ))
-        .where((e) => e.titulo.isNotEmpty)
-        .toList();
+    final setTitulos = filteredDocs
+        .map((d) => (d.data()['titulo'] ?? '').toString())
+        .where((t) => t.isNotEmpty)
+        .toSet();
+    final list = setTitulos.toList();
     list.sort(
-      (a, b) => a.titulo.toLowerCase().compareTo(b.titulo.toLowerCase()),
+      (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
     );
     return list;
   } catch (_) {
@@ -215,7 +214,7 @@ Future<StatsAggregates> loadStats(
   TamizajeTipo tipo, {
   String? colegio,
   DateTimeRange? rango,
-  DocumentReference? encuestaRef,
+  String? tituloEncuesta,
   String? nivelAlerta,
 }) async {
   final responses = <ClassifiedResponse>[];
@@ -229,16 +228,16 @@ Future<StatsAggregates> loadStats(
         .timeout(const Duration(seconds: 20));
 
     for (final doc in snap.docs) {
-      // Filter by specific encuesta when drill-down is active.
-      if (encuestaRef != null) {
-        final parentRef = doc.reference.parent.parent;
-        if (parentRef == null || parentRef.id != encuestaRef.id) continue;
-      }
-
       final data = doc.data();
       final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
       if (titulo.isEmpty) continue;
       if (!_matchesTipo(tipo, titulo)) continue;
+
+      // Filter by specific encuesta title when drill-down is active.
+      if (tituloEncuesta != null && tituloEncuesta.isNotEmpty) {
+        if (titulo != tituloEncuesta) continue;
+      }
+      
       if ((data['invalidado'] as bool?) == true) continue;
 
       if (rango != null) {

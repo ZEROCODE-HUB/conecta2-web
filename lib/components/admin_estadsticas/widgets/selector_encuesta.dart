@@ -6,8 +6,6 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '../common/filter_pill.dart';
 import '../helpers/stats_calculator.dart';
 
-typedef EncuestaItem = ({String titulo, DocumentReference ref});
-
 /// Dropdown to pick a specific encuesta within the currently selected
 /// [TamizajeTipo]. Hidden when the list is empty or tipo is "todas".
 class SelectorEncuesta extends StatefulWidget {
@@ -19,15 +17,15 @@ class SelectorEncuesta extends StatefulWidget {
   });
 
   final TamizajeTipo tipo;
-  final DocumentReference? seleccionada;
-  final ValueChanged<DocumentReference?> onChanged;
+  final String? seleccionada;
+  final ValueChanged<String?> onChanged;
 
   @override
   State<SelectorEncuesta> createState() => _SelectorEncuestaState();
 }
 
 class _SelectorEncuestaState extends State<SelectorEncuesta> {
-  List<EncuestaItem> _items = [];
+  List<String> _items = [];
   bool _cargando = true;
 
   @override
@@ -78,7 +76,7 @@ class _SelectorEncuestaState extends State<SelectorEncuesta> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : DropdownButtonHideUnderline(
-                child: DropdownButton<DocumentReference?>(
+                child: DropdownButton<String?>(
                   value: widget.seleccionada,
                   hint: Text(
                     'Todos los tamizajes',
@@ -98,10 +96,10 @@ class _SelectorEncuestaState extends State<SelectorEncuesta> {
                       ),
                     ),
                     ..._items.map(
-                      (e) => DropdownMenuItem(
-                        value: e.ref,
+                      (titulo) => DropdownMenuItem(
+                        value: titulo,
                         child: Text(
-                          e.titulo,
+                          titulo,
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,

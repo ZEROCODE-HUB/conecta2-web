@@ -99,6 +99,52 @@ class _MapaInstitucionesEducativasState
     _cargarInstituciones();
   }
 
+  // Función para obtener colegios que tienen tamizajes (lugares intervenidos)
+  Future<Set<String>> _obtenerColegiosConTamizaje() async {
+    Set<String> colegiosConTamizaje = {};
+    try {
+      print('📋 Buscando todos los tamizajes para filtrar mapa...');
+      final tamizajesSnapshot = await FirebaseFirestore.instance
+          .collection('Encuestas')
+          .where('tipo', isEqualTo: 'Tamizajes')
+          .where('Publicado', isEqualTo: true)
+          .get();
+
+      Set<String> userPaths = {};
+      for (var doc in tamizajesSnapshot.docs) {
+        final data = doc.data();
+        final userRefList = data['user_Ref'] as List<dynamic>? ?? [];
+        for (var userRef in userRefList) {
+          if (userRef is DocumentReference) {
+            userPaths.add(userRef.path);
+          }
+        }
+      }
+
+      print('👥 Usuarios únicos con tamizajes: ${userPaths.length}');
+
+      if (userPaths.isEmpty) return {};
+
+      final usersSnapshot = await FirebaseFirestore.instance.collection('users').get();
+      
+      for (var doc in usersSnapshot.docs) {
+        if (userPaths.contains(doc.reference.path)) {
+          final data = doc.data();
+          final colegio = data['colegio']?.toString().trim();
+          if (colegio != null && colegio.isNotEmpty) {
+            colegiosConTamizaje.add(colegio);
+          }
+        }
+      }
+      
+      print('🏫 Colegios con tamizajes encontrados: ${colegiosConTamizaje.length}');
+      
+    } catch (e) {
+      print('❌ Error obteniendo colegios con tamizaje: $e');
+    }
+    return colegiosConTamizaje;
+  }
+
   // Función para cargar barrios desde Firebase
   Future<void> _cargarBarrios() async {
     try {
@@ -140,6 +186,9 @@ class _MapaInstitucionesEducativasState
         isLoadingInstituciones = true;
       });
 
+      // Obtener colegios intervenidos (con tamizajes)
+      Set<String> colegiosConTamizaje = await _obtenerColegiosConTamizaje();
+
       final querySnapshot =
           await FirebaseFirestore.instance.collection('colegios').get();
 
@@ -147,6 +196,10 @@ class _MapaInstitucionesEducativasState
 
       for (var doc in querySnapshot.docs) {
         final data = doc.data();
+        final nombreColegio = data['nombre']?.toString().trim() ?? 'Sin nombre';
+
+        // Filtrar: Solo agregar si el colegio está en la lista de colegios con tamizaje
+        if (!colegiosConTamizaje.contains(nombreColegio)) continue;
 
         // Parsear latitud y longitud desde strings
         double? latitud = _parseCoordinate(data['latitud']);
@@ -512,32 +565,6 @@ class _MapaInstitucionesEducativasState
 
   @override
   Widget build(BuildContext context) {
-    // Mostrar loading mientras cargan las instituciones o barrios
-    if (isLoadingInstituciones || isLoadingBarrios) {
-      return Container(
-        width: widget.width,
-        height: widget.height,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Cargando datos...',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return Container(
       width: widget.width,
       height: widget.height,
@@ -565,6 +592,42 @@ class _MapaInstitucionesEducativasState
           if (isDialogOpen)
             Container(
               color: Colors.black54,
+            ),
+          if (isLoadingInstituciones || isLoadingBarrios)
+            Positioned(
+              top: 80,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text('Cargando lugares intervenidos...'),
+                    ],
+                  ),
+                ),
+              ),
             ),
           Positioned(
             top: 10,

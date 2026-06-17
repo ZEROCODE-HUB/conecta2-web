@@ -32,7 +32,7 @@ class _AdminEstadsticas2WidgetState extends State<AdminEstadsticas2Widget> {
 
   TamizajeTipo _tipoSeleccionado = TamizajeTipo.todas;
   DateTimeRange? _rangoFechas;
-  DocumentReference? _encuestaSeleccionada;
+  String? _encuestaSeleccionada;
   String? _nivelAlerta;
   Future<StatsAggregates>? _statsFuture;
 
@@ -55,7 +55,7 @@ class _AdminEstadsticas2WidgetState extends State<AdminEstadsticas2Widget> {
       _tipoSeleccionado,
       colegio: _model.filtroColegio.isEmpty ? null : _model.filtroColegio,
       rango: _rangoFechas,
-      encuestaRef: _encuestaSeleccionada,
+      tituloEncuesta: _encuestaSeleccionada,
       nivelAlerta: _nivelAlerta,
     );
   }
@@ -91,9 +91,9 @@ class _AdminEstadsticas2WidgetState extends State<AdminEstadsticas2Widget> {
     });
   }
 
-  void _onEncuestaChanged(DocumentReference? ref) {
+  void _onEncuestaChanged(String? titulo) {
     setState(() {
-      _encuestaSeleccionada = ref;
+      _encuestaSeleccionada = titulo;
       _nivelAlerta = null;
       _refreshStats();
     });
