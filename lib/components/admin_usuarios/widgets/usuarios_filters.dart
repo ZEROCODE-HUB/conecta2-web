@@ -48,39 +48,39 @@ class UsuariosTitleBar extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.max,
             children: [
-              Padding(
-                padding:
-                    const EdgeInsetsDirectional.fromSTEB(0, 0, 16, 0),
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    await actions.generarPDFPrueba();
-                  },
-                  icon: const Icon(
-                    Icons.picture_as_pdf,
-                    color: Color(0xFF265294),
-                    size: 20.0,
-                  ),
-                  label: Text(
-                    'PDF de prueba',
-                    style: theme.bodyMedium.override(
-                      font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                      color: const Color(0xFF265294),
-                      fontSize: 14.0,
-                      letterSpacing: 0.5,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(
-                        color: Color(0xFF265294), width: 1.5),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                  ),
-                ),
-              ),
+              // Padding(
+              //   padding:
+              //       const EdgeInsetsDirectional.fromSTEB(0, 0, 16, 0),
+              //   child: OutlinedButton.icon(
+              //     onPressed: () async {
+              //       await actions.generarPDFPrueba();
+              //     },
+              //     icon: const Icon(
+              //       Icons.picture_as_pdf,
+              //       color: Color(0xFF265294),
+              //       size: 20.0,
+              //     ),
+              //     label: Text(
+              //       'PDF de prueba',
+              //       style: theme.bodyMedium.override(
+              //         font: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              //         color: const Color(0xFF265294),
+              //         fontSize: 14.0,
+              //         letterSpacing: 0.5,
+              //         fontWeight: FontWeight.w600,
+              //       ),
+              //     ),
+              //     style: OutlinedButton.styleFrom(
+              //       side: const BorderSide(
+              //           color: Color(0xFF265294), width: 1.5),
+              //       padding: const EdgeInsets.symmetric(
+              //           horizontal: 20, vertical: 18),
+              //       shape: RoundedRectangleBorder(
+              //         borderRadius: BorderRadius.circular(20.0),
+              //       ),
+              //     ),
+              //   ),
+              // ),
               if (valueOrDefault(currentUserDocument?.rol, '') ==
                   'Administrador')
                 AuthUserStreamWidget(
@@ -153,8 +153,8 @@ class UsuariosTitleBar extends StatelessWidget {
                         builder: (context) => Text(
                           currentUserDisplayName,
                           style: theme.bodyMedium.override(
-                            font: GoogleFonts.inter(
-                                fontWeight: FontWeight.w600),
+                            font:
+                                GoogleFonts.inter(fontWeight: FontWeight.w600),
                             letterSpacing: 0.0,
                             fontWeight: FontWeight.w600,
                           ),
@@ -256,8 +256,7 @@ class UsuariosFilters extends StatelessWidget {
                         ),
                         hintText: 'Buscar usuarios',
                         hintStyle: theme.bodyLarge.override(
-                          font: GoogleFonts.inter(
-                              fontWeight: FontWeight.w500),
+                          font: GoogleFonts.inter(fontWeight: FontWeight.w500),
                           color: theme.accent3,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.w500,
@@ -268,8 +267,8 @@ class UsuariosFilters extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12.0),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                              color: theme.primary, width: 2.0),
+                          borderSide:
+                              BorderSide(color: theme.primary, width: 2.0),
                           borderRadius: BorderRadius.circular(12.0),
                         ),
                         errorBorder: OutlineInputBorder(
@@ -284,9 +283,8 @@ class UsuariosFilters extends StatelessWidget {
                         ),
                         filled: true,
                         fillColor: theme.web2,
-                        contentPadding:
-                            const EdgeInsetsDirectional.fromSTEB(
-                                24.0, 16.0, 24.0, 16.0),
+                        contentPadding: const EdgeInsetsDirectional.fromSTEB(
+                            24.0, 16.0, 24.0, 16.0),
                         prefixIcon: const Icon(
                           Icons.search_rounded,
                           color: Color(0xFF265294),
@@ -294,8 +292,7 @@ class UsuariosFilters extends StatelessWidget {
                         ),
                       ),
                       style: theme.bodyMedium.override(
-                        font:
-                            GoogleFonts.inter(fontWeight: FontWeight.w500),
+                        font: GoogleFonts.inter(fontWeight: FontWeight.w500),
                         fontSize: 16.0,
                         letterSpacing: 0.0,
                         fontWeight: FontWeight.w500,
@@ -323,8 +320,8 @@ class UsuariosFilters extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    0.0, 0.0, 20.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 20.0, 0.0),
                 child: Text(
                   'Filtrar por',
                   style: theme.bodyMedium.override(
@@ -368,8 +365,8 @@ class UsuariosFilters extends StatelessWidget {
                 borderColor: theme.alternate,
                 borderWidth: 2.0,
                 borderRadius: 8.0,
-                margin: const EdgeInsetsDirectional.fromSTEB(
-                    16.0, 4.0, 16.0, 4.0),
+                margin:
+                    const EdgeInsetsDirectional.fromSTEB(16.0, 4.0, 16.0, 4.0),
                 hidesUnderline: true,
                 isOverButton: false,
                 isSearchable: false,

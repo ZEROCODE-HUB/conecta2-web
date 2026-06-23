@@ -61,6 +61,28 @@ class UsuarioActionsMenu extends StatelessWidget {
         break;
 
       case 'reporte':
+        final respuestas = await queryRespuestasRecordOnce(
+          queryBuilder: (respuestasRecord) =>
+              respuestasRecord.where('User_respuesta', isEqualTo: user.reference),
+          singleRecord: true,
+        );
+
+        if (respuestas.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'El usuario aún no ha respondido o diligenciado ningún tamizaje.',
+                style: TextStyle(
+                  color: FlutterFlowTheme.of(context).primaryBackground,
+                ),
+              ),
+              backgroundColor: FlutterFlowTheme.of(context).error,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          return;
+        }
+
         // Reporte branded con cards por tamizaje, factores de alerta,
         // observaciones y logo IPS.
         await actions.generarInformeIndividualPDF(user.reference.id);

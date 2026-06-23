@@ -72,6 +72,7 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
 
   void _openPerfil(UsersRecord user) {
     _model.document = user.reference;
+    _model.usuariodoc = user;
     safeSetState(() {});
     switch (user.rol) {
       case 'Acudiente':

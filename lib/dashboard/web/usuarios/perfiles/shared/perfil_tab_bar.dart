@@ -60,17 +60,19 @@ class PerfilTabBar extends StatelessWidget {
     required this.tabs,
     required this.current,
     required this.onSelected,
+    this.mainAxisAlignment = MainAxisAlignment.spaceBetween,
   });
 
   final List<String> tabs;
   final String current;
   final ValueChanged<String> onSelected;
+  final MainAxisAlignment mainAxisAlignment;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: mainAxisAlignment,
       children: [
         for (final tab in tabs)
           Flexible(

@@ -53,8 +53,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
         _model.textFieldNombresTextController?.text =
             widget.userdoc!.displayName;
         _model.emailTextController?.text = widget.userdoc!.email;
-        _model.textFieldphoneTextController?.text =
-            widget.userdoc!.phoneNumber;
+        _model.textFieldphoneTextController?.text = widget.userdoc!.phoneNumber;
         _model.textFielddniTextController?.text = widget.userdoc!.identidad;
         _model.textFieldaddressTextController?.text = widget.userdoc!.address;
         _model.dropDownProfesionalValueController?.value =
@@ -86,8 +85,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
         color: FlutterFlowTheme.of(context).secondaryBackground,
       ),
       child: Padding(
-        padding:
-            const EdgeInsetsDirectional.fromSTEB(40.0, 20.0, 40.0, 20.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(40.0, 20.0, 40.0, 20.0),
         child: Column(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -96,8 +94,8 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
             _buildHeader(context),
             Flexible(
               child: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    0.0, 45.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 45.0, 0.0, 0.0),
                 child: StreamBuilder<UsersRecord>(
                   stream: UsersRecord.getDocument(widget.documentID!),
                   builder: (context, snapshot) {
@@ -160,8 +158,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
         ),
         Expanded(
           child: Padding(
-            padding:
-                const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 0.0, 0.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 0.0, 0.0),
             child: Text(
               'Editar usuario',
               style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -188,8 +185,8 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                      0.0, 0.0, 10.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
                   child: AuthUserStreamWidget(
                     builder: (context) => ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
@@ -212,18 +209,17 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                 AuthUserStreamWidget(
                   builder: (context) => Text(
                     currentUserDisplayName,
-                    style:
-                        FlutterFlowTheme.of(context).bodyMedium.override(
-                              font: GoogleFonts.inter(
-                                fontWeight: FontWeight.w600,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .fontStyle,
-                              ),
-                              fontSize: 18.0,
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                          fontSize: 18.0,
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                 ),
               ],
@@ -259,9 +255,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                         0.0, 0.0, 0.0, 10.0),
                     child: Text(
                       rowUsersRecord.displayName,
-                      style: FlutterFlowTheme.of(context)
-                          .labelMedium
-                          .override(
+                      style: FlutterFlowTheme.of(context).labelMedium.override(
                             font: GoogleFonts.inter(
                               fontWeight: FontWeight.w600,
                               fontStyle: FlutterFlowTheme.of(context)
@@ -353,8 +347,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
       mainAxisSize: MainAxisSize.max,
       children: [
         Padding(
-          padding:
-              const EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
+          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,8 +358,8 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                       ? 'Adolescentes vinculados'
                       : otherRoleLabel),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    0.0, 15.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 15.0, 0.0, 0.0),
                 child: isEditingAcudiente
                     ? _buildAdolescentesVinculadosReadonly(
                         context, rowUsersRecord)
@@ -384,7 +377,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                               rowUsersRecord.acudiente.nombre;
                           final hintText = currentAcudienteName.isNotEmpty
                               ? currentAcudienteName
-                              : 'Nombres y Apellidos';
+                              : 'Nombres y Apellidos *';
                           return buildSearchableDropDown(
                             context: context,
                             controller: _model
@@ -393,8 +386,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                               _model.dropDownAcudienteoAdolescenteValue ??=
                                   rowUsersRecord.acudiente.nombre,
                             ),
-                            options:
-                                users.map((e) => e.displayName).toList(),
+                            options: users.map((e) => e.displayName).toList(),
                             onChanged: (val) => safeSetState(() => _model
                                 .dropDownAcudienteoAdolescenteValue = val),
                             hintText: hintText,
@@ -408,16 +400,15 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
           ),
         ),
         Padding(
-          padding:
-              const EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
+          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               buildFieldLabel(context, 'Profesional'),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    0.0, 15.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 15.0, 0.0, 0.0),
                 child: StreamBuilder<List<UsersRecord>>(
                   stream: queryUsersRecord(
                     queryBuilder: (usersRecord) =>
@@ -435,14 +426,12 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                         : 'Nombres y Apellidos';
                     return buildSearchableDropDown(
                       context: context,
-                      controller: _model
-                              .dropDownProfesionalValueController ??=
+                      controller: _model.dropDownProfesionalValueController ??=
                           FormFieldController<String>(
                         _model.dropDownProfesionalValue ??=
                             rowUsersRecord.profesionales.nombre,
                       ),
-                      options:
-                          users.map((e) => e.displayName).toList(),
+                      options: users.map((e) => e.displayName).toList(),
                       onChanged: (val) => safeSetState(
                           () => _model.dropDownProfesionalValue = val),
                       hintText: hintText,
@@ -505,8 +494,8 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                                 a.displayName.isEmpty
                                     ? '(sin nombre)'
                                     : a.displayName,
-                                style: theme.bodyMedium.override(
-                                    fontWeight: FontWeight.w600),
+                                style: theme.bodyMedium
+                                    .override(fontWeight: FontWeight.w600),
                               ),
                               if (a.email.isNotEmpty)
                                 Text(
@@ -640,8 +629,8 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
             children: [
               buildFieldLabel(context, 'Tipo de usuario'),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    0.0, 20.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                 child: buildStyledDropDown(
                   context: context,
                   controller: _model.ddTipoValueController ??=
@@ -671,8 +660,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     );
   }
 
-  Widget _buildEmailPhoneRow(
-      BuildContext context, UsersRecord rowUsersRecord) {
+  Widget _buildEmailPhoneRow(BuildContext context, UsersRecord rowUsersRecord) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
       child: Row(
@@ -680,7 +668,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
         children: [
           Expanded(
             child: LabeledTextField(
-              label: 'Correo electrónico',
+              label: 'Correo electrónico *',
               controller: _model.emailTextController ??=
                   TextEditingController(text: rowUsersRecord.email),
               focusNode: _model.emailFocusNode,
@@ -708,8 +696,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     );
   }
 
-  Widget _buildDniAddressRow(
-      BuildContext context, UsersRecord rowUsersRecord) {
+  Widget _buildDniAddressRow(BuildContext context, UsersRecord rowUsersRecord) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
       child: Row(
@@ -717,7 +704,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
         children: [
           Expanded(
             child: LabeledTextField(
-              label: 'Documento de identidad',
+              label: 'Documento de identidad *',
               controller: _model.textFielddniTextController ??=
                   TextEditingController(text: rowUsersRecord.identidad),
               focusNode: _model.textFielddniFocusNode,
@@ -728,7 +715,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
           ),
           Expanded(
             child: LabeledTextField(
-              label: 'Dirección',
+              label: 'Dirección *',
               controller: _model.textFieldaddressTextController ??=
                   TextEditingController(text: rowUsersRecord.address),
               focusNode: _model.textFieldaddressFocusNode,
@@ -745,8 +732,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
   Widget _buildResetPasswordButton(BuildContext context) {
     return Builder(
       builder: (context) => Padding(
-        padding:
-            const EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
         child: buildPrimaryButton(
           context: context,
           text: 'Restaurar contraseña',
@@ -781,11 +767,9 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     );
   }
 
-  Widget _buildActionButtons(
-      BuildContext context, UsersRecord rowUsersRecord) {
+  Widget _buildActionButtons(BuildContext context, UsersRecord rowUsersRecord) {
     return Padding(
-      padding:
-          const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 40.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 40.0),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -817,6 +801,27 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
   }
 
   Future<void> _onEditPressed(UsersRecord rowUsersRecord) async {
+    final email = _model.emailTextController?.text.trim() ?? '';
+    final nombre = _model.textFieldNombresTextController?.text.trim() ?? '';
+    final dni = _model.textFielddniTextController?.text.trim() ?? '';
+    final address = _model.textFieldaddressTextController?.text.trim() ?? '';
+
+    if (email.isEmpty || nombre.isEmpty || dni.isEmpty || address.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Por favor complete los datos obligatorios.',
+            style: TextStyle(
+              color: FlutterFlowTheme.of(context).primaryBackground,
+            ),
+          ),
+          backgroundColor: FlutterFlowTheme.of(context).error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     final isEditingAcudiente =
         _model.ddTipoValue == 'Acudiente' || _model.ddTipoValue == 'Padre';
 

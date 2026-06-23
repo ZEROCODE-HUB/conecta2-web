@@ -44,7 +44,7 @@ class PerfilActionsMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
       tooltip: 'Acciones',
-      icon: Container(
+      child: Container(
         width: 40.0,
         height: 40.0,
         decoration: BoxDecoration(

@@ -36,7 +36,7 @@ class _PerfilAdolescenteWidgetState extends State<PerfilAdolescenteWidget> {
   static const _tabs = [
     'Datos Personales',
     'Registro de emociones',
-    'Repuestas de encuestas',
+    //'Repuestas de encuestas',
   ];
 
   @override
@@ -98,7 +98,8 @@ class _PerfilAdolescenteWidgetState extends State<PerfilAdolescenteWidget> {
                         width: 50.0,
                         height: 50.0,
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(theme.primary),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(theme.primary),
                         ),
                       ),
                     );
@@ -168,7 +169,7 @@ class _PerfilAdolescenteWidgetState extends State<PerfilAdolescenteWidget> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -178,6 +179,7 @@ class _PerfilAdolescenteWidgetState extends State<PerfilAdolescenteWidget> {
                   child: PerfilTabBar(
                     tabs: _tabs,
                     current: _model.slider,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     onSelected: (value) {
                       _model.slider = value;
                       FFAppState().showEncuesta = false;
@@ -211,7 +213,7 @@ class _PerfilAdolescenteWidgetState extends State<PerfilAdolescenteWidget> {
           calendarioModel: _model.calendarioReadModel,
           onStateChanged: () => safeSetState(() {}),
         );
-      case 'Repuestas de encuestas':
+      /*case 'Repuestas de encuestas':
         if (FFAppState().showEncuesta == true && _model.refEncuestas != null) {
           return Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
@@ -240,7 +242,7 @@ class _PerfilAdolescenteWidgetState extends State<PerfilAdolescenteWidget> {
             FFAppState().showEncuesta = true;
             safeSetState(() {});
           },
-        );
+        ); */
       default:
         return const SizedBox.shrink();
     }
@@ -253,14 +255,16 @@ class _PerfilAdolescenteWidgetState extends State<PerfilAdolescenteWidget> {
       rows: [
         InfoRow(
           left: InfoField(label: 'Tipo de usuario', value: user.rol),
-          right: InfoField(label: 'Nombres y Apellidos', value: user.displayName),
+          right:
+              InfoField(label: 'Nombres y Apellidos', value: user.displayName),
         ),
         InfoRow(
           left: InfoField(label: 'Correo electrónico', value: user.email),
           right: InfoField(label: 'Celular', value: user.phoneNumber),
         ),
         InfoRow(
-          left: InfoField(label: 'Documento de identidad', value: user.identidad),
+          left:
+              InfoField(label: 'Documento de identidad', value: user.identidad),
           right: InfoField(label: 'Dirección', value: user.address),
         ),
         InfoRow(
