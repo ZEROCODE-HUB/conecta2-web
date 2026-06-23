@@ -41,7 +41,19 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
   bool _mostrarFiltros = false;
   bool _mostrarSeleccionColumnas = false;
 
-  final Map<String, bool> _columnasVisibles = buildDefaultColumnVisibility();
+  Map<String, bool> _columnasVisibles = {};
+  List<Map<String, String>> _ordenColumnas = [];
+  Set<String> _variables = {};
+
+  final ScrollController _scrollControllerVertical = ScrollController();
+  final ScrollController _scrollControllerHorizontal = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollControllerVertical.dispose();
+    _scrollControllerHorizontal.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -125,6 +137,73 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
       final tamizajeData = tamizajeDoc.data();
       final tamizajeId = tamizajeDoc.id;
 
+      final preguntasEncuesta = tamizajeData['Preguntas'] as List<dynamic>? ?? [];
+      final Set<String> variables = {};
+      for (var preg in preguntasEncuesta) {
+        if (preg is Map<String, dynamic>) {
+          final v = preg['variable']?.toString().trim() ?? '';
+          if (v.isNotEmpty) {
+            variables.add(v);
+          }
+        }
+      }
+
+      final categoria = tamizajeData['categoria'] as String? ?? '';
+      final titulo = tamizajeData['titulo'] as String? ?? '';
+      final bool esAssist = categoria == 'Consumo de SPA' ||
+          categoria == 'ASSIST' ||
+          titulo.toUpperCase().contains('ASSIST');
+
+      if (variables.isEmpty) {
+        if (esAssist) {
+          variables.addAll(kTodasLasSustancias);
+        } else {
+          variables.add(categoria.isNotEmpty ? categoria : titulo);
+        }
+      }
+
+      _variables = variables;
+
+      final List<Map<String, String>> dynamicOrdenColumnas = [];
+      final List<Map<String, String>> kColumnasBasicasConLabel = [
+        {'label': 'N', 'clave': 'N'},
+        {'label': 'AÑO', 'clave': 'ANO'},
+        {'label': 'FOLIO', 'clave': 'FOLIO'},
+        {'label': 'NOMBRE', 'clave': 'NOMBRE'},
+        {'label': 'COLEGIO', 'clave': 'COLEGIO'},
+        {'label': 'DOCUMENTO', 'clave': 'DOCUMENTO'},
+        {'label': 'EDAD', 'clave': 'EDAD'},
+        {'label': 'FECHA NACIMIENTO', 'clave': 'FECHA_NACIMIENTO'},
+        {'label': 'GÉNERO', 'clave': 'GENERO'},
+        {'label': 'MUNICIPIO', 'clave': 'MUNICIPIO'},
+        {'label': 'BARRIO', 'clave': 'BARRIO'},
+        {'label': 'GRADO', 'clave': 'GRADO'},
+        {'label': 'EPS', 'clave': 'EPS'},
+        {'label': 'CURSO DE VIDA', 'clave': 'CURSO_VIDA'},
+        {'label': 'FECHA RESPUESTA', 'clave': 'FECHA_RESPUESTA'},
+      ];
+
+      for (var col in kColumnasBasicasConLabel) {
+        dynamicOrdenColumnas.add(col);
+      }
+
+      for (var v in variables) {
+        final labelValor = v.toUpperCase();
+        final labelRiesgo = '${v.toUpperCase()} RIESGO';
+        final claveValor = getSubstanceKey(v, 'VALOR');
+        final claveRiesgo = getSubstanceKey(v, 'RIESGO');
+        dynamicOrdenColumnas.add({'label': labelValor, 'clave': claveValor});
+        dynamicOrdenColumnas.add({'label': labelRiesgo, 'clave': claveRiesgo});
+      }
+
+      _ordenColumnas = dynamicOrdenColumnas;
+
+      final Map<String, bool> dynamicColumnasVisibles = {};
+      for (var col in dynamicOrdenColumnas) {
+        dynamicColumnasVisibles[col['clave']!] = true;
+      }
+      _columnasVisibles = dynamicColumnasVisibles;
+
       final respuestasSnapshot = await FirebaseFirestore.instance
           .collection('Encuestas')
           .doc(tamizajeId)
@@ -144,12 +223,13 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
 
             final resultados =
                 procesarRespuestasTamizaje(tamizajeData, respuestaData);
-            final resultadosCompletos = completarSustanciasFaltantes(resultados);
+            final resultadosCompletos = completarSustanciasFaltantes(resultados, variables);
             final registro = crearRegistroExcel(
               userData,
               resultadosCompletos,
               respuestaData,
               respuestasProcesadas.length + 1,
+              variables,
             );
 
             respuestasProcesadas.add(registro);
@@ -243,6 +323,7 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
       tamizajeNombre: widget.tamizajeNombre,
       datosAExportar: datosAExportar,
       columnasVisibles: _columnasVisibles,
+      ordenColumnas: _ordenColumnas,
     );
   }
 
@@ -427,22 +508,25 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
                   Wrap(
                     spacing: 16,
                     runSpacing: 8,
-                    children: _columnasVisibles.entries.map((entry) {
+                    children: _ordenColumnas.map((columna) {
+                      final clave = columna['clave']!;
+                      final label = columna['label']!;
+                      final visible = _columnasVisibles[clave] ?? true;
                       return FilterChip(
                         label: Text(
-                          obtenerNombreColumna(entry.key),
+                          label,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        selected: entry.value,
+                        selected: visible,
                         onSelected: (bool selected) {
                           setState(() {
-                            _columnasVisibles[entry.key] = selected;
+                            _columnasVisibles[clave] = selected;
                           });
                         },
                         backgroundColor: Colors.white,
                         selectedColor: const Color(0xFF265295),
                         labelStyle: TextStyle(
-                          color: entry.value ? Colors.white : Colors.black87,
+                          color: visible ? Colors.white : Colors.black87,
                         ),
                       );
                     }).toList(),
@@ -490,32 +574,49 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
             ),
           if (!_cargando && datosMostrados.isNotEmpty)
             Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
+              child: Scrollbar(
+                controller: _scrollControllerVertical,
+                thumbVisibility: true,
+                trackVisibility: true,
                 child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: buildDataColumns(_columnasVisibles),
-                    rows: buildDataRows(
-                      datos: datosMostrados,
-                      columnasVisibles: _columnasVisibles,
+                  controller: _scrollControllerVertical,
+                  scrollDirection: Axis.vertical,
+                  child: Scrollbar(
+                    controller: _scrollControllerHorizontal,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    notificationPredicate: (notif) => notif.depth == 0,
+                    child: SingleChildScrollView(
+                      controller: _scrollControllerHorizontal,
+                      scrollDirection: Axis.horizontal,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: DataTable(
+                          columns: buildDataColumns(_ordenColumnas, _columnasVisibles),
+                          rows: buildDataRows(
+                            datos: datosMostrados,
+                            ordenColumnas: _ordenColumnas,
+                            columnasVisibles: _columnasVisibles,
+                          ),
+                          headingRowColor: MaterialStateProperty.all(
+                              const Color(0xFF265295)),
+                          dataRowColor:
+                              MaterialStateProperty.all(Colors.transparent),
+                          border: TableBorder.all(color: Colors.grey.shade300),
+                          headingTextStyle: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                          dataTextStyle: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.black87,
+                          ),
+                          columnSpacing: 20,
+                          horizontalMargin: 12,
+                        ),
+                      ),
                     ),
-                    headingRowColor: MaterialStateProperty.all(
-                        const Color(0xFF265295)),
-                    dataRowColor:
-                        MaterialStateProperty.all(Colors.transparent),
-                    border: TableBorder.all(color: Colors.grey.shade300),
-                    headingTextStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
-                    dataTextStyle: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.black87,
-                    ),
-                    columnSpacing: 20,
-                    horizontalMargin: 12,
                   ),
                 ),
               ),

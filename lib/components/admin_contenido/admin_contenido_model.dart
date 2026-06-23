@@ -25,6 +25,7 @@ class AdminContenido2Model extends FlutterFlowModel<AdminContenido2Widget> {
   TextEditingController? searchTextController;
   String? Function(BuildContext, String?)? searchTextControllerValidator;
   List<ContenidoRecord> simpleSearchResults = [];
+  bool isShowFullList = true;
   // State field(s) for "Publicado/Borrador" DropDown.
   bool? dropDownValue1;
   FormFieldController<bool>? dropDownValueController1;

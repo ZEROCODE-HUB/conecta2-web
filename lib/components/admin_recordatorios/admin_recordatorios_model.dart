@@ -20,6 +20,7 @@ class AdminRecordatoriosModel
   TextEditingController? textController1;
   String? Function(BuildContext, String?)? textController1Validator;
   List<RecordatorRecord> simpleSearchResults = [];
+  bool isShowFullList = true;
 
   // Create-form title.
   FocusNode? text1FocusNode;

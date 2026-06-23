@@ -159,6 +159,9 @@ class _ExcelPageWidgetState extends State<ExcelPageWidget> {
                             encuestasRecord.where(
                           'tipo',
                           isEqualTo: 'Tamizajes',
+                        ).where(
+                          'Publicado',
+                          isEqualTo: true,
                         ),
                       ),
                       builder: (context, snapshot) {
@@ -179,15 +182,39 @@ class _ExcelPageWidgetState extends State<ExcelPageWidget> {
                         List<EncuestasRecord>
                             dropDownTamizajEncuestasRecordList = snapshot.data!;
 
+                        final optionsList = dropDownTamizajEncuestasRecordList
+                            .where((e) => e.titulo.trim().isNotEmpty)
+                            .map((e) => e.titulo.trim())
+                            .toList();
+
+                        if (optionsList.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'No hay tamizajes publicados',
+                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                    font: GoogleFonts.inter(),
+                                    color: FlutterFlowTheme.of(context).secondaryText,
+                                  ),
+                            ),
+                          );
+                        }
+
+                        if (_model.dropDownTamizajValue == null ||
+                            _model.dropDownTamizajValue == 'Todos' ||
+                            !optionsList.contains(_model.dropDownTamizajValue)) {
+                          _model.dropDownTamizajValue = optionsList.first;
+                          if (_model.dropDownTamizajValueController != null) {
+                            _model.dropDownTamizajValueController!.value = optionsList.first;
+                          }
+                        }
+
                         return FlutterFlowDropDown<String>(
                           controller: _model.dropDownTamizajValueController ??=
                               FormFieldController<String>(
-                            _model.dropDownTamizajValue ??= 'Todos',
+                            _model.dropDownTamizajValue!,
                           ),
-                          options: List<String>.from(
-                              dropDownTamizajEncuestasRecordList
-                                  .map((e) => e.titulo)
-                                  .toList()),
+                          options: optionsList,
                           optionLabels: <String>[],
                           onChanged: (val) => safeSetState(
                               () => _model.dropDownTamizajValue = val),

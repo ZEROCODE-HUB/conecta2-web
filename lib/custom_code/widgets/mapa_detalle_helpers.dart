@@ -249,6 +249,7 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                                               ? (respuestas /
                                                       stats['totalUsuarios'] *
                                                       100)
+                                                  .clamp(0, 100)
                                                   .toStringAsFixed(1)
                                               : '0.0';
 

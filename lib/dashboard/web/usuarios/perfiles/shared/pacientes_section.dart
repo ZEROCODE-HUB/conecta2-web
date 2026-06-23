@@ -62,20 +62,19 @@ class PacientesSection extends StatelessWidget {
                     'pacientes_search',
                     const Duration(milliseconds: 100),
                     () async {
-                      await queryUsersRecordOnce()
-                          .then(
-                            (records) => onResultsChanged(
-                              TextSearch(
-                                records
-                                    .map((record) =>
-                                        TextSearchItem.fromTerms(record, [record.displayName]))
-                                    .toList(),
-                              ).search(controller.text).map((r) => r.object).toList(),
-                            ),
+                      await queryUsersRecordOnce().then(
+                        (records) => onResultsChanged(
+                          TextSearch(
+                            records
+                                .map((record) => TextSearchItem.fromTerms(
+                                    record, [record.displayName]))
+                                .toList(),
                           )
-                          .onError((_, __) => onResultsChanged(const []));
-                      FFAppState().isShowFullList = false;
-                      onStateChanged();
+                              .search(controller.text)
+                              .map((r) => r.object)
+                              .toList(),
+                        ),
+                      );
                     },
                   ),
                   decoration: InputDecoration(
@@ -91,8 +90,8 @@ class PacientesSection extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: Color(0x00000000), width: 2.0),
+                      borderSide: const BorderSide(
+                          color: Color(0x00000000), width: 2.0),
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                     focusedBorder: OutlineInputBorder(
@@ -126,7 +125,6 @@ class PacientesSection extends StatelessWidget {
                   onPressed: () {
                     controller.clear();
                     onResultsChanged(const []);
-                    FFAppState().isShowFullList = true;
                     onStateChanged();
                   },
                   icon: const Icon(Icons.clear, color: Color(0xFF265294)),
@@ -143,9 +141,8 @@ class PacientesSection extends StatelessWidget {
   }
 
   Widget _buildSearchResults(BuildContext context) {
-    final filtered = results
-        .where((e) => e.profesionales.ref == profesionalRef)
-        .toList();
+    final filtered =
+        results.where((e) => e.profesionales.ref == profesionalRef).toList();
     if (filtered.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(20.0),
@@ -163,7 +160,8 @@ class PacientesSection extends StatelessWidget {
     final theme = FlutterFlowTheme.of(context);
     return StreamBuilder<List<UsersRecord>>(
       stream: queryUsersRecord(
-        queryBuilder: (u) => u.where('Profesionales.Ref', isEqualTo: profesionalRef),
+        queryBuilder: (u) =>
+            u.where('Profesionales.Ref', isEqualTo: profesionalRef),
       ),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {

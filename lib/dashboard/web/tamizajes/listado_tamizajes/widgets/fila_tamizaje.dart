@@ -271,6 +271,40 @@ class _FilaTamizajeState extends State<FilaTamizaje> {
                       Expanded(
                         child: InvalidarBoton(respuesta: respuesta),
                       ),
+                      const SizedBox(width: 6.0),
+                      IconButton(
+                        tooltip: 'Eliminar',
+                        icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20.0),
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Eliminar Tamizaje'),
+                              content: const Text('¿Está seguro de eliminar este tamizaje? Esta acción no se puede deshacer.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancelar'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                  child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true) {
+                            await respuesta.reference.delete();
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Tamizaje eliminado correctamente.')),
+                              );
+                            }
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ),

@@ -45,7 +45,7 @@ class _AdminRecordatoriosWidgetState extends State<AdminRecordatoriosWidget> {
     _model = createModel(context, () => AdminRecordatoriosModel());
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      FFAppState().isShowFullList = true;
+      _model.isShowFullList = true;
       safeSetState(() {});
     });
 
@@ -94,14 +94,14 @@ class _AdminRecordatoriosWidgetState extends State<AdminRecordatoriosWidget> {
             .onError((_, __) => _model.simpleSearchResults = [])
             .whenComplete(() => safeSetState(() {}));
 
-        FFAppState().isShowFullList = false;
+        _model.isShowFullList = false;
         safeSetState(() {});
       },
     );
   }
 
   void _clearSearch() {
-    FFAppState().isShowFullList = true;
+    _model.isShowFullList = true;
     safeSetState(() {
       _model.textController1?.clear();
     });
@@ -176,7 +176,7 @@ class _AdminRecordatoriosWidgetState extends State<AdminRecordatoriosWidget> {
                   focusNode: _model.textFieldFocusNode1!,
                   validator: _model.textController1Validator,
                   onChanged: _runSearch,
-                  showClearButton: FFAppState().isShowFullList == false,
+                  showClearButton: _model.isShowFullList == false,
                   onClear: _clearSearch,
                 ),
                 Expanded(

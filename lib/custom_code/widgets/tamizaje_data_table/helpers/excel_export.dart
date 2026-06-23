@@ -27,6 +27,7 @@ Future<void> exportarTamizajeAExcel({
   required String? tamizajeNombre,
   required List<Map<String, dynamic>> datosAExportar,
   required Map<String, bool> columnasVisibles,
+  required List<Map<String, String>> ordenColumnas,
 }) async {
   if (datosAExportar.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -58,12 +59,10 @@ Future<void> exportarTamizajeAExcel({
     final xlsio.Workbook workbook = xlsio.Workbook();
     final xlsio.Worksheet sheet = workbook.worksheets[0];
 
-    final headers = kExcelHeaders;
-
-    final headersVisibles = headers.where((header) {
-      final clave = obtenerClaveColumna(header);
-      return columnasVisibles[clave] ?? true;
-    }).toList();
+    final headersVisibles = ordenColumnas
+        .where((col) => columnasVisibles[col['clave']] ?? true)
+        .map((col) => col['label']!)
+        .toList();
 
     final timestamp = DateTime.now().millisecondsSinceEpoch;
 
@@ -120,8 +119,8 @@ Future<void> exportarTamizajeAExcel({
       final data = datosAExportar[i];
       int colIndex = 1;
 
-      for (final header in headers) {
-        final clave = obtenerClaveColumna(header);
+      for (final col in ordenColumnas) {
+        final clave = col['clave']!;
         if (columnasVisibles[clave] ?? true) {
           final xlsio.Range cell = sheet.getRangeByIndex(i + 2, colIndex);
           final dynamic value = data[clave] ?? '';
@@ -132,7 +131,7 @@ Future<void> exportarTamizajeAExcel({
             cell.setText(value.toString());
           }
 
-          if (kColumnasRiesgoExcel.contains(header)) {
+          if (clave.endsWith('_RIESGO')) {
             final nivelRiesgo = value.toString();
             cell.cellStyle = riesgoStyles[nivelRiesgo] ?? estiloNormal;
           } else {

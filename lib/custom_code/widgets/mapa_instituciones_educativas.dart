@@ -427,17 +427,19 @@ class _MapaInstitucionesEducativasState
         print('🔎 Verificando tamizaje: $tituloTamizaje (ID: $tamizajeId)');
         print('   - Total user_Ref en tamizaje: ${userRefList.length}');
 
-        int count = 0;
+        Set<String> uniqueResponders = {};
 
         // Verificar cada referencia de usuario en el array user_Ref
         for (var userRef in userRefList) {
           if (userRef is DocumentReference) {
             // Verificar si este usuario pertenece a la institución
             if (userPaths.contains(userRef.path)) {
-              count++;
+              uniqueResponders.add(userRef.path);
             }
           }
         }
+
+        int count = uniqueResponders.length;
 
         if (count > 0) {
           tamizajesRespondidosMap[tituloTamizaje] = {

@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import '../data/substance_data.dart';
 import 'table_header.dart';
 
-List<DataColumn> buildDataColumns(Map<String, bool> columnasVisibles) {
-  return kOrdenColumnas
+List<DataColumn> buildDataColumns(
+  List<Map<String, String>> ordenColumnas,
+  Map<String, bool> columnasVisibles,
+) {
+  return ordenColumnas
       .where((columna) => columnasVisibles[columna['clave']] ?? true)
       .map((columna) => DataColumn(label: buildHeaderCell(columna['label']!)))
       .toList();
@@ -14,12 +17,13 @@ List<DataColumn> buildDataColumns(Map<String, bool> columnasVisibles) {
 
 List<DataRow> buildDataRows({
   required List<Map<String, dynamic>> datos,
+  required List<Map<String, String>> ordenColumnas,
   required Map<String, bool> columnasVisibles,
 }) {
   return datos.map((data) {
     final celdas = <DataCell>[];
 
-    for (var columna in kOrdenColumnas) {
+    for (var columna in ordenColumnas) {
       final clave = columna['clave']!;
       if (columnasVisibles[clave] ?? true) {
         final valor = data[clave]?.toString() ?? '';

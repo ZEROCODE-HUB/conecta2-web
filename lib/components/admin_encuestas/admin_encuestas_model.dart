@@ -32,6 +32,7 @@ class AdminEncuestasModel extends FlutterFlowModel<AdminEncuestasWidget> {
   TextEditingController? searchTextController;
   String? Function(BuildContext, String?)? searchTextControllerValidator;
   List<EncuestasRecord> simpleSearchResults = [];
+  bool isShowFullList = true;
   // State field(s) for DropDown widget (publicado/borrador).
   bool? dropDownValue1;
   FormFieldController<bool>? dropDownValueController1;

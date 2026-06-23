@@ -31,7 +31,7 @@ class _EncuestasListState extends State<EncuestasList> {
 
   List<EncuestasRecord> _filtered() {
     final m = widget.model;
-    final showFullList = FFAppState().isShowFullList == true;
+    final showFullList = m.isShowFullList == true;
     final hasPublicadoFilter = m.dropDownValue1 != null;
     final hasRolFilter = m.dropDownValue2 != null && m.dropDownValue2 != '';
 

@@ -161,7 +161,7 @@ class _AdminContenido2WidgetState extends State<AdminContenido2Widget> {
                     child: ContenidoList(
                       allRecords: records,
                       simpleSearchResults: _model.simpleSearchResults,
-                      isShowFullList: FFAppState().isShowFullList,
+                      isShowFullList: _model.isShowFullList,
                       publishedFilter: _model.dropDownValue1,
                       rolesFilter: _model.dropDownValue2,
                       onPreview: _openPreview,

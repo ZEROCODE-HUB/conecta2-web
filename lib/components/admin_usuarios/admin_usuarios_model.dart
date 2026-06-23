@@ -33,6 +33,7 @@ class AdminUsuariossModel extends FlutterFlowModel<AdminUsuariossWidget> {
   TextEditingController? textController;
   String? Function(BuildContext, String?)? textControllerValidator;
   List<UsersRecord> simpleSearchResults = [];
+  bool isShowFullList = true;
   // State field(s) for DropDown widget.
   String? dropDownValue;
   FormFieldController<String>? dropDownValueController;

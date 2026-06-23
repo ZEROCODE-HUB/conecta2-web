@@ -40,7 +40,7 @@ class ContenidoFilters extends StatelessWidget {
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Flexible(child: _buildSearchField(context, theme)),
-                  if (!FFAppState().isShowFullList)
+                  if (!model.isShowFullList)
                     FlutterFlowIconButton(
                       borderColor: Colors.transparent,
                       borderRadius: 20.0,
@@ -52,7 +52,7 @@ class ContenidoFilters extends StatelessWidget {
                         size: 24.0,
                       ),
                       onPressed: () {
-                        FFAppState().isShowFullList = true;
+                        model.isShowFullList = true;
                         model.searchTextController?.clear();
                         onChanged();
                       },
@@ -95,7 +95,7 @@ class ContenidoFilters extends StatelessWidget {
             } catch (_) {
               model.simpleSearchResults = [];
             }
-            FFAppState().isShowFullList = false;
+            model.isShowFullList = false;
             onChanged();
           },
         ),
@@ -274,11 +274,11 @@ class ContenidoFilters extends StatelessWidget {
             child: FlutterFlowDropDown<String>(
               multiSelectController: model.dropDownValueController2 ??=
                   FormListFieldController<String>(null),
-              options: const ['', 'Adolescente ', 'Acudiente ', 'Profesional'],
+              options: const ['', 'Adolescente', 'Acudiente', 'Profesional'],
               optionLabels: const [
                 'All',
-                'Adolescente ',
-                'Acudiente ',
+                'Adolescente',
+                'Acudiente',
                 'Profesional',
               ],
               width: screenWidth * 0.2,

@@ -53,7 +53,7 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
     _model = createModel(context, () => AdminUsuariossModel());
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      FFAppState().isShowFullList = true;
+      _model.isShowFullList = true;
       safeSetState(() {});
     });
 
@@ -121,12 +121,12 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
       result = result.where((u) => u.rol == role);
     }
 
-    if (!FFAppState().isShowFullList &&
+    if (!_model.isShowFullList &&
         _model.simpleSearchResults.isNotEmpty) {
       final allowedIds =
           _model.simpleSearchResults.map((u) => u.reference.id).toSet();
       result = result.where((u) => allowedIds.contains(u.reference.id));
-    } else if (!FFAppState().isShowFullList &&
+    } else if (!_model.isShowFullList &&
         _model.simpleSearchResults.isEmpty) {
       // Active search that found nothing.
       result = const [];
@@ -252,14 +252,14 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
                     dropDownValueController:
                         _model.dropDownValueController ??=
                             FormFieldController<String>(null),
-                    isShowFullList: FFAppState().isShowFullList,
+                    isShowFullList: _model.isShowFullList,
                     onSearchChanged: (results) {
                       _model.simpleSearchResults = results;
-                      FFAppState().isShowFullList = false;
+                      _model.isShowFullList = false;
                       safeSetState(() {});
                     },
                     onClearSearch: () {
-                      FFAppState().isShowFullList = true;
+                      _model.isShowFullList = true;
                       _model.textController?.clear();
                       _model.simpleSearchResults = [];
                       safeSetState(() {});

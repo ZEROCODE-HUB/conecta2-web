@@ -108,15 +108,74 @@ String evaluarNivelRiesgo(
   return alertasCoincidentes.last['nivel'];
 }
 
+String sanitizeKey(String name) {
+  return name.toUpperCase()
+      .replaceAll('Á', 'A')
+      .replaceAll('É', 'E')
+      .replaceAll('Í', 'I')
+      .replaceAll('Ó', 'O')
+      .replaceAll('Ú', 'U')
+      .replaceAll('Ñ', 'N')
+      .replaceAll(RegExp(r'[^A-Z0-9_]'), '_')
+      .replaceAll(RegExp(r'_+'), '_');
+}
+
+String getSubstanceKey(String substance, String suffix) {
+  const substanceKeys = {
+    'Tabaco': 'TABACO',
+    'Bebidas alcohólicas': 'ALCOHOL',
+    'Cannabis': 'CANNABIS',
+    'Cocaína': 'COCAINA',
+    'Anfetaminas': 'ESTIMULANTES',
+    'Inhalantes': 'INHALANTES',
+    'Tranquilizantes': 'SEDANTES',
+    'Alucinógenos': 'ALUCINOGENOS',
+    'Opiáceos': 'OPIACEOS',
+    'Otros': 'OTRAS',
+  };
+  final base = substanceKeys[substance] ?? sanitizeKey(substance);
+  return '${base}_$suffix';
+}
+
 Map<String, dynamic> procesarRespuestasTamizaje(
   Map<String, dynamic> encuestaData,
   Map<String, dynamic> respuestaData,
 ) {
+  final preguntasEncuesta = encuestaData['Preguntas'] as List<dynamic>? ?? [];
   final alertas = encuestaData['alertas'] as List<dynamic>? ?? [];
   final test = respuestaData['test'] as List<dynamic>? ?? [];
+  final categoria = encuestaData['categoria'] as String? ?? '';
+  final titulo = encuestaData['titulo'] as String? ?? '';
 
-  Map<String, double> puntajesPorSustancia = {};
-  Map<String, List<Map<String, dynamic>>> detallesPorSustancia = {};
+  final Set<String> variables = {};
+  for (var preg in preguntasEncuesta) {
+    if (preg is Map<String, dynamic>) {
+      final v = preg['variable']?.toString().trim() ?? '';
+      if (v.isNotEmpty) {
+        variables.add(v);
+      }
+    }
+  }
+
+  final bool esAssist = categoria == 'Consumo de SPA' ||
+      categoria == 'ASSIST' ||
+      titulo.toUpperCase().contains('ASSIST');
+
+  if (variables.isEmpty) {
+    if (esAssist) {
+      variables.addAll(kTodasLasSustancias);
+    } else {
+      variables.add(categoria.isNotEmpty ? categoria : titulo);
+    }
+  }
+
+  Map<String, double> puntajesPorVariable = {};
+  Map<String, List<Map<String, dynamic>>> detallesPorVariable = {};
+
+  for (var v in variables) {
+    puntajesPorVariable[v] = 0.0;
+    detallesPorVariable[v] = [];
+  }
 
   for (var item in test) {
     if (item is! Map<String, dynamic>) continue;
@@ -135,37 +194,58 @@ Map<String, dynamic> procesarRespuestasTamizaje(
     final etiqueta = respuestaSeleccionada['etiqueta'] as String? ?? '';
     final valor = (respuestaSeleccionada['valor'] as num?)?.toDouble() ?? 0.0;
 
-    String sustancia = extraerSustancia(pregunta);
-
-    puntajesPorSustancia[sustancia] =
-        (puntajesPorSustancia[sustancia] ?? 0) + valor;
-
-    if (!detallesPorSustancia.containsKey(sustancia)) {
-      detallesPorSustancia[sustancia] = [];
+    String varName = '';
+    final nPregunta = item['NPregunta'] as int? ?? 0;
+    if (nPregunta > 0 && nPregunta <= preguntasEncuesta.length) {
+      final pregData = preguntasEncuesta[nPregunta - 1] as Map<String, dynamic>?;
+      varName = pregData?['variable']?.toString().trim() ?? '';
+    } else {
+      for (var p in preguntasEncuesta) {
+        if (p is Map<String, dynamic> && p['pregunta'] == pregunta) {
+          varName = p['variable']?.toString().trim() ?? '';
+          break;
+        }
+      }
     }
-    detallesPorSustancia[sustancia]!.add({
-      'pregunta': pregunta,
-      'respuesta': etiqueta,
-      'valor': valor,
-    });
+
+    if (varName.isEmpty) {
+      if (esAssist) {
+        varName = extraerSustancia(pregunta);
+      } else if (variables.length == 1) {
+        varName = variables.first;
+      }
+    }
+
+    if (varName.isNotEmpty) {
+      if (!variables.contains(varName)) {
+        variables.add(varName);
+        puntajesPorVariable[varName] = 0.0;
+        detallesPorVariable[varName] = [];
+      }
+      puntajesPorVariable[varName] = (puntajesPorVariable[varName] ?? 0.0) + valor;
+      detallesPorVariable[varName]!.add({
+        'pregunta': pregunta,
+        'respuesta': etiqueta,
+        'valor': valor,
+      });
+    }
   }
 
-  Map<String, String> nivelRiesgoPorSustancia = {};
-  for (var sustancia in puntajesPorSustancia.keys) {
-    final puntaje = puntajesPorSustancia[sustancia]!;
-    nivelRiesgoPorSustancia[sustancia] =
-        evaluarNivelRiesgo(sustancia, puntaje, alertas);
+  Map<String, String> nivelRiesgoPorVariable = {};
+  for (var v in variables) {
+    final puntaje = puntajesPorVariable[v] ?? 0.0;
+    nivelRiesgoPorVariable[v] = evaluarNivelRiesgo(v, puntaje, alertas);
   }
 
   return {
-    'puntajesPorSustancia': puntajesPorSustancia,
-    'detallesPorSustancia': detallesPorSustancia,
-    'nivelRiesgoPorSustancia': nivelRiesgoPorSustancia,
+    'puntajesPorSustancia': puntajesPorVariable,
+    'detallesPorSustancia': detallesPorVariable,
+    'nivelRiesgoPorSustancia': nivelRiesgoPorVariable,
   };
 }
 
 Map<String, dynamic> completarSustanciasFaltantes(
-    Map<String, dynamic> resultados) {
+    Map<String, dynamic> resultados, Set<String> variables) {
   final puntajesPorSustancia =
       Map<String, double>.from(resultados['puntajesPorSustancia'] ?? {});
   final nivelesRiesgoPorSustancia =
@@ -173,7 +253,7 @@ Map<String, dynamic> completarSustanciasFaltantes(
   final detallesPorSustancia = Map<String, List<Map<String, dynamic>>>.from(
       resultados['detallesPorSustancia'] ?? {});
 
-  for (var sustancia in kTodasLasSustancias) {
+  for (var sustancia in variables) {
     if (!puntajesPorSustancia.containsKey(sustancia)) {
       puntajesPorSustancia[sustancia] = 0.0;
       nivelesRiesgoPorSustancia[sustancia] = 'Sin alarma';
@@ -181,8 +261,8 @@ Map<String, dynamic> completarSustanciasFaltantes(
       if (!detallesPorSustancia.containsKey(sustancia)) {
         detallesPorSustancia[sustancia] = [
           {
-            'pregunta': 'Consumo de $sustancia',
-            'respuesta': 'Nunca',
+            'pregunta': 'Consumo o evaluación de $sustancia',
+            'respuesta': 'Nunca / Sin respuesta',
             'valor': 0.0,
           }
         ];
@@ -208,6 +288,7 @@ Map<String, dynamic> crearRegistroExcel(
   Map<String, dynamic> resultados,
   Map<String, dynamic> respuestaData,
   int numeroRegistro,
+  Set<String> variables,
 ) {
   final puntajes = resultados['puntajesPorSustancia'] as Map<String, double>;
   final niveles =
@@ -237,7 +318,7 @@ Map<String, dynamic> crearRegistroExcel(
     }
   }
 
-  return {
+  final registro = {
     'N': numeroRegistro,
     'ANO': DateTime.now().year,
     'FOLIO': 'TZ${numeroRegistro.toString().padLeft(3, '0')}',
@@ -252,26 +333,15 @@ Map<String, dynamic> crearRegistroExcel(
     'GRADO': userData['grado']?.toString() ?? 'No registrado',
     'EPS': userData['eps'] ?? 'No registrada',
     'CURSO_VIDA': cursoVida,
-    'TABACO_VALOR': puntajes['Tabaco'] ?? 0.0,
-    'TABACO_RIESGO': niveles['Tabaco'] ?? 'Sin alarma',
-    'ALCOHOL_VALOR': puntajes['Bebidas alcohólicas'] ?? 0.0,
-    'ALCOHOL_RIESGO': niveles['Bebidas alcohólicas'] ?? 'Sin alarma',
-    'CANNABIS_VALOR': puntajes['Cannabis'] ?? 0.0,
-    'CANNABIS_RIESGO': niveles['Cannabis'] ?? 'Sin alarma',
-    'COCAINA_VALOR': puntajes['Cocaína'] ?? 0.0,
-    'COCAINA_RIESGO': niveles['Cocaína'] ?? 'Sin alarma',
-    'ESTIMULANTES_VALOR': puntajes['Anfetaminas'] ?? 0.0,
-    'ESTIMULANTES_RIESGO': niveles['Anfetaminas'] ?? 'Sin alarma',
-    'INHALANTES_VALOR': puntajes['Inhalantes'] ?? 0.0,
-    'INHALANTES_RIESGO': niveles['Inhalantes'] ?? 'Sin alarma',
-    'SEDANTES_VALOR': puntajes['Tranquilizantes'] ?? 0.0,
-    'SEDANTES_RIESGO': niveles['Tranquilizantes'] ?? 'Sin alarma',
-    'ALUCINOGENOS_VALOR': puntajes['Alucinógenos'] ?? 0.0,
-    'ALUCINOGENOS_RIESGO': niveles['Alucinógenos'] ?? 'Sin alarma',
-    'OPIACEOS_VALOR': puntajes['Opiáceos'] ?? 0.0,
-    'OPIACEOS_RIESGO': niveles['Opiáceos'] ?? 'Sin alarma',
-    'OTRAS_VALOR': puntajes['Otros'] ?? 0.0,
-    'OTRAS_RIESGO': niveles['Otros'] ?? 'Sin alarma',
     'FECHA_RESPUESTA': formatFecha(respuestaData['Fecha'] as Timestamp?),
   };
+
+  for (var v in variables) {
+    final valorKey = getSubstanceKey(v, 'VALOR');
+    final riesgoKey = getSubstanceKey(v, 'RIESGO');
+    registro[valorKey] = puntajes[v] ?? 0.0;
+    registro[riesgoKey] = niveles[v] ?? 'Sin alarma';
+  }
+
+  return registro;
 }

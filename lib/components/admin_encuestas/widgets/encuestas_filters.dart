@@ -66,7 +66,7 @@ class EncuestasFilters extends StatelessWidget {
                     .onError((_, __) => model.simpleSearchResults = [])
                     .whenComplete(onStateChanged);
 
-                FFAppState().isShowFullList = false;
+                model.isShowFullList = false;
                 onStateChanged();
               },
             ),
@@ -141,7 +141,7 @@ class EncuestasFilters extends StatelessWidget {
             validator: model.searchTextControllerValidator?.asValidator(context),
           ),
         ),
-        if (FFAppState().isShowFullList == false)
+        if (model.isShowFullList == false)
           FlutterFlowIconButton(
             borderColor: Colors.transparent,
             borderRadius: 20.0,
@@ -153,7 +153,7 @@ class EncuestasFilters extends StatelessWidget {
               size: 24.0,
             ),
             onPressed: () async {
-              FFAppState().isShowFullList = true;
+              model.isShowFullList = true;
               model.searchTextController?.clear();
               onStateChanged();
             },
@@ -238,11 +238,11 @@ class EncuestasFilters extends StatelessWidget {
           child: FlutterFlowDropDown<String>(
             controller: model.dropDownValueController2 ??=
                 FormFieldController<String>(model.dropDownValue2 ??= ''),
-            options: const ['', 'Adolescente ', 'Acudiente ', 'Profesional'],
+            options: const ['', 'Adolescente', 'Acudiente', 'Profesional'],
             optionLabels: const [
               'Todos',
-              'Adolescente ',
-              'Acudiente ',
+              'Adolescente',
+              'Acudiente',
               'Profesional'
             ],
             onChanged: (val) {
