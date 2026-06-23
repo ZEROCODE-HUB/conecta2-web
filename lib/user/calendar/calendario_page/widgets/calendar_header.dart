@@ -8,7 +8,7 @@ class CalendarHeader extends StatelessWidget {
   const CalendarHeader({
     super.key,
     required this.message,
-    this.asset = 'assets/images/nioRecurso_1Plantilla.png',
+    this.asset = 'assets/images/ChicoRecurso.png',
     this.showImage = true,
     this.textAlign,
   });
@@ -40,9 +40,18 @@ class CalendarHeader extends StatelessWidget {
                 alignment: const AlignmentDirectional(1.0, 0.0),
                 children: [
                   if (showImage)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: Image.asset(asset, fit: BoxFit.cover),
+                    Align(
+                      alignment: const AlignmentDirectional(-0.8, -0.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: Image.asset(
+                          asset,
+                          fit: BoxFit.contain,
+                          width: 200.0,
+                          height: 200.0,
+                          alignment: Alignment.centerLeft,
+                        ),
+                      ),
                     ),
                   Align(
                     alignment: const AlignmentDirectional(0.76, -0.03),

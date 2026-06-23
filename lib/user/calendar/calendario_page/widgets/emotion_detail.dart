@@ -237,34 +237,32 @@ class EmotionFinishView extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           children: [
             Expanded(
-              child: Stack(
-                alignment: const AlignmentDirectional(1.0, 0.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
                 children: [
                   Align(
-                    alignment: const AlignmentDirectional(0.0, 0.0),
+                    alignment: const AlignmentDirectional(-1.0, 0.0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
-                      child: CachedNetworkImage(
-                        fadeInDuration: const Duration(milliseconds: 500),
-                        fadeOutDuration: const Duration(milliseconds: 500),
-                        imageUrl: _finishImageUrl(emocion),
-                        fit: BoxFit.cover,
-                        errorWidget: (_, __, ___) =>
-                            const SizedBox.shrink(),
+                      child: Image.asset(
+                        _finishImageUrl(emocion),
+                        fit: BoxFit.contain,
+                        width: 150.0,
+                        height: 150.0,
+                        alignment: Alignment.centerLeft,
                       ),
                     ),
                   ),
-                  Align(
-                    alignment: const AlignmentDirectional(0.83, -0.77),
-                    child: Container(
-                      width: 150.0,
-                      height: 100.0,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 15.0, 15.0, 15.0),
                       child: Text(
                         _finishText(context, emocion),
                         style: labelSmall.override(
                           font: GoogleFonts.outfit(
                             fontWeight: FontWeight.w600,
                             fontStyle: labelSmall.fontStyle,
+                            height: 1.2,
                           ),
                           fontSize: 18.0,
                           letterSpacing: 0.0,
@@ -286,9 +284,9 @@ class EmotionFinishView extends StatelessWidget {
   String _finishImageUrl(int emocion) {
     switch (emocion) {
       case 5:
-        return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/q8h7kxqqxqwp/CHICORecurso_22Plantilla.png';
+        return 'assets/images/ChicoRecurso.png';
       case 4:
-        return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/oadrw8ppem6o/ni%C3%B1oRecurso_1Plantilla.png';
+        return 'assets/images/ChicoRecurso.png';
       default:
         return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/ro5jhc7xaao0/CHICORecurso_22Plantilla_(1).png';
     }

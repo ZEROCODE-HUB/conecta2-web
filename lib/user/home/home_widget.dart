@@ -156,60 +156,34 @@ class _HomeWidgetState extends State<HomeWidget> {
                                           child: Align(
                                             alignment:
                                                 AlignmentDirectional(0.0, 0.0),
-                                            child: Stack(
-                                              alignment: AlignmentDirectional(
-                                                  1.0, 0.0),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.max,
                                               children: [
                                                 Align(
                                                   alignment:
                                                       AlignmentDirectional(
-                                                          0.0, 0.0),
+                                                          -1.0, 0.0),
                                                   child: ClipRRect(
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             8.0),
-                                                    child: CachedNetworkImage(
-                                                      fadeInDuration: Duration(
-                                                          milliseconds: 500),
-                                                      fadeOutDuration: Duration(
-                                                          milliseconds: 500),
-                                                      imageUrl: valueOrDefault<
-                                                          String>(
-                                                        () {
-                                                          if (FFAppState()
-                                                                  .emocionDay ==
-                                                              5) {
-                                                            return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/q8h7kxqqxqwp/CHICORecurso_22Plantilla.png';
-                                                          } else if (FFAppState()
-                                                                  .emocionDay ==
-                                                              4) {
-                                                            return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/oadrw8ppem6o/ni%C3%B1oRecurso_1Plantilla.png';
-                                                          } else if (FFAppState()
-                                                                  .emocionDay ==
-                                                              0) {
-                                                            return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/q8h7kxqqxqwp/CHICORecurso_22Plantilla.png';
-                                                          } else {
-                                                            return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/ro5jhc7xaao0/CHICORecurso_22Plantilla_(1).png';
-                                                          }
-                                                        }(),
-                                                        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/ro5jhc7xaao0/CHICORecurso_22Plantilla_(1).png',
-                                                      ),
-                                                      height: MediaQuery.sizeOf(
-                                                                  context)
-                                                              .height *
-                                                          1.0,
-                                                      fit: BoxFit.cover,
+                                                    child: Image.asset(
+                                                      'assets/images/ChicoRecurso.png',
+                                                      width: 150.0,
+                                                      height: 150.0,
+                                                      fit: BoxFit.contain,
+                                                      alignment:
+                                                          AlignmentDirectional(
+                                                              0.0, 0.0),
                                                     ),
                                                   ),
                                                 ),
-                                                Align(
-                                                  alignment:
-                                                      AlignmentDirectional(
-                                                          1.04, -0.76),
-                                                  child: Container(
-                                                    width: 150.0,
-                                                    height: 100.0,
-                                                    decoration: BoxDecoration(),
+                                                Expanded(
+                                                  child: Padding(
+                                                    padding:
+                                                        EdgeInsetsDirectional
+                                                            .fromSTEB(0.0, 15.0,
+                                                                15.0, 15.0),
                                                     child: Text(
                                                       FFAppState().emocionDay ==
                                                               0
@@ -344,40 +318,53 @@ class _HomeWidgetState extends State<HomeWidget> {
                                           child: Align(
                                             alignment:
                                                 AlignmentDirectional(0.0, 0.0),
-                                            child: Stack(
-                                              alignment: AlignmentDirectional(
-                                                  1.0, 0.0),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.max,
                                               children: [
                                                 Align(
                                                   alignment:
                                                       AlignmentDirectional(
-                                                          0.0, 0.0),
+                                                          -1.0, 0.0),
                                                   child: ClipRRect(
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             8.0),
                                                     child: Image.asset(
-                                                      'assets/images/CHICORecurso_23Plantilla.png',
-                                                      height: MediaQuery.sizeOf(
-                                                                  context)
-                                                              .height *
-                                                          1.0,
-                                                      fit: BoxFit.cover,
+                                                      'assets/images/ChicaRecurso2.png',
+                                                      width: 150.0,
+                                                      height: 150.0,
+                                                      fit: BoxFit.contain,
+                                                      alignment:
+                                                          AlignmentDirectional(
+                                                              0.0, 0.0),
                                                     ),
                                                   ),
                                                 ),
-                                                Align(
-                                                  alignment:
-                                                      AlignmentDirectional(
-                                                          0.63, -0.01),
-                                                  child: Text(
-                                                    'Aprende más \nsobre tus \nemociones',
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .labelSmall
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .outfit(
+                                                Expanded(
+                                                  child: Padding(
+                                                    padding:
+                                                        EdgeInsetsDirectional
+                                                            .fromSTEB(0.0, 15.0,
+                                                                15.0, 15.0),
+                                                    child: Text(
+                                                      'Aprende más \nsobre tus \nemociones',
+                                                      style: FlutterFlowTheme
+                                                              .of(context)
+                                                          .labelSmall
+                                                          .override(
+                                                            font: GoogleFonts
+                                                                .outfit(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              fontStyle:
+                                                                  FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .labelSmall
+                                                                      .fontStyle,
+                                                            ),
+                                                            fontSize: 18.0,
+                                                            letterSpacing: 0.0,
                                                             fontWeight:
                                                                 FontWeight.w600,
                                                             fontStyle:
@@ -386,16 +373,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                                                                     .labelSmall
                                                                     .fontStyle,
                                                           ),
-                                                          fontSize: 18.0,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelSmall
-                                                                  .fontStyle,
-                                                        ),
+                                                    ),
                                                   ),
                                                 ),
                                               ],

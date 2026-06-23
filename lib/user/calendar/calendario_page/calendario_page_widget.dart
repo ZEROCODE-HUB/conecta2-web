@@ -136,9 +136,8 @@ class _CalendarioPageWidgetState extends State<CalendarioPageWidget>
     super.dispose();
   }
 
-  bool get _keyboardIsVisible => isWeb
-      ? MediaQuery.viewInsetsOf(context).bottom > 0
-      : _isKeyboardVisible;
+  bool get _keyboardIsVisible =>
+      isWeb ? MediaQuery.viewInsetsOf(context).bottom > 0 : _isKeyboardVisible;
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +205,9 @@ class _CalendarioPageWidgetState extends State<CalendarioPageWidget>
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const CalendarHeader(message: '¿Como te sientes\nel día de hoy?  '),
+          const CalendarHeader(
+            message: '¿Como te sientes\nel día de hoy?  ',
+          ),
           EmotionSelector(
             animationsMap: animationsMap,
             onEmotionPicked: (emotion) {
@@ -239,8 +240,9 @@ class _CalendarioPageWidgetState extends State<CalendarioPageWidget>
 
     if (_model.slider == 'Dis' && _model.emocionelegida == 5) {
       return EmotionFeedbackForm(
-        heroAsset: 'assets/images/CHICORecurso_21Plantilla.png',
-        message: 'Qué alegría que estés bien,\npuedes escribirme si\nnecesitas algo',
+        heroAsset: 'assets/images/ChicoRecurso.png',
+        message:
+            'Qué alegría que estés bien,\npuedes escribirme si\nnecesitas algo',
         messageTextAlign: TextAlign.center,
         isKeyboardVisible: _keyboardIsVisible,
         controller: _model.textController2!,
