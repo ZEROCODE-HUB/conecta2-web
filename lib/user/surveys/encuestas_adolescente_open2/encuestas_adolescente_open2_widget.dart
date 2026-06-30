@@ -928,8 +928,7 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                                         .start,
                                                                 children: [
                                                                   Text(
-                                                                    (preguntasindeexItem.tipo ==
-                                                                                'Tamizaje CRQ / SRQ' ||
+                                                                    (preguntasindeexItem.tipo == 'Tamizaje CRQ / SRQ' ||
                                                                             preguntasindeexItem.tipo ==
                                                                                 'Tamizaje CRQ' ||
                                                                             preguntasindeexItem.tipo ==
@@ -1210,12 +1209,7 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                                             ),
                                                                             action:
                                                                                 () async {
-                                                                              if (preguntasindeexItem.tipo ==
-                                                                                      'Tamizaje CRQ / SRQ' ||
-                                                                                  preguntasindeexItem.tipo ==
-                                                                                      'Tamizaje CRQ' ||
-                                                                                  preguntasindeexItem.tipo ==
-                                                                                      'Tamizaje SRQ') {
+                                                                              if (preguntasindeexItem.tipo == 'Tamizaje CRQ / SRQ' || preguntasindeexItem.tipo == 'Tamizaje CRQ' || preguntasindeexItem.tipo == 'Tamizaje SRQ') {
                                                                                 FFAppState().updateRespuestaEncAtIndex(
                                                                                   preguntasindeexIndex,
                                                                                   (e) => e..respuesta = FFAppState().updateText,

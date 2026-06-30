@@ -312,9 +312,9 @@ class _EncuestaPreguntasTWidgetState extends State<EncuestaPreguntasTWidget> {
                       Flexible(
                         child: Builder(
                           builder: (context) {
-                            final list = widget.pregunta?.respuestaSelection
-                                    .toList() ??
-                                [];
+                            final list =
+                                widget.pregunta?.respuestaSelection.toList() ??
+                                    [];
 
                             return Column(
                               mainAxisSize: MainAxisSize.max,
@@ -472,19 +472,20 @@ class _EncuestaPreguntasTWidgetState extends State<EncuestaPreguntasTWidget> {
                           nPregunta: widget.pregunta?.nPregunta,
                           respuesta: val,
                           userRef: currentUserReference,
-                          trueAndFalse: (widget.pregunta?.respuestaTamizaje ??
-                                  [])
-                              .where((e) => e.etiqueta == val)
-                              .map((e) => e.valor)
-                              .firstOrNull ??
-                              0,
+                          trueAndFalse:
+                              (widget.pregunta?.respuestaTamizaje ?? [])
+                                      .where((e) => e.etiqueta == val)
+                                      .map((e) => e.valor)
+                                      .firstOrNull ??
+                                  0,
                         ),
                       );
                       safeSetState(() {});
                     },
                     controller: _model.radioButtonTamizajeController ??=
                         FormFieldController<String>(null),
-                    optionHeight: 32.0,
+                    optionHeight: null,
+                    optionWidth: MediaQuery.sizeOf(context).width - 64,
                     textStyle:
                         FlutterFlowTheme.of(context).labelMedium.override(
                               font: GoogleFonts.inter(
@@ -506,8 +507,7 @@ class _EncuestaPreguntasTWidgetState extends State<EncuestaPreguntasTWidget> {
                             ),
                     buttonPosition: RadioButtonPosition.left,
                     direction: Axis.vertical,
-                    radioButtonColor:
-                        FlutterFlowTheme.of(context).secondary,
+                    radioButtonColor: FlutterFlowTheme.of(context).secondary,
                     inactiveRadioButtonColor:
                         FlutterFlowTheme.of(context).tertiary,
                     toggleable: false,
@@ -633,10 +633,10 @@ class _EncuestaPreguntasTWidgetState extends State<EncuestaPreguntasTWidget> {
                                     }
                                   },
                                   side: BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                        ),
+                                    width: 2,
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                  ),
                                   activeColor:
                                       FlutterFlowTheme.of(context).accent2,
                                   checkColor: FlutterFlowTheme.of(context).info,
@@ -713,10 +713,10 @@ class _EncuestaPreguntasTWidgetState extends State<EncuestaPreguntasTWidget> {
                                     }
                                   },
                                   side: BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                        ),
+                                    width: 2,
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                  ),
                                   activeColor:
                                       FlutterFlowTheme.of(context).accent2,
                                   checkColor: FlutterFlowTheme.of(context).info,

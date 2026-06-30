@@ -61,7 +61,8 @@ class _RSeleccionUnicaRadiousWidgetState
       },
       controller: _model.radioButtonValueController ??=
           FormFieldController<String>(null),
-      optionHeight: 32.0,
+      optionHeight: null,
+      optionWidth: MediaQuery.sizeOf(context).width - 64,
       textStyle: FlutterFlowTheme.of(context).labelMedium.override(
             font: GoogleFonts.inter(
               fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,

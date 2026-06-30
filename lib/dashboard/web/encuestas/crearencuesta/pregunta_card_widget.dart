@@ -407,18 +407,22 @@ class _PreguntaCardState extends State<PreguntaCard> {
                       Expanded(
                           child: Text(op.etiqueta,
                               style: const TextStyle(fontSize: 13.0))),
-                      if (op.sustanciaValor.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0, vertical: 2.0),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFF9800),
-                            borderRadius: BorderRadius.circular(12.0),
+                      if (op.sustanciaValor.isNotEmpty) ...[
+                        const SizedBox(width: 8.0),
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 2.0),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF9800),
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: Text(op.sustanciaValor,
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 11.0)),
                           ),
-                          child: Text(op.sustanciaValor,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 11.0)),
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -650,6 +654,8 @@ class _PreguntaCardState extends State<PreguntaCard> {
   Widget _siNoChipValor(AtributosStruct op) {
     final isSi = op.valor == 1;
     return Container(
+      constraints:
+          BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 64),
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
       decoration: BoxDecoration(
         color: isSi ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
@@ -665,12 +671,15 @@ class _PreguntaCardState extends State<PreguntaCard> {
               color: isSi ? const Color(0xFF4CAF50) : const Color(0xFFEF5350),
               size: 14.0),
           const SizedBox(width: 4.0),
-          Text(op.etiqueta,
-              style: TextStyle(
-                  color:
-                      isSi ? const Color(0xFF388E3C) : const Color(0xFFD32F2F),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13.0)),
+          Flexible(
+            child: Text(op.etiqueta,
+                style: TextStyle(
+                    color: isSi
+                        ? const Color(0xFF388E3C)
+                        : const Color(0xFFD32F2F),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13.0)),
+          ),
           const SizedBox(width: 4.0),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 1.0),
