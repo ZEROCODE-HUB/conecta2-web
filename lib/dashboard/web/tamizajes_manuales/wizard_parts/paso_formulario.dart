@@ -519,11 +519,21 @@ class _PreguntaCard extends StatelessWidget {
     final kind = estado.tipoKind;
 
     if (kind == PreguntaTipo.descriptiva) {
+      final desc = p.respuestaLarga.trim();
+      if (desc.isEmpty) {
+        return Text(
+          '(Este tamizaje no cuenta con una descripción adicional)',
+          style: theme.bodySmall.override(
+            font: GoogleFonts.inter(fontStyle: FontStyle.italic),
+            color: theme.secondaryText,
+            letterSpacing: 0.0,
+          ),
+        );
+      }
       return Text(
-        '(Pregunta descriptiva — sin respuesta)',
-        style: theme.bodySmall.override(
-          font: GoogleFonts.inter(fontStyle: FontStyle.italic),
-          color: theme.secondaryText,
+        desc,
+        style: theme.bodyMedium.override(
+          font: GoogleFonts.inter(),
           letterSpacing: 0.0,
         ),
       );

@@ -1,19 +1,18 @@
 // "Observaciones médicas" light-blue card.
 
+import 'dart:convert';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '/components/rich_text_notas/rich_text_notas_widget.dart'
-    show quillDeltaToPlainText;
 import '../helpers/pdf_styles.dart';
 
 pw.Widget buildObservacionesSection(String observaciones) {
-  // Observaciones may come as a Quill Delta JSON string (rich editor) or
-  // as legacy plain text; normalise to plain text for PDF rendering.
-  final plain = quillDeltaToPlainText(observaciones);
-  final texto = plain.trim().isEmpty
-      ? 'No hay observaciones registradas'
-      : plain.trim();
+  final baseStyle = pw.TextStyle(
+    fontSize: 9,
+    color: PdfBrand.darkGrey,
+  );
+
+  final contentWidgets = parseQuillDeltaToPdf(observaciones, baseStyle);
 
   return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -38,15 +37,107 @@ pw.Widget buildObservacionesSection(String observaciones) {
           ),
           borderRadius: pw.BorderRadius.circular(12),
         ),
-        child: pw.Text(
-          texto,
-          style: pw.TextStyle(
-            fontSize: 9,
-            color: PdfBrand.darkGrey,
-          ),
-          textAlign: pw.TextAlign.left,
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: contentWidgets,
         ),
       ),
     ],
   );
+}
+
+List<pw.Widget> parseQuillDeltaToPdf(String deltaJson, pw.TextStyle baseStyle) {
+  final trimmed = deltaJson.trim();
+  if (trimmed.isEmpty) {
+    return [pw.Text('No hay observaciones registradas', style: baseStyle)];
+  }
+
+  List<dynamic> ops;
+  try {
+    final decoded = jsonDecode(trimmed);
+    if (decoded is List) {
+      ops = decoded;
+    } else {
+      return _plainTextToWidgets(trimmed, baseStyle);
+    }
+  } catch (_) {
+    return _plainTextToWidgets(trimmed, baseStyle);
+  }
+
+  final paragraphs = <pw.Widget>[];
+  var currentSpans = <pw.InlineSpan>[];
+
+  for (final op in ops) {
+    if (op is! Map) continue;
+    final insert = op['insert'];
+    if (insert == null) continue;
+    final attrs = (op['attributes'] as Map<String, dynamic>?) ?? {};
+
+    if (insert is String) {
+      final text = insert;
+      
+      // Determine style for this run
+      final isBold = attrs['bold'] == true;
+      final isItalic = attrs['italic'] == true;
+      final isUnderline = attrs['underline'] == true;
+      
+      final runStyle = baseStyle.copyWith(
+        fontWeight: isBold ? pw.FontWeight.bold : baseStyle.fontWeight,
+        fontStyle: isItalic ? pw.FontStyle.italic : baseStyle.fontStyle,
+        decoration: isUnderline ? pw.TextDecoration.underline : baseStyle.decoration,
+      );
+
+      if (text.contains('\n')) {
+        final parts = text.split('\n');
+        for (var i = 0; i < parts.length; i++) {
+          if (parts[i].isNotEmpty) {
+            currentSpans.add(pw.TextSpan(text: parts[i], style: runStyle));
+          }
+          if (i < parts.length - 1) {
+            // New line means we end the current paragraph
+            if (currentSpans.isNotEmpty) {
+              paragraphs.add(
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 4),
+                  child: pw.RichText(
+                    text: pw.TextSpan(children: currentSpans),
+                  ),
+                ),
+              );
+              currentSpans = [];
+            } else {
+              // Empty line/paragraph spacing
+              paragraphs.add(pw.SizedBox(height: 6));
+            }
+          }
+        }
+      } else {
+        currentSpans.add(pw.TextSpan(text: text, style: runStyle));
+      }
+    }
+  }
+
+  if (currentSpans.isNotEmpty) {
+    paragraphs.add(
+      pw.RichText(
+        text: pw.TextSpan(children: currentSpans),
+      ),
+    );
+  }
+
+  return paragraphs;
+}
+
+List<pw.Widget> _plainTextToWidgets(String text, pw.TextStyle style) {
+  final lines = text.split('\n');
+  return lines.map((line) {
+    final trimmedLine = line.trim();
+    return pw.Padding(
+      padding: const pw.EdgeInsets.only(bottom: 4),
+      child: pw.Text(
+        trimmedLine.isEmpty ? ' ' : trimmedLine,
+        style: style,
+      ),
+    );
+  }).toList();
 }

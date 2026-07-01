@@ -1,5 +1,7 @@
 // Tamizaje processing + card builders styled to match the reference PDF.
 
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -80,6 +82,33 @@ List<RespustaTamizajeStruct> completarSustanciasFaltantes(
   }
 }
 
+String _mergeQuillDeltas(List<String> deltas) {
+  if (deltas.isEmpty) return '';
+  final mergedOps = <dynamic>[];
+  for (var i = 0; i < deltas.length; i++) {
+    final delta = deltas[i].trim();
+    if (delta.isEmpty) continue;
+    
+    try {
+      final decoded = jsonDecode(delta);
+      if (decoded is List) {
+        mergedOps.addAll(decoded);
+      } else if (decoded is Map && decoded.containsKey('ops') && decoded['ops'] is List) {
+        mergedOps.addAll(decoded['ops'] as List);
+      } else {
+        mergedOps.add({"insert": "$delta\n"});
+      }
+    } catch (_) {
+      mergedOps.add({"insert": "$delta\n"});
+    }
+    
+    if (i < deltas.length - 1) {
+      mergedOps.add({"insert": "\n\n"});
+    }
+  }
+  return jsonEncode(mergedOps);
+}
+
 Future<Map<String, dynamic>> obtenerRespuestasTamizajeSeguro(
     String userUid) async {
   try {
@@ -123,10 +152,7 @@ Future<Map<String, dynamic>> obtenerRespuestasTamizajeSeguro(
       return {
         'respuestas': respuestasAgregadas,
         'completadoSinRespuestas': false,
-        'notasProfesional': notasAgregadas
-            .map(quillDeltaToPlainText)
-            .where((n) => n.trim().isNotEmpty)
-            .join('\n\n'),
+        'notasProfesional': _mergeQuillDeltas(notasAgregadas),
       };
     }
 
@@ -164,10 +190,22 @@ void _procesarDocRespuesta(
     for (final item in items) {
       if (item is! Map) continue;
       final m = Map<String, dynamic>.from(item);
-      final respuestaText = m['Respuesta']?.toString() ??
-          m['respuesta']?.toString() ??
-          m['RespuestaSeleccionUnica']?.toString() ??
-          '';
+      
+      final structItem = RespuestaTestStruct.fromMap(m);
+      String respuestaText = structItem.respuesta.trim();
+      if (respuestaText.isEmpty) {
+        respuestaText = structItem.respuestaSeleccionUnica.trim();
+      }
+      if (respuestaText.isEmpty && structItem.respuestasSeleccionadas.isNotEmpty) {
+        respuestaText = structItem.respuestasSeleccionadas.join(', ');
+      }
+      if (respuestaText.isEmpty && structItem.respuestaSelection.isNotEmpty) {
+        respuestaText = structItem.respuestaSelection.join(', ');
+      }
+      if (respuestaText.isEmpty && structItem.respuestaTamizaje.isNotEmpty) {
+        respuestaText = structItem.respuestaTamizaje.map((e) => e.etiqueta).join(', ');
+      }
+
       final tipo =
           (m['Tipo'] ?? m['tipo'] ?? titulo).toString();
       respuestas.add(RespustaTamizajeStruct(

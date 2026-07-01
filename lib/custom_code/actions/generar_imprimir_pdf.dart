@@ -471,95 +471,103 @@ List<RespustaTamizajeStruct> _generarRespuestasPorDefecto() {
   return respuestasDefault;
 }
 
+void _procesarDocRespuestaImprimir(
+  Map<String, dynamic> data,
+  List<RespustaTamizajeStruct> respuestas,
+) {
+  try {
+    final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
+    final List<dynamic> items = [];
+    if (data['test'] is List) items.addAll(data['test'] as List);
+    if (data['Respusta'] is List) items.addAll(data['Respusta'] as List);
+
+    for (final item in items) {
+      if (item is! Map) continue;
+      final m = Map<String, dynamic>.from(item);
+      
+      final structItem = RespuestaTestStruct.fromMap(m);
+      String respuestaText = structItem.respuesta.trim();
+      if (respuestaText.isEmpty) {
+        respuestaText = structItem.respuestaSeleccionUnica.trim();
+      }
+      if (respuestaText.isEmpty && structItem.respuestasSeleccionadas.isNotEmpty) {
+        respuestaText = structItem.respuestasSeleccionadas.join(', ');
+      }
+      if (respuestaText.isEmpty && structItem.respuestaSelection.isNotEmpty) {
+        respuestaText = structItem.respuestaSelection.join(', ');
+      }
+      if (respuestaText.isEmpty && structItem.respuestaTamizaje.isNotEmpty) {
+        respuestaText = structItem.respuestaTamizaje.map((e) => e.etiqueta).join(', ');
+      }
+
+      final tipo = (m['Tipo'] ?? m['tipo'] ?? titulo).toString();
+      respuestas.add(RespustaTamizajeStruct(
+        pregunta: m['Pregunta']?.toString() ??
+            m['pregunta']?.toString() ??
+            'Pregunta no disponible',
+        respuesta: respuestaText.isEmpty ? 'No respondida' : respuestaText,
+        tipo: tipo,
+        trueAndFalse: (m['TrueAndFalse'] as num?)?.toInt(),
+        nPregunta: (m['NPregunta'] as num?)?.toInt(),
+      ));
+    }
+  } catch (e) {
+    print('  Error procesando doc de respuesta (Imprimir): $e');
+  }
+}
+
 /// Obtiene respuestas de tamizaje de forma segura
 /// Ahora retorna Map con respuestas y flag de completado sin respuestas
 Future<Map<String, dynamic>> _obtenerRespuestasTamizajeSeguro(
     String userUid) async {
   try {
     print('  Buscando respuestas de tamizaje para usuario: $userUid');
+    final respuestasAgregadas = <RespustaTamizajeStruct>[];
+    final userRef = FirebaseFirestore.instance.collection('users').doc(userUid);
 
-    // Intentar obtener de Firestore
+    // 1) Respuestas bajo /Encuestas/{id}/Respuestas filtradas por userRespuesta
     try {
-      final tamizajeSnapshot = await FirebaseFirestore.instance
-          .collection('tamizajes')
-          .where('user_uid', isEqualTo: userUid)
-          .limit(1)
+      final snap = await FirebaseFirestore.instance
+          .collectionGroup('Respuestas')
+          .where('User_respuesta', isEqualTo: userRef)
           .get()
-          .timeout(Duration(seconds: 10));
+          .timeout(const Duration(seconds: 12));
 
-      if (tamizajeSnapshot.docs.isNotEmpty) {
-        final tamizajeDoc = tamizajeSnapshot.docs.first;
-        final data = tamizajeDoc.data();
-
-        print('  ✓ Encontrado documento de tamizaje');
-
-        // Verificar si hay respuestas
-        bool tieneRespuestas = false;
-        List<RespustaTamizajeStruct> respuestas = [];
-
-        // Adaptar según tu estructura de datos real
-        if (data.containsKey('respuestas') && data['respuestas'] != null) {
-          var respuestasData = data['respuestas'];
-          if (respuestasData is List && respuestasData.isNotEmpty) {
-            tieneRespuestas = true;
-            // TODO: Convertir respuestasData a List<RespustaTamizajeStruct>
-            // Por ahora, si hay respuestas, las procesamos
-            try {
-              // Simulamos que encontramos respuestas reales
-              // En tu implementación real, aquí convertirías los datos de Firestore
-              print(
-                  '  ✓ Tamizaje con ${respuestasData.length} respuestas reales');
-
-              // Iterar sobre la lista de forma segura sin forzar el tipo a List<Map<String, dynamic>>
-              for (var respuestaData in respuestasData) {
-                try {
-                  if (respuestaData is Map) {
-                    respuestas.add(RespustaTamizajeStruct(
-                      pregunta: respuestaData['pregunta']?.toString() ??
-                          'Pregunta no disponible',
-                      respuesta: respuestaData['respuesta']?.toString() ??
-                          'No respondida',
-                    ));
-                  }
-                } catch (e) {
-                  print('Error al convertir respuesta: $e');
-                }
-              }
-            } catch (e) {
-              print('Error al procesar respuestas: $e');
-              tieneRespuestas = false;
-            }
-          }
-        }
-
-        // Si tiene documento pero NO tiene respuestas válidas -> caso especial
-        if (!tieneRespuestas || respuestas.isEmpty) {
-          print(
-              '  ⚠ Usuario tiene tamizaje pero sin respuestas registradas o válidas');
-          return {
-            'respuestas': _generarRespuestasPorDefecto(),
-            'completadoSinRespuestas': true,
-          };
-        }
-
-        return {
-          'respuestas': respuestas,
-          'completadoSinRespuestas': false,
-        };
-      } else {
-        print('  ⚠ No se encontraron documentos de tamizaje');
+      for (final doc in snap.docs) {
+        _procesarDocRespuestaImprimir(doc.data(), respuestasAgregadas);
       }
     } catch (e) {
-      print('  ⚠ Error al consultar tamizajes: $e');
+      print('  Info: no se pudo leer collectionGroup Respuestas en Imprimir: $e');
     }
 
-    // Por defecto retorna sin datos de tamizaje
+    // 2) Fallback: Respuestas guardadas bajo /users/{userUid}/Respuestas/...
+    if (respuestasAgregadas.isEmpty) {
+      try {
+        final snap = await userRef
+            .collection('Respuestas')
+            .get()
+            .timeout(const Duration(seconds: 10));
+        for (final doc in snap.docs) {
+          _procesarDocRespuestaImprimir(doc.data(), respuestasAgregadas);
+        }
+      } catch (e) {
+        print('  Info: no se pudo leer users/$userUid/Respuestas en Imprimir: $e');
+      }
+    }
+
+    if (respuestasAgregadas.isNotEmpty) {
+      return {
+        'respuestas': respuestasAgregadas,
+        'completadoSinRespuestas': false,
+      };
+    }
+
     return {
       'respuestas': <RespustaTamizajeStruct>[],
       'completadoSinRespuestas': false,
     };
   } catch (e) {
-    print('  ERROR al obtener respuestas de tamizaje: $e');
+    print('  ERROR al obtener respuestas de tamizaje en Imprimir: $e');
     return {
       'respuestas': <RespustaTamizajeStruct>[],
       'completadoSinRespuestas': false,
