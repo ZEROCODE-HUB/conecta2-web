@@ -129,6 +129,11 @@ List<pw.Widget> parseQuillDeltaToPdf(String deltaJson, pw.TextStyle baseStyle) {
 }
 
 List<pw.Widget> _plainTextToWidgets(String text, pw.TextStyle style) {
+  // Simple check for HTML tags
+  if (text.contains('<p>') || text.contains('<b>') || text.contains('<strong>') || text.contains('<i>') || text.contains('<em>') || text.contains('<u>') || text.contains('<br>') || text.contains('<li>')) {
+    return _parseHtmlToPdf(text, style);
+  }
+
   final lines = text.split('\n');
   return lines.map((line) {
     final trimmedLine = line.trim();
@@ -140,4 +145,64 @@ List<pw.Widget> _plainTextToWidgets(String text, pw.TextStyle style) {
       ),
     );
   }).toList();
+}
+
+List<pw.Widget> _parseHtmlToPdf(String html, pw.TextStyle baseStyle) {
+  final paragraphs = <pw.Widget>[];
+  var currentSpans = <pw.InlineSpan>[];
+  
+  bool isBold = false;
+  bool isItalic = false;
+  bool isUnderline = false;
+
+  // Extremely basic regex parser for common HTML tags
+  final regex = RegExp(r'(<[^>]+>|[^<]+)');
+  final matches = regex.allMatches(html);
+
+  for (final match in matches) {
+    final token = match.group(0)!;
+    if (token.startsWith('<')) {
+      final tag = token.toLowerCase();
+      if (tag == '<b>' || tag == '<strong>') isBold = true;
+      else if (tag == '</b>' || tag == '</strong>') isBold = false;
+      else if (tag == '<i>' || tag == '<em>') isItalic = true;
+      else if (tag == '</i>' || tag == '</em>') isItalic = false;
+      else if (tag == '<u>') isUnderline = true;
+      else if (tag == '</u>') isUnderline = false;
+      else if (tag == '<br>' || tag == '<br/>' || tag == '</p>' || tag == '</li>') {
+        if (currentSpans.isNotEmpty) {
+          paragraphs.add(
+            pw.Padding(
+              padding: const pw.EdgeInsets.only(bottom: 4),
+              child: pw.RichText(text: pw.TextSpan(children: currentSpans)),
+            ),
+          );
+          currentSpans = [];
+        } else {
+          paragraphs.add(pw.SizedBox(height: 6));
+        }
+      }
+    } else {
+      final text = token.replaceAll('&nbsp;', ' ').replaceAll('&lt;', '<').replaceAll('&gt;', '>');
+      if (text.isNotEmpty) {
+        final runStyle = baseStyle.copyWith(
+          fontWeight: isBold ? pw.FontWeight.bold : baseStyle.fontWeight,
+          fontStyle: isItalic ? pw.FontStyle.italic : baseStyle.fontStyle,
+          decoration: isUnderline ? pw.TextDecoration.underline : baseStyle.decoration,
+        );
+        currentSpans.add(pw.TextSpan(text: text, style: runStyle));
+      }
+    }
+  }
+
+  if (currentSpans.isNotEmpty) {
+    paragraphs.add(
+      pw.Padding(
+        padding: const pw.EdgeInsets.only(bottom: 4),
+        child: pw.RichText(text: pw.TextSpan(children: currentSpans)),
+      ),
+    );
+  }
+
+  return paragraphs.isEmpty ? [pw.Text(' ')] : paragraphs;
 }

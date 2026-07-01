@@ -47,19 +47,26 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      safeSetState(() {
-        _model.ddTipoValueController?.value = widget.userdoc!.rol;
-        _model.ddTipoValue = widget.userdoc!.rol;
-        _model.textFieldNombresTextController?.text =
-            widget.userdoc!.displayName;
-        _model.emailTextController?.text = widget.userdoc!.email;
-        _model.textFieldphoneTextController?.text = widget.userdoc!.phoneNumber;
-        _model.textFielddniTextController?.text = widget.userdoc!.identidad;
-        _model.textFieldaddressTextController?.text = widget.userdoc!.address;
-        _model.dropDownProfesionalValueController?.value =
-            widget.userdoc!.profesionales.nombre;
-        _model.dropDownProfesionalValue = widget.userdoc!.profesionales.nombre;
-      });
+      if (widget.userdoc != null) {
+        safeSetState(() {
+          _model.ddTipoValueController?.value = widget.userdoc!.rol;
+          _model.ddTipoValue = widget.userdoc!.rol;
+          _model.textFieldNombresTextController?.text =
+              widget.userdoc!.displayName;
+          _model.emailTextController?.text = widget.userdoc!.email;
+          _model.textFieldphoneTextController?.text = widget.userdoc!.phoneNumber;
+          _model.textFielddniTextController?.text = widget.userdoc!.identidad;
+          _model.textFieldaddressTextController?.text = widget.userdoc!.address;
+          _model.textFieldcolegioTextController?.text = widget.userdoc!.colegio;
+          _model.textFieldepsTextController?.text = widget.userdoc!.eps;
+          _model.textFieldgradoTextController?.text = widget.userdoc!.grado;
+          _model.textFieldmunicipioTextController?.text = widget.userdoc!.municipio;
+          _model.textFieldbarrioTextController?.text = widget.userdoc!.barrio;
+          _model.dropDownProfesionalValueController?.value =
+              widget.userdoc!.profesionales.nombre;
+          _model.dropDownProfesionalValue = widget.userdoc!.profesionales.nombre;
+        });
+      }
     });
 
     _model.textFieldNombresFocusNode ??= FocusNode();
@@ -67,6 +74,11 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     _model.textFieldphoneFocusNode ??= FocusNode();
     _model.textFielddniFocusNode ??= FocusNode();
     _model.textFieldaddressFocusNode ??= FocusNode();
+    _model.textFieldcolegioFocusNode ??= FocusNode();
+    _model.textFieldepsFocusNode ??= FocusNode();
+    _model.textFieldgradoFocusNode ??= FocusNode();
+    _model.textFieldmunicipioFocusNode ??= FocusNode();
+    _model.textFieldbarrioFocusNode ??= FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
@@ -583,29 +595,35 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
           key: _formKey,
           autovalidateMode: AutovalidateMode.disabled,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.max,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(25.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          0.0, 20.0, 0.0, 0.0),
-                      child: buildSectionTitle(context, 'Datos personales'),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(25.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              0.0, 20.0, 0.0, 0.0),
+                          child: buildSectionTitle(context, 'Datos personales'),
+                        ),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              0.0, 20.0, 0.0, 0.0),
+                          child: _buildTipoAndNombreRow(context, rowUsersRecord),
+                        ),
+                        _buildEmailPhoneRow(context, rowUsersRecord),
+                        _buildDniAddressRow(context, rowUsersRecord),
+                        _buildColegioEpsRow(context, rowUsersRecord),
+                        _buildMunicipioBarrioRow(context, rowUsersRecord),
+                        _buildGradoRow(context, rowUsersRecord),
+                        _buildResetPasswordButton(context),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          0.0, 20.0, 0.0, 0.0),
-                      child: _buildTipoAndNombreRow(context, rowUsersRecord),
-                    ),
-                    _buildEmailPhoneRow(context, rowUsersRecord),
-                    _buildDniAddressRow(context, rowUsersRecord),
-                    _buildResetPasswordButton(context),
-                  ],
+                  ),
                 ),
               ),
               _buildActionButtons(context, rowUsersRecord),
@@ -724,6 +742,95 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                   .asValidator(context),
             ),
           ),
+        ].divide(const SizedBox(width: 25.0)),
+      ),
+    );
+  }
+
+  Widget _buildColegioEpsRow(BuildContext context, UsersRecord rowUsersRecord) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: LabeledTextField(
+              label: 'Colegio',
+              controller: _model.textFieldcolegioTextController ??=
+                  TextEditingController(text: rowUsersRecord.colegio),
+              focusNode: _model.textFieldcolegioFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldcolegioTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+          Expanded(
+            child: LabeledTextField(
+              label: 'EPS',
+              controller: _model.textFieldepsTextController ??=
+                  TextEditingController(text: rowUsersRecord.eps),
+              focusNode: _model.textFieldepsFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldepsTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+        ].divide(const SizedBox(width: 25.0)),
+      ),
+    );
+  }
+
+  Widget _buildMunicipioBarrioRow(BuildContext context, UsersRecord rowUsersRecord) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: LabeledTextField(
+              label: 'Municipio',
+              controller: _model.textFieldmunicipioTextController ??=
+                  TextEditingController(text: rowUsersRecord.municipio),
+              focusNode: _model.textFieldmunicipioFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldmunicipioTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+          Expanded(
+            child: LabeledTextField(
+              label: 'Barrio',
+              controller: _model.textFieldbarrioTextController ??=
+                  TextEditingController(text: rowUsersRecord.barrio),
+              focusNode: _model.textFieldbarrioFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldbarrioTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+        ].divide(const SizedBox(width: 25.0)),
+      ),
+    );
+  }
+
+  Widget _buildGradoRow(BuildContext context, UsersRecord rowUsersRecord) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: LabeledTextField(
+              label: 'Grado Escolar',
+              controller: _model.textFieldgradoTextController ??=
+                  TextEditingController(text: rowUsersRecord.grado),
+              focusNode: _model.textFieldgradoFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldgradoTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+          Expanded(child: const SizedBox()),
         ].divide(const SizedBox(width: 25.0)),
       ),
     );
@@ -870,6 +977,11 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
       ),
       address: _model.textFieldaddressTextController.text,
       identidad: _model.textFielddniTextController.text,
+      colegio: _model.textFieldcolegioTextController.text,
+      eps: _model.textFieldepsTextController.text,
+      grado: _model.textFieldgradoTextController.text,
+      municipio: _model.textFieldmunicipioTextController.text,
+      barrio: _model.textFieldbarrioTextController.text,
     ));
     FFAppState().selectUser = '';
     safeSetState(() {});

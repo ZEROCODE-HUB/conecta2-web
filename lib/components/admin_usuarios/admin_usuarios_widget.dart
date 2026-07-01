@@ -152,6 +152,13 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
                 child: const CrearUsuarioWidget(),
               );
             } else if (selected == 'PerfilAdolescente') {
+              if (_model.document == null) {
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                  FFAppState().selectUser = '';
+                  safeSetState(() {});
+                });
+                return const SizedBox();
+              }
               return wrapWithModel(
                 model: _model.perfilAdolescenteModel,
                 updateCallback: () => safeSetState(() {}),
@@ -161,6 +168,13 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
                 ),
               );
             } else if (selected == 'PerfilAcudiente') {
+              if (_model.document == null) {
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                  FFAppState().selectUser = '';
+                  safeSetState(() {});
+                });
+                return const SizedBox();
+              }
               return wrapWithModel(
                 model: _model.perfilAcudienteModel,
                 updateCallback: () => safeSetState(() {}),
@@ -170,6 +184,13 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
                 ),
               );
             } else if (selected == 'PerfilProfesional') {
+              if (_model.document == null) {
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                  FFAppState().selectUser = '';
+                  safeSetState(() {});
+                });
+                return const SizedBox();
+              }
               return wrapWithModel(
                 model: _model.perfilProfesionalModel,
                 updateCallback: () => safeSetState(() {}),
@@ -179,6 +200,13 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
                 ),
               );
             } else if (selected == 'Editar') {
+              if (_model.document == null || _model.usuariodoc == null) {
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                  FFAppState().selectUser = '';
+                  safeSetState(() {});
+                });
+                return const SizedBox();
+              }
               return wrapWithModel(
                 model: _model.editarUsuarioModel,
                 updateCallback: () => safeSetState(() {}),

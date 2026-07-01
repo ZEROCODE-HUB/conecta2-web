@@ -612,6 +612,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                                                                         FFAppState()
                                                                             .listaAlertasEnvio,
                                                                       ),
+                                                                      'alertasEspeciales': _model.alertasEspeciales.map((a) => getAlertaEspecialFirestoreData(a, true)).toList(),
                                                                     },
                                                                   ),
                                                                 });
@@ -730,6 +731,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                                                                         FFAppState()
                                                                             .listaAlertasEnvio,
                                                                       ),
+                                                                      'alertasEspeciales': _model.alertasEspeciales.map((a) => getAlertaEspecialFirestoreData(a, true)).toList(),
                                                                     },
                                                                   ),
                                                                 });
@@ -828,31 +830,20 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                                                                   FFAppState()
                                                                       .selectUser = '';
                                                                   safeSetState(
-                                                                      () {});
-
-                                                                  await widget
-                                                                      .encuestaID!
-                                                                      .update({
-                                                                    ..._payloadEncuestaRecord(
-                                                                      publicado:
-                                                                          true,
-                                                                      titulo: _model
-                                                                          .textController1
-                                                                          .text,
-                                                                      descripcion: _model
-                                                                          .descTextController
-                                                                          .text,
-                                                                    ),
-                                                                    ...mapToFirestore(
-                                                                      {
-                                                                        'alertas':
-                                                                            getAlertaListFirestoreData(
-                                                                          FFAppState()
-                                                                              .listaAlertasEnvio,
+                                                                      () {
+                                                                    widget.encuestaID!.update({
+                                                                        ..._payloadEncuestaRecord(
+                                                                            publicado: true,
+                                                                            titulo: _model.textController1.text,
+                                                                            descripcion: _model.descTextController.text,
                                                                         ),
-                                                                      },
-                                                                    ),
+                                                                        ...mapToFirestore({
+                                                                            'alertas': getAlertaListFirestoreData(FFAppState().listaAlertasEnvio),
+                                                                            'alertasEspeciales': _model.alertasEspeciales.map((a) => getAlertaEspecialFirestoreData(a, true)).toList(),
+                                                                        }),
+                                                                    });
                                                                   });
+
                                                                   await showDialog(
                                                                     context:
                                                                         context,
@@ -1108,6 +1099,388 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                                                     ],
                                                   ),
                                                 );
+  }
+
+  Widget _buildTamizajesAlertsEspecialesPanel(BuildContext context) {
+    final tema = FlutterFlowTheme.of(context);
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(30.0, 16.0, 0.0, 0.0),
+      child: Container(
+        width: MediaQuery.sizeOf(context).width * 0.2,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: const [
+            BoxShadow(
+              blurRadius: 50.0,
+              color: Color(0x26000000),
+              offset: Offset(20.0, 20.0),
+            )
+          ],
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 15.0),
+                child: Text(
+                  'Alertas Especiales CRQ/SRQ',
+                  style: tema.bodyMedium.override(
+                    font: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      fontStyle: tema.bodyMedium.fontStyle,
+                    ),
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              TextFormField(
+                controller: _model.alertaEspecialNombreTextController ??=
+                    TextEditingController(),
+                focusNode: _model.alertaEspecialNombreFocusNode ??= FocusNode(),
+                autofocus: false,
+                obscureText: false,
+                decoration: InputDecoration(
+                  hintText: 'Nombre de la alerta',
+                  hintStyle: tema.labelMedium.override(
+                    font: GoogleFonts.inter(
+                      fontWeight: tema.labelMedium.fontWeight,
+                      fontStyle: tema.labelMedium.fontStyle,
+                    ),
+                    color: const Color(0xFF9E8888),
+                    fontSize: 14.0,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: tema.alternate,
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: tema.primary,
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: tema.error,
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: tema.error,
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  filled: true,
+                  fillColor: tema.primaryBackground,
+                ),
+                style: tema.bodyMedium.override(
+                  font: GoogleFonts.inter(
+                    fontWeight: tema.bodyMedium.fontWeight,
+                    fontStyle: tema.bodyMedium.fontStyle,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                child: FlutterFlowDropDown<String>(
+                  controller: _model.alertaEspecialCondicionValueController ??=
+                      FormFieldController<String>(null),
+                  options: const [
+                    'Todas en Sí',
+                    'Al menos una en Sí',
+                    'Al menos dos en Sí',
+                    'Todas en No',
+                    'Al menos una en No',
+                    'Al menos dos en No',
+                    'Puntaje igual a'
+                  ],
+                  onChanged: (val) {
+                    _model.alertaEspecialCondicionValue = val;
+                    safeSetState(() {});
+                  },
+                  width: double.infinity,
+                  height: 44.0,
+                  textStyle: tema.bodyMedium.override(
+                    font: GoogleFonts.inter(
+                      fontWeight: tema.bodyMedium.fontWeight,
+                      fontStyle: tema.bodyMedium.fontStyle,
+                    ),
+                  ),
+                  hintText: 'Condición...',
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: tema.secondaryText,
+                    size: 24.0,
+                  ),
+                  fillColor: tema.secondaryBackground,
+                  elevation: 2.0,
+                  borderColor: Colors.transparent,
+                  borderWidth: 0.0,
+                  borderRadius: 8.0,
+                  margin: const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+                  hidesUnderline: true,
+                  isOverButton: false,
+                  isSearchable: false,
+                  isMultiSelect: false,
+                ),
+              ),
+              if (_model.alertaEspecialCondicionValue == 'Puntaje igual a')
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                  child: TextFormField(
+                    controller: _model.alertaEspecialPuntajeTextController ??=
+                        TextEditingController(),
+                    focusNode: _model.alertaEspecialPuntajeFocusNode ??= FocusNode(),
+                    autofocus: false,
+                    keyboardType: TextInputType.number,
+                    obscureText: false,
+                    decoration: InputDecoration(
+                      hintText: 'Puntaje',
+                      hintStyle: tema.labelMedium.override(
+                        font: GoogleFonts.inter(
+                          fontWeight: tema.labelMedium.fontWeight,
+                          fontStyle: tema.labelMedium.fontStyle,
+                        ),
+                        color: const Color(0xFF9E8888),
+                        fontSize: 14.0,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: tema.alternate,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: tema.primary,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: tema.error,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: tema.error,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      filled: true,
+                      fillColor: tema.primaryBackground,
+                    ),
+                    style: tema.bodyMedium.override(
+                      font: GoogleFonts.inter(
+                        fontWeight: tema.bodyMedium.fontWeight,
+                        fontStyle: tema.bodyMedium.fontStyle,
+                      ),
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                child: TextFormField(
+                  controller: _model.alertaEspecialPreguntasTextController ??=
+                      TextEditingController(),
+                  focusNode: _model.alertaEspecialPreguntasFocusNode ??= FocusNode(),
+                  autofocus: false,
+                  obscureText: false,
+                  decoration: InputDecoration(
+                    hintText: 'Números de pregunta (ej: 1, 2, 11)',
+                    hintStyle: tema.labelMedium.override(
+                      font: GoogleFonts.inter(
+                        fontWeight: tema.labelMedium.fontWeight,
+                        fontStyle: tema.labelMedium.fontStyle,
+                      ),
+                      color: const Color(0xFF9E8888),
+                      fontSize: 14.0,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: tema.alternate,
+                        width: 1.0,
+                      ),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: tema.primary,
+                        width: 1.0,
+                      ),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: tema.error,
+                        width: 1.0,
+                      ),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: tema.error,
+                        width: 1.0,
+                      ),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    filled: true,
+                    fillColor: tema.primaryBackground,
+                  ),
+                  style: tema.bodyMedium.override(
+                    font: GoogleFonts.inter(
+                      fontWeight: tema.bodyMedium.fontWeight,
+                      fontStyle: tema.bodyMedium.fontStyle,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: FFButtonWidget(
+                    onPressed: () async {
+                      if (_model.alertaEspecialNombreTextController?.text.isNotEmpty == true &&
+                          _model.alertaEspecialCondicionValue != null) {
+                        final preguntasRaw =
+                            _model.alertaEspecialPreguntasTextController?.text ?? '';
+                        final List<int> preguntasParsed = preguntasRaw
+                            .split(',')
+                            .map((s) => int.tryParse(s.trim()))
+                            .where((v) => v != null)
+                            .cast<int>()
+                            .toList();
+                        final nuevaAlerta = createAlertaEspecialStruct(
+                          nombre: _model.alertaEspecialNombreTextController?.text ?? '',
+                          condicion: _model.alertaEspecialCondicionValue ?? '',
+                          puntaje:
+                              int.tryParse(_model.alertaEspecialPuntajeTextController?.text ?? '') ?? 0,
+                          clearUnsetFields: false,
+                        );
+                        nuevaAlerta.preguntas = preguntasParsed;
+                        _model.addToAlertasEspeciales(nuevaAlerta);
+                        _model.alertaEspecialNombreTextController?.clear();
+                        _model.alertaEspecialCondicionValueController?.value = null;
+                        _model.alertaEspecialCondicionValue = null;
+                        _model.alertaEspecialPuntajeTextController?.clear();
+                        _model.alertaEspecialPreguntasTextController?.clear();
+                        safeSetState(() {});
+                      }
+                    },
+                    text: 'Agregar alerta especial',
+                    options: FFButtonOptions(
+                      height: 34.0,
+                      padding: const EdgeInsetsDirectional.fromSTEB(14.0, 0.0, 14.0, 0.0),
+                      color: const Color(0xFF265294),
+                      textStyle: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                ),
+              ),
+              if (_model.alertasEspeciales.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Alertas especiales guardadas',
+                        style: tema.bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FontWeight.w500,
+                            fontStyle: tema.bodyMedium.fontStyle,
+                          ),
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      ...List.generate(_model.alertasEspeciales.length, (idx) {
+                        final alerta = _model.alertasEspeciales[idx];
+                        return Container(
+                          margin: const EdgeInsets.only(top: 8.0),
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: tema.primaryBackground,
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      alerta.nombre,
+                                      style: tema.bodyMedium.override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w600,
+                                          fontStyle: tema.bodyMedium.fontStyle,
+                                        ),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      alerta.condicion +
+                                          (alerta.condicion == 'Puntaje igual a'
+                                              ? ': ${alerta.puntaje}'
+                                              : ''),
+                                      style: tema.bodyMedium.override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight: tema.bodyMedium.fontWeight,
+                                          fontStyle: tema.bodyMedium.fontStyle,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                  size: 20.0,
+                                ),
+                                onPressed: () {
+                                  _model.removeAtIndexFromAlertasEspeciales(idx);
+                                  safeSetState(() {});
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
 }

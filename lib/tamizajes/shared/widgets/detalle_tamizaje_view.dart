@@ -316,6 +316,7 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
                           g: respuesta.puntajeTotal,
                           d: cdiSub.d,
                           a: cdiSub.a,
+                          nivelCalculado: _nivelCalculado().toLowerCase(),
                           theme: theme,
                         ),
                       ],
@@ -961,16 +962,27 @@ class _CdiSubescalasCard extends StatelessWidget {
     required this.g,
     required this.d,
     required this.a,
+    required this.nivelCalculado,
     required this.theme,
   });
 
   final int g;
   final int d;
   final int a;
+  final String nivelCalculado;
   final FlutterFlowTheme theme;
 
   @override
   Widget build(BuildContext context) {
+    String nivelTexto = nivelCalculado;
+    if (nivelCalculado.contains('severo') || nivelCalculado.contains('grave')) {
+      nivelTexto = 'una depresión severa';
+    } else if (nivelCalculado.contains('leve')) {
+      nivelTexto = 'una depresión leve';
+    } else if (nivelCalculado.contains('sin sintomatología')) {
+      nivelTexto = 'sin sintomatología depresiva';
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -991,20 +1003,19 @@ class _CdiSubescalasCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              _SubescalaChip(label: 'G (Total)', valor: g, color: kNavy),
-              const SizedBox(width: 10),
-              _SubescalaChip(
-                  label: 'D (Disforia)',
-                  valor: d,
-                  color: const Color(0xFF7B5EA7)),
-              const SizedBox(width: 10),
-              _SubescalaChip(
-                  label: 'A (Autoestima)',
-                  valor: a,
-                  color: const Color(0xFF2E7D88)),
-            ],
+          Text(
+            'G= $g (G, es la suma de D + A) lo que equivale a $nivelTexto.',
+            style: GoogleFonts.inter(fontSize: 14, color: theme.primaryText),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'D= $d',
+            style: GoogleFonts.inter(fontSize: 14, color: theme.primaryText),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'A= $a',
+            style: GoogleFonts.inter(fontSize: 14, color: theme.primaryText),
           ),
         ],
       ),

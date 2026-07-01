@@ -87,6 +87,7 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
       _model.categoriaValue = doc.categoria;
       _model.categoriaValueController =
           FormFieldController<String>(_model.categoriaValue);
+      _model.alertasEspeciales = List<AlertaEspecialStruct>.from(doc.alertasEspeciales);
     }
 
     _model.textController1 ??= TextEditingController();
@@ -524,8 +525,13 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
                                               ),
                                             ),
                                           ),
-                                          if (widget.tipo == 'Tamizajes')
+                                          if (widget.tipo == 'Tamizajes') ...[
                                             _buildTamizajesAlertsPanel(context),
+                                            if (_model.categoriaValue == 'CRQ / SRQ' ||
+                                                _model.categoriaValue == 'CRQ' ||
+                                                _model.categoriaValue == 'SRQ')
+                                              _buildTamizajesAlertsEspecialesPanel(context),
+                                          ],
                                         ],
                                       ),
                                     ),

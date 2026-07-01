@@ -44,6 +44,28 @@ class EditarUsuarioModel extends FlutterFlowModel<EditarUsuarioWidget> {
   TextEditingController? textFieldaddressTextController;
   String? Function(BuildContext, String?)?
       textFieldaddressTextControllerValidator;
+      
+  // New fields for colegio, eps, grado, municipio, barrio
+  FocusNode? textFieldcolegioFocusNode;
+  TextEditingController? textFieldcolegioTextController;
+  String? Function(BuildContext, String?)? textFieldcolegioTextControllerValidator;
+
+  FocusNode? textFieldepsFocusNode;
+  TextEditingController? textFieldepsTextController;
+  String? Function(BuildContext, String?)? textFieldepsTextControllerValidator;
+
+  FocusNode? textFieldgradoFocusNode;
+  TextEditingController? textFieldgradoTextController;
+  String? Function(BuildContext, String?)? textFieldgradoTextControllerValidator;
+
+  FocusNode? textFieldmunicipioFocusNode;
+  TextEditingController? textFieldmunicipioTextController;
+  String? Function(BuildContext, String?)? textFieldmunicipioTextControllerValidator;
+
+  FocusNode? textFieldbarrioFocusNode;
+  TextEditingController? textFieldbarrioTextController;
+  String? Function(BuildContext, String?)? textFieldbarrioTextControllerValidator;
+
   // Stores action output result for [Firestore Query - Query a collection] action in Button widget.
   UsersRecord? getRefAcud;
   // Stores action output result for [Firestore Query - Query a collection] action in Button widget.
@@ -68,5 +90,20 @@ class EditarUsuarioModel extends FlutterFlowModel<EditarUsuarioWidget> {
 
     textFieldaddressFocusNode?.dispose();
     textFieldaddressTextController?.dispose();
+    
+    textFieldcolegioFocusNode?.dispose();
+    textFieldcolegioTextController?.dispose();
+
+    textFieldepsFocusNode?.dispose();
+    textFieldepsTextController?.dispose();
+
+    textFieldgradoFocusNode?.dispose();
+    textFieldgradoTextController?.dispose();
+
+    textFieldmunicipioFocusNode?.dispose();
+    textFieldmunicipioTextController?.dispose();
+
+    textFieldbarrioFocusNode?.dispose();
+    textFieldbarrioTextController?.dispose();
   }
 }
