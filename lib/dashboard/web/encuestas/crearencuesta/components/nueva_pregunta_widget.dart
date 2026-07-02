@@ -385,6 +385,7 @@ class NuevaPreguntaWidget extends StatelessWidget {
                           'Tamizaje CRQ',
                           'Tamizaje SRQ',
                           'Tamizaje CRQ / SRQ',
+                          'Tamizaje ansiedad',
                           'Descriptiva'
                         ];
                         final opciones = tiposPermitidos(model.categoria, todosLosTipos);

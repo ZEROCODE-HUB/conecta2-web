@@ -238,11 +238,12 @@ class DatosPrincipalesWidget extends StatelessWidget {
                               'Tamizaje',
                               'Tamizaje (Sustancias)',
                               'Tamizaje autoestima',
-                              'Escala ansiedad',
+                              'Tamizaje ansiedad',
                               'Tamizaje CDI',
                               'Tamizajes Depresion Beck',
                               'Tamizaje CRQ',
                               'Tamizaje SRQ',
+                              'Tamizaje CRQ / SRQ',
                               'Descriptiva'
                             ];
                             final _permitidos =

@@ -60,6 +60,7 @@ class _EditarEncuestaWidgetState extends State<EditarEncuestaWidget> {
     'Tamizaje',
     'Tamizaje (Sustancias)',
     'Tamizaje autoestima',
+    'Tamizaje ansiedad',
     'Tamizaje CDI',
     'Tamizajes Depresion Beck',
     'Tamizaje CRQ',

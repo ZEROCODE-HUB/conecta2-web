@@ -57,7 +57,7 @@ class EmotionFeedbackForm extends StatelessWidget {
                     heroAsset,
                     width: 300.0,
                     height: 200.0,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 CalendarHeader(
@@ -255,7 +255,8 @@ class EmotionFinishView extends StatelessWidget {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 15.0, 15.0, 15.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 15.0, 15.0, 15.0),
                       child: Text(
                         _finishText(context, emocion),
                         style: labelSmall.override(

@@ -64,6 +64,7 @@ class CrearencuestaModel extends FlutterFlowModel<CrearencuestaWidget> {
     'Condicionante',
     'Abierta',
     'Tamizaje autoestima',
+    'Tamizaje ansiedad',
     'Descriptiva',
     'Tamizaje CDI',
     'Tamizajes Depresion Beck',

@@ -8,7 +8,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'network_avatar.dart';
 
 /// Emotion registry tab used in the adolescent profile view.
-class RegistroEmocionesSection extends StatelessWidget {
+class RegistroEmocionesSection extends StatefulWidget {
   const RegistroEmocionesSection({
     super.key,
     required this.userRef,
@@ -19,6 +19,39 @@ class RegistroEmocionesSection extends StatelessWidget {
   final DocumentReference userRef;
   final CalendarioReadModel calendarioModel;
   final VoidCallback onStateChanged;
+
+  @override
+  State<RegistroEmocionesSection> createState() => _RegistroEmocionesSectionState();
+}
+
+class _RegistroEmocionesSectionState extends State<RegistroEmocionesSection> {
+  @override
+  void initState() {
+    super.initState();
+    // Clear global state when loading a user's emotion profile for the first time
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        FFAppState().emocion = 0;
+        FFAppState().description = '';
+        widget.onStateChanged();
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(RegistroEmocionesSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Clear global state if the user changes
+    if (oldWidget.userRef != widget.userRef) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          FFAppState().emocion = 0;
+          FFAppState().description = '';
+          widget.onStateChanged();
+        }
+      });
+    }
+  }
 
   String _emotionLabel(int value) {
     switch (value) {
@@ -101,13 +134,13 @@ class RegistroEmocionesSection extends StatelessWidget {
               final calendar = SizedBox(
                 width: 400.0,
                 child: wrapWithModel(
-                  model: calendarioModel,
-                  updateCallback: onStateChanged,
+                  model: widget.calendarioModel,
+                  updateCallback: widget.onStateChanged,
                   updateOnChange: true,
                   child: CalendarioReadWidget(
                     inputDate: getCurrentTimestamp,
                     initialSelectedDate: getCurrentTimestamp,
-                    userRef: userRef,
+                    userRef: widget.userRef,
                     onSelectDateAction: (selectedDate) async {},
                   ),
                 ),
