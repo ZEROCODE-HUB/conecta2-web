@@ -95,6 +95,8 @@ class NuevaPreguntaWidget extends StatelessWidget {
                     return;
                   }
 
+                  int? finalNumPregunta;
+
                   // 2. Type-Specific Validation
                   if (model.tipoValue == 'Tamizaje (Sustancias)') {
                     if (model.dropDownSustanciaValue == null ||
@@ -112,6 +114,30 @@ class NuevaPreguntaWidget extends StatelessWidget {
                       );
                       return;
                     }
+                  } else if (model.tipoValue == 'Tamizaje CRQ / SRQ' || model.tipoValue == 'Tamizaje CRQ' || model.tipoValue == 'Tamizaje SRQ') {
+                    int? numPregunta = int.tryParse(model.crqNumeroPreguntaTextController?.text ?? '');
+                    if (numPregunta == null || numPregunta <= 0) {
+                      int maxNum = 0;
+                      for (var p in model.preguntasBuffer) {
+                        if (p.numeroPregunta > maxNum) maxNum = p.numeroPregunta;
+                      }
+                      numPregunta = maxNum + 1;
+                    }
+
+                    if (model.preguntasBuffer.any((p) => p.numeroPregunta == numPregunta)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'El número de pregunta $numPregunta ya existe. Debe ser único.',
+                            style: TextStyle(color: FlutterFlowTheme.of(context).primaryText),
+                          ),
+                          duration: Duration(milliseconds: 4000),
+                          backgroundColor: FlutterFlowTheme.of(context).error,
+                        ),
+                      );
+                      return;
+                    }
+                    finalNumPregunta = numPregunta;
                   } else if (model.tipoValue == 'Selección' && model.seleccionunica.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -170,10 +196,7 @@ class NuevaPreguntaWidget extends StatelessWidget {
                     sustancia: model.dropDownSustanciaValue,
                     ocultarRespuesta: model.ocultarRespuestaValue,
                     variable: esCDIoBeck ? model.variableCDIValue : null,
-                    numeroPregunta: esCRQ
-                        ? int.tryParse(
-                            model.crqNumeroPreguntaTextController?.text ?? '')
-                        : null,
+                    numeroPregunta: esCRQ ? finalNumPregunta : null,
                     nPregunta: model.checkboxNPValue1 == true ? 1 : 0,
                     clearUnsetFields: false,
                   )

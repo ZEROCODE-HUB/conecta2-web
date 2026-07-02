@@ -93,6 +93,7 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
           FormFieldController<String>(_model.categoriaValue);
       _model.alertasEspeciales =
           List<AlertaEspecialStruct>.from(doc.alertasEspeciales);
+      _model.preguntas = List<PreguntasEncuestaStruct>.from(doc.preguntas);
     }
 
     _model.textController1 ??= TextEditingController();
@@ -156,6 +157,7 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
       bajo: bajo,
       moderado: moderado,
       alto: alto,
+      categoria: cat,
     );
   }
 
@@ -510,16 +512,6 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
                                                                   safeSetState(() =>
                                                                       _model.roleValue =
                                                                           val);
-                                                                  await widget
-                                                                      .encuestaID!
-                                                                      .update({
-                                                                    ...mapToFirestore(
-                                                                      {
-                                                                        'Roles':
-                                                                            _model.roleValue,
-                                                                      },
-                                                                    ),
-                                                                  });
                                                                 },
                                                               ),
                                                             ],
@@ -566,7 +558,7 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
   }
 
   Widget _buildPreguntasList(EncuestasRecord encuestasRecord) {
-    final preguntaList = encuestasRecord.preguntas.toList();
+    final preguntaList = _model.preguntas;
     if (preguntaList.isEmpty) {
       return Center(child: EmptytestWidget());
     }
@@ -580,6 +572,11 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
           pregunta: preguntaList[index],
           encuestasRecord: encuestasRecord,
           index: index,
+          onDelete: () {
+            setState(() {
+              _model.preguntas.removeAt(index);
+            });
+          },
         );
       },
     );

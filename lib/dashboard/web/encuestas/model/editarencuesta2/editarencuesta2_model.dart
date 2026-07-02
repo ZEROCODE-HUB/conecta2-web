@@ -59,6 +59,11 @@ class Editarencuesta2Model extends FlutterFlowModel<Editarencuesta2Widget> {
   void removeAtIndexFromListaCondicionante(int index) =>
       listaCondicionante.removeAt(index);
 
+  List<PreguntasEncuestaStruct> preguntas = [];
+  void addToPreguntas(PreguntasEncuestaStruct item) => preguntas.add(item);
+  void removeFromPreguntas(PreguntasEncuestaStruct item) => preguntas.remove(item);
+  void removeAtIndexFromPreguntas(int index) => preguntas.removeAt(index);
+
   String? variableCDI;
   bool? ideacionSuicidaValue;
   String? variableCDIValue;

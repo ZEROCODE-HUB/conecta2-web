@@ -838,6 +838,8 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                                                                             descripcion: _model.descTextController.text,
                                                                         ),
                                                                         ...mapToFirestore({
+                                                                            'Preguntas': _model.preguntas.map((p) => getPreguntasEncuestaFirestoreData(p, true)).toList(),
+                                                                            'Roles': _model.roleValue,
                                                                             'alertas': getAlertaListFirestoreData(FFAppState().listaAlertasEnvio),
                                                                             'alertasEspeciales': _model.alertasEspeciales.map((a) => getAlertaEspecialFirestoreData(a, true)).toList(),
                                                                         }),
@@ -948,58 +950,64 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                                                     children: [
                                                       FFButtonWidget(
                                                         onPressed: () async {
-                                                          await widget
-                                                              .encuestaID!
-                                                              .update({
-                                                            ...mapToFirestore(
-                                                              {
-                                                                'Preguntas':
-                                                                    FieldValue
-                                                                        .arrayUnion([
-                                                                  getPreguntasEncuestaFirestoreData(
-                                                                    createPreguntasEncuestaStruct(
-                                                                      pregunta: _model
-                                                                          .preguntaTextController
-                                                                          .text,
-                                                                      tipo: _model
-                                                                          .tipoValue,
-                                                                      respuestaLarga: _model
-                                                                          .abiertaTextController
-                                                                          .text,
-                                                                      respuestaSUnicaCorrecta:
-                                                                          _model
-                                                                              .sunicarespValue,
-                                                                      sustancia:
-                                                                          _model
-                                                                              .dropDownSustanciaValue,
-                                                                      ocultarRespuesta:
-                                                                          _model
-                                                                              .ocultarRespuestaValue,
-                                                                      nPregunta: _model.checkboxNPValue1 == true ? 1 : 0,
-                                                                      fieldValues: {
-                                                                        'RespuestaSelection':
-                                                                            _model.respuestaSelection,
-                                                                        'RespuestasSeleccionUnica':
-                                                                            _model.seleccionunica,
-                                                                        'RespuestaCondicionante':
-                                                                            getValorCondicionanteListFirestoreData(
-                                                                          _model
-                                                                              .listaCondicionante,
-                                                                        ),
-                                                                        'RespuestaTamizaje':
-                                                                            getAtributosListFirestoreData(
-                                                                          _model
-                                                                              .listaTamizaje,
-                                                                        ),
-                                                                      },
-                                                                      clearUnsetFields:
-                                                                          false,
-                                                                    ),
-                                                                    true,
-                                                                  )
-                                                                ]),
-                                                              },
-                                                            ),
+                                                          bool isCRQ = _model.tipoValue == 'Tamizaje CRQ / SRQ' || _model.tipoValue == 'Tamizaje CRQ' || _model.tipoValue == 'Tamizaje SRQ';
+                                                          int? finalNumPregunta;
+                                                          if (isCRQ) {
+                                                            int? numPregunta = int.tryParse(_model.crqNumeroPreguntaTextController?.text ?? '');
+                                                            if (numPregunta == null || numPregunta <= 0) {
+                                                              int maxNum = 0;
+                                                              for (var p in _model.preguntas) {
+                                                                if (p.numeroPregunta > maxNum) maxNum = p.numeroPregunta;
+                                                              }
+                                                              numPregunta = maxNum + 1;
+                                                            }
+                                                            if (_model.preguntas.any((p) => p.numeroPregunta == numPregunta)) {
+                                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                                SnackBar(content: Text('El número de pregunta $numPregunta ya existe. Debe ser único.')),
+                                                              );
+                                                              return;
+                                                            }
+                                                            finalNumPregunta = numPregunta;
+                                                          }
+
+                                                          List<AtributosStruct> finalRespuestaTamizaje = List.from(_model.listaTamizaje);
+                                                          if (isCRQ) {
+                                                            finalRespuestaTamizaje = [
+                                                              createAtributosStruct(
+                                                                etiqueta: 'Sí',
+                                                                valor: int.tryParse(_model.crqSiScoreTextController?.text ?? '') ?? 0,
+                                                                clearUnsetFields: false,
+                                                              ),
+                                                              createAtributosStruct(
+                                                                etiqueta: 'No',
+                                                                valor: int.tryParse(_model.crqNoScoreTextController?.text ?? '') ?? 0,
+                                                                clearUnsetFields: false,
+                                                              ),
+                                                            ];
+                                                          }
+
+                                                          final nuevaPregunta = createPreguntasEncuestaStruct(
+                                                            pregunta: _model.preguntaTextController?.text,
+                                                            tipo: _model.tipoValue,
+                                                            respuestaLarga: _model.abiertaTextController?.text,
+                                                            respuestaSUnicaCorrecta: _model.sunicarespValue,
+                                                            sustancia: _model.dropDownSustanciaValue,
+                                                            ocultarRespuesta: _model.ocultarRespuestaValue,
+                                                            nPregunta: _model.checkboxNPValue1 == true ? 1 : 0,
+                                                            numeroPregunta: isCRQ ? (finalNumPregunta ?? 0) : 0,
+                                                            variable: isCRQ ? 'CRQ' : '',
+                                                            fieldValues: {
+                                                              'RespuestaSelection': _model.respuestaSelection,
+                                                              'RespuestasSeleccionUnica': _model.seleccionunica,
+                                                              'RespuestaCondicionante': getValorCondicionanteListFirestoreData(_model.listaCondicionante),
+                                                              'RespuestaTamizaje': getAtributosListFirestoreData(finalRespuestaTamizaje),
+                                                            },
+                                                            clearUnsetFields: false,
+                                                          );
+                                                          nuevaPregunta.respuestaTamizaje = finalRespuestaTamizaje;
+
+                                                          safeSetState(() {
+                                                            _model.addToPreguntas(nuevaPregunta);
                                                           });
                                                           _model.respuestaSelection =
                                                               [];
