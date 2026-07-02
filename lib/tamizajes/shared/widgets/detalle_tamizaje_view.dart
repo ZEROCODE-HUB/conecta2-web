@@ -313,7 +313,12 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
                       ),
 
                       // ── Nivel de alerta ────────────────────────────────
-                      if (_nivelCalculado().isNotEmpty) ...[
+                      if (_nivelCalculado().isNotEmpty &&
+                          !(_nivelCalculado().toLowerCase().trim() == 'sin alerta' &&
+                              (respuesta.alertasEspeciales
+                                      .where((a) => a.trim().isNotEmpty)
+                                      .isNotEmpty ||
+                                  _tieneIdeacion))) ...[
                         const SizedBox(height: 16.0),
                         _NivelCard(
                           nivel: _nivelCalculado(),

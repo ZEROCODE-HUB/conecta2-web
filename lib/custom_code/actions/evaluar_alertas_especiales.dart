@@ -101,6 +101,12 @@ bool _respondioSi(RespuestaTestStruct r) {
     if (txt == 'sí' || txt == 'si') return true;
   }
 
+  // Single selection containing 'Sí'
+  if (r.hasRespuestaSeleccionUnica() && r.respuestaSeleccionUnica.isNotEmpty) {
+    final txt = r.respuestaSeleccionUnica.toLowerCase().trim();
+    if (txt == 'sí' || txt == 'si') return true;
+  }
+
   // Multiple selection containing 'Sí'
   if (r.respuestasSeleccionadas.isNotEmpty) {
     if (r.respuestasSeleccionadas
@@ -124,6 +130,11 @@ bool _respondioNo(RespuestaTestStruct r) {
 
   if (r.hasRespuesta() && r.respuesta.isNotEmpty) {
     final txt = r.respuesta.toLowerCase().trim();
+    if (txt == 'no') return true;
+  }
+
+  if (r.hasRespuestaSeleccionUnica() && r.respuestaSeleccionUnica.isNotEmpty) {
+    final txt = r.respuestaSeleccionUnica.toLowerCase().trim();
     if (txt == 'no') return true;
   }
 

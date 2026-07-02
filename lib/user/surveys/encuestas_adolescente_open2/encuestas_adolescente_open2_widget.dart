@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/custom_code/actions/evaluar_alertas_especiales.dart';
 import '/components/lista_respuestas_cond_widget.dart';
 import '/components/lista_respuestas_widget.dart';
 import '/components/r_seleccion_unica_radious_tamizaje_widget.dart';
@@ -1396,6 +1397,10 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                               .first.valor
                                                           : 0),
                                                 ),
+                                            alertasEspeciales: evaluarAlertasEspeciales(
+                                              columnEncuestasRecord.alertasEspeciales,
+                                              FFAppState().RespuestaEnc,
+                                            ),
                                           ),
                                           ...mapToFirestore(
                                             {
