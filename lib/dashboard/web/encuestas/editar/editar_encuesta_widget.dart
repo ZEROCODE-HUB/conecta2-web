@@ -77,7 +77,19 @@ class _EditarEncuestaWidgetState extends State<EditarEncuestaWidget> {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (widget.doc != null) {
-        setState(() => _model.loadFromRecord(widget.doc!));
+        setState(() {
+          _model.loadFromRecord(widget.doc!, _tiposPregunta);
+          // Force-sync the controller that may have been created with null
+          // during the first build (before this callback fired).
+          final v = _model.tipoValue;
+          if (v != null) {
+            if (_model.tipoValueController == null) {
+              _model.tipoValueController = FormFieldController<String>(v);
+            } else {
+              _model.tipoValueController!.value = v;
+            }
+          }
+        });
       }
     });
   }
@@ -271,8 +283,7 @@ class _EditarEncuestaWidgetState extends State<EditarEncuestaWidget> {
                   ],
                   onChanged: (val) {
                     _model.categoriaValue = val;
-                    final permitidos =
-                        tiposPermitidos(val, _tiposPregunta);
+                    final permitidos = tiposPermitidos(val, _tiposPregunta);
                     if (_model.tipoValue != null &&
                         !permitidos.contains(_model.tipoValue)) {
                       _model.tipoValue = null;
@@ -349,7 +360,8 @@ class _EditarEncuestaWidgetState extends State<EditarEncuestaWidget> {
                   child: TextFormField(
                     controller: _model.preguntaController,
                     focusNode: _model.preguntaFocus,
-                    decoration: _filledDecoration(hint: 'Ingresa la pregunta...'),
+                    decoration:
+                        _filledDecoration(hint: 'Ingresa la pregunta...'),
                   ),
                 ),
               ),
@@ -366,27 +378,28 @@ class _EditarEncuestaWidgetState extends State<EditarEncuestaWidget> {
                       _model.tipoValueController?.value = null;
                     }
                     return FlutterFlowDropDown<String>(
-                    controller: _model.tipoValueController ??=
-                        FormFieldController<String>(null),
-                    options: opciones,
-                    onChanged: (val) {
-                      _model.tipoValue = val;
-                      _update();
-                    },
-                    width: double.infinity,
-                    height: 56.0,
-                    textStyle: tema.bodyMedium,
-                    hintText: 'Seleccione un tipo...',
-                    fillColor: Colors.white,
-                    elevation: 2.0,
-                    borderColor: tema.alternate,
-                    borderWidth: 2.0,
-                    borderRadius: 8.0,
-                    margin: const EdgeInsetsDirectional.fromSTEB(
-                        16.0, 4.0, 16.0, 4.0),
-                    hidesUnderline: true,
-                    isSearchable: false,
-                    isMultiSelect: false,
+                      controller: _model.tipoValueController ??=
+                          FormFieldController<String>(_model.tipoValue),
+                      options: opciones,
+                      onChanged: (val) {
+                        if (val == null) return;
+                        _model.tipoValue = val;
+                        _update();
+                      },
+                      width: double.infinity,
+                      height: 56.0,
+                      textStyle: tema.bodyMedium,
+                      hintText: 'Seleccione un tipo...',
+                      fillColor: Colors.white,
+                      elevation: 2.0,
+                      borderColor: tema.alternate,
+                      borderWidth: 2.0,
+                      borderRadius: 8.0,
+                      margin: const EdgeInsetsDirectional.fromSTEB(
+                          16.0, 4.0, 16.0, 4.0),
+                      hidesUnderline: true,
+                      isSearchable: false,
+                      isMultiSelect: false,
                     );
                   }),
                 ),
@@ -511,15 +524,16 @@ class _EditarEncuestaWidgetState extends State<EditarEncuestaWidget> {
 
     await encuesta.reference.update(_model.buildNuevaPreguntaFirestoreEntry());
 
-    setState(() => _model.resetNuevaPreguntaForm());
+    setState(() {
+      _model.resetNuevaPreguntaForm();
+    });
   }
 
   void _showError(BuildContext context, String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje,
-            style: TextStyle(
-                color: FlutterFlowTheme.of(context).primaryText)),
+            style: TextStyle(color: FlutterFlowTheme.of(context).primaryText)),
         duration: const Duration(milliseconds: 3500),
         backgroundColor: FlutterFlowTheme.of(context).error,
       ),

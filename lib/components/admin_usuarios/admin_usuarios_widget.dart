@@ -113,8 +113,12 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
 
   /// Applies the role dropdown + the search text to the full
   /// Firestore-streamed user list.
-  List<UsersRecord> _filter(List<UsersRecord> all) {
+  List<UsersRecord> _filter(List<UsersRecord> all, String currentUserRol) {
     Iterable<UsersRecord> result = all;
+
+    if (currentUserRol == 'Profesional') {
+      result = result.where((u) => u.profesionales.ref == currentUserReference && u.rol == 'Adolescente');
+    }
 
     final role = _model.dropDownValue;
     if (role != null && role.isNotEmpty) {
@@ -247,7 +251,7 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
 
         final allUsers = snapshot.data!;
         final currentUserRol = valueOrDefault(currentUserDocument?.rol, '');
-        final filtered = _filter(allUsers);
+        final filtered = _filter(allUsers, currentUserRol);
 
         return Container(
           width: MediaQuery.sizeOf(context).width,
@@ -273,6 +277,7 @@ class _AdminUsuariossWidgetState extends State<AdminUsuariossWidget> {
                     },
                   ),
                   UsuariosFilters(
+                    currentUserRol: currentUserRol,
                     textController: _model.textController,
                     textFieldFocusNode: _model.textFieldFocusNode,
                     textControllerValidator: _model.textControllerValidator,

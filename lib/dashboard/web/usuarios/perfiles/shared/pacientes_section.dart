@@ -141,8 +141,9 @@ class PacientesSection extends StatelessWidget {
   }
 
   Widget _buildSearchResults(BuildContext context) {
-    final filtered =
-        results.where((e) => e.profesionales.ref == profesionalRef).toList();
+    final filtered = results
+        .where((e) => e.profesionales.ref == profesionalRef && e.rol == 'Adolescente')
+        .toList();
     if (filtered.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(20.0),
@@ -175,7 +176,10 @@ class PacientesSection extends StatelessWidget {
             ),
           );
         }
-        final list = snapshot.data!;
+        final list = snapshot.data!
+            .where((e) =>
+                e.profesionales.ref == profesionalRef && e.rol == 'Adolescente')
+            .toList();
         if (list.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(20.0),

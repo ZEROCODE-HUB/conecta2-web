@@ -176,6 +176,7 @@ class UsuariosTitleBar extends StatelessWidget {
 class UsuariosFilters extends StatelessWidget {
   const UsuariosFilters({
     super.key,
+    required this.currentUserRol,
     required this.textController,
     required this.textFieldFocusNode,
     required this.textControllerValidator,
@@ -187,6 +188,7 @@ class UsuariosFilters extends StatelessWidget {
     required this.onDropDownChanged,
   });
 
+  final String currentUserRol;
   final TextEditingController? textController;
   final FocusNode? textFieldFocusNode;
   final String? Function(BuildContext, String?)? textControllerValidator;
@@ -316,64 +318,65 @@ class UsuariosFilters extends StatelessWidget {
               ),
             ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Padding(
-                padding:
-                    const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 20.0, 0.0),
-                child: Text(
-                  'Filtrar por',
-                  style: theme.bodyMedium.override(
+          if (currentUserRol != 'Profesional')
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 20.0, 0.0),
+                  child: Text(
+                    'Filtrar por',
+                    style: theme.bodyMedium.override(
+                      font: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                      fontSize: 18.0,
+                      letterSpacing: 0.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                FlutterFlowDropDown<String>(
+                  controller: dropDownValueController,
+                  options: List<String>.from(const [
+                    '',
+                    'Adolescente',
+                    'Acudiente',
+                    'Profesional',
+                  ]),
+                  optionLabels: const [
+                    'All',
+                    'Adolescente',
+                    'Acudiente',
+                    'Profesional',
+                  ],
+                  onChanged: onDropDownChanged,
+                  width: 255.0,
+                  height: 47.0,
+                  textStyle: theme.bodyMedium.override(
                     font: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                    fontSize: 18.0,
                     letterSpacing: 0.0,
                     fontWeight: FontWeight.w500,
                   ),
+                  hintText: 'Please select...',
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: Color(0xFF265294),
+                    size: 24.0,
+                  ),
+                  fillColor: theme.secondaryBackground,
+                  elevation: 2.0,
+                  borderColor: theme.alternate,
+                  borderWidth: 2.0,
+                  borderRadius: 8.0,
+                  margin:
+                      const EdgeInsetsDirectional.fromSTEB(16.0, 4.0, 16.0, 4.0),
+                  hidesUnderline: true,
+                  isOverButton: false,
+                  isSearchable: false,
+                  isMultiSelect: false,
                 ),
-              ),
-              FlutterFlowDropDown<String>(
-                controller: dropDownValueController,
-                options: List<String>.from(const [
-                  '',
-                  'Adolescente',
-                  'Acudiente',
-                  'Profesional',
-                ]),
-                optionLabels: const [
-                  'All',
-                  'Adolescente',
-                  'Acudiente',
-                  'Profesional',
-                ],
-                onChanged: onDropDownChanged,
-                width: 255.0,
-                height: 47.0,
-                textStyle: theme.bodyMedium.override(
-                  font: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.w500,
-                ),
-                hintText: 'Please select...',
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFF265294),
-                  size: 24.0,
-                ),
-                fillColor: theme.secondaryBackground,
-                elevation: 2.0,
-                borderColor: theme.alternate,
-                borderWidth: 2.0,
-                borderRadius: 8.0,
-                margin:
-                    const EdgeInsetsDirectional.fromSTEB(16.0, 4.0, 16.0, 4.0),
-                hidesUnderline: true,
-                isOverButton: false,
-                isSearchable: false,
-                isMultiSelect: false,
-              ),
-            ],
-          ),
+              ],
+            ),
         ],
       ),
     );

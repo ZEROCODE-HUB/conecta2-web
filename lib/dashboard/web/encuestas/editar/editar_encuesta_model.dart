@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
 import '/flutter_flow/form_field_controller.dart';
+import '../encuesta_form_helpers.dart';
 
 class EditarEncuestaModel {
   // ── Encabezado encuesta ──────────────────────────────────────────────────
@@ -131,12 +132,21 @@ class EditarEncuestaModel {
 
   /// Initialize controllers from an existing record (used by the widget in
   /// initState the first time the stream returns a doc).
-  void loadFromRecord(EncuestasRecord doc) {
+  void loadFromRecord(EncuestasRecord doc, List<String> todosTipos) {
     tituloController.text = doc.titulo;
     descripcionController.text = doc.descripcion;
     rolesValue = List<String>.from(doc.roles);
     categoriaValue = doc.categoria;
     categoriaValueController?.value = doc.categoria;
+
+    // Pre-select the first allowed type so _buildTipoEspecificoForm renders
+    // immediately without the user needing to reselect from the dropdown.
+    if (categoriaValue != null && categoriaValue!.isNotEmpty) {
+      final permitidos = kTiposPorCategoria[categoriaValue!];
+      if (permitidos != null && permitidos.isNotEmpty) {
+        tipoValue = permitidos.first;
+      }
+    }
   }
 
   /// Reset the transient form state after a question is successfully saved.
