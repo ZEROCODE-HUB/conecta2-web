@@ -12,9 +12,15 @@ const Map<String, List<String>> kTiposPorCategoria = {
   'Escala autoestima': ['Tamizaje autoestima', 'Descriptiva'],
   'CDI': ['Tamizaje CDI', 'Descriptiva'],
   'Depresión Beck': ['Tamizajes Depresion Beck', 'Descriptiva'],
-  'CRQ / SRQ': ['Tamizaje CRQ / SRQ', 'Tamizaje CRQ', 'Tamizaje SRQ', 'Descriptiva'],
+  'CRQ / SRQ': [
+    'Tamizaje CRQ / SRQ',
+    'Tamizaje CRQ',
+    'Tamizaje SRQ',
+    'Descriptiva'
+  ],
   'CRQ': ['Tamizaje CRQ', 'Descriptiva'],
   'SRQ': ['Tamizaje SRQ', 'Descriptiva'],
+  'Escala ansiedad': ['Tamizaje ansiedad', 'Descriptiva'],
 };
 
 /// Variables para preguntas tipo *Tamizajes Depresion Beck*: los 21 ítems del
@@ -68,8 +74,10 @@ class EncuestaFormHelpers {
             padding: const EdgeInsets.only(bottom: 10.0),
             child: Row(
               children: [
-                Text('Sustancia: ', style: FlutterFlowTheme.of(context).bodyMedium),
-                _buildSustanciaDropdown(context, model, onUpdate, isCondicionante: false),
+                Text('Sustancia: ',
+                    style: FlutterFlowTheme.of(context).bodyMedium),
+                _buildSustanciaDropdown(context, model, onUpdate,
+                    isCondicionante: false),
               ],
             ),
           ),
@@ -90,6 +98,7 @@ class EncuestaFormHelpers {
             case 'Tamizaje':
             case 'Tamizaje (Sustancias)':
             case 'Tamizaje autoestima':
+            case 'Tamizaje ansiedad':
               return _buildAutoestimaForm(model, onUpdate);
             case 'Tamizaje CDI':
             case 'Tamizajes Depresion Beck':
@@ -140,7 +149,8 @@ class EncuestaFormHelpers {
           },
           activeColor: FlutterFlowTheme.of(context).secondary,
         ),
-        Text('Ocultar respuesta', style: FlutterFlowTheme.of(context).bodyMedium),
+        Text('Ocultar respuesta',
+            style: FlutterFlowTheme.of(context).bodyMedium),
       ],
     );
   }
@@ -177,7 +187,8 @@ class EncuestaFormHelpers {
               icon: Icon(Icons.add_circle, color: Color(0xFF265294)),
               onPressed: () {
                 if (model.selection1TextController1.text.isNotEmpty) {
-                  model.addToRespuestaSelection(model.selection1TextController1.text);
+                  model.addToRespuestaSelection(
+                      model.selection1TextController1.text);
                   model.selection1TextController1?.clear();
                   onUpdate();
                 }
@@ -218,7 +229,8 @@ class EncuestaFormHelpers {
                 ),
               ),
             ),
-            _buildSustanciaDropdown(context, model, onUpdate, isCondicionante: true),
+            _buildSustanciaDropdown(context, model, onUpdate,
+                isCondicionante: true),
             IconButton(
               icon: Icon(Icons.add_circle, color: Color(0xFF265294)),
               onPressed: () {
@@ -234,20 +246,22 @@ class EncuestaFormHelpers {
             ),
           ],
         ),
-        if ((model.respuestaCondicionante as List<ValorCondicionanteStruct>).isNotEmpty)
+        if ((model.respuestaCondicionante as List<ValorCondicionanteStruct>)
+            .isNotEmpty)
           Column(
-            children: (model.respuestaCondicionante as List<ValorCondicionanteStruct>)
-                .map((rc) => ListTile(
-                      title: Text('${rc.etiqueta} -> ${rc.sustanciaValor}'),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          model.removeFromRespuestaCondicionante(rc);
-                          onUpdate();
-                        },
-                      ),
-                    ))
-                .toList(),
+            children:
+                (model.respuestaCondicionante as List<ValorCondicionanteStruct>)
+                    .map((rc) => ListTile(
+                          title: Text('${rc.etiqueta} -> ${rc.sustanciaValor}'),
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              model.removeFromRespuestaCondicionante(rc);
+                              onUpdate();
+                            },
+                          ),
+                        ))
+                    .toList(),
           ),
       ],
     );
@@ -259,11 +273,21 @@ class EncuestaFormHelpers {
     return FlutterFlowDropDown<String>(
       textStyle: FlutterFlowTheme.of(context).bodyMedium,
       controller: isCondicionante
-          ? (model.dropDownSustanciaCondicionanValueController ??= FormFieldController<String>(null))
-          : (model.dropDownSustanciaValueController ??= FormFieldController<String>(null)),
+          ? (model.dropDownSustanciaCondicionanValueController ??=
+              FormFieldController<String>(null))
+          : (model.dropDownSustanciaValueController ??=
+              FormFieldController<String>(null)),
       options: [
-        'Tabaco', 'Bebidas alcohólicas', 'Cannabis', 'Anfetaminas', 'Inhalantes',
-        'Tranquilizantes', 'Alucinógenos', 'Opiáceos', 'Otros', 'Cocaina'
+        'Tabaco',
+        'Bebidas alcohólicas',
+        'Cannabis',
+        'Anfetaminas',
+        'Inhalantes',
+        'Tranquilizantes',
+        'Alucinógenos',
+        'Opiáceos',
+        'Otros',
+        'Cocaina'
       ],
       onChanged: (val) {
         if (isCondicionante) {
@@ -307,7 +331,8 @@ class EncuestaFormHelpers {
               icon: Icon(Icons.add_circle, color: Color(0xFF265294)),
               onPressed: () {
                 if (model.selectionunica1TextController.text.isNotEmpty) {
-                  model.addToSeleccionunica(model.selectionunica1TextController.text);
+                  model.addToSeleccionunica(
+                      model.selectionunica1TextController.text);
                   model.selectionunica1TextController?.clear();
                   onUpdate();
                 }
@@ -318,7 +343,8 @@ class EncuestaFormHelpers {
         FlutterFlowRadioButton(
           options: (model.seleccionunica as List<String>).toList(),
           onChanged: (val) => onUpdate(),
-          controller: model.sunicarespValueController ??= FormFieldController<String>(null),
+          controller: model.sunicarespValueController ??=
+              FormFieldController<String>(null),
           optionHeight: 32.0,
           textStyle: FlutterFlowTheme.of(context).bodyMedium,
           radioButtonColor: Color(0xFF265294),
@@ -363,18 +389,24 @@ class EncuestaFormHelpers {
           children: [
             Expanded(
               child: TextFormField(
-                controller: model.autoestimaEtiquetaTextController ??= TextEditingController(),
+                controller: model.autoestimaEtiquetaTextController ??=
+                    TextEditingController(),
                 focusNode: model.autoestimaEtiquetaFocusNode ??= FocusNode(),
-                decoration: InputDecoration(hintText: 'Etiqueta (ej. Muy en desacuerdo)', filled: true, fillColor: Colors.white),
+                decoration: InputDecoration(
+                    hintText: 'Etiqueta (ej. Muy en desacuerdo)',
+                    filled: true,
+                    fillColor: Colors.white),
               ),
             ),
             SizedBox(width: 10),
             SizedBox(
               width: 100,
               child: TextFormField(
-                controller: model.autoestimaValorTextController ??= TextEditingController(),
+                controller: model.autoestimaValorTextController ??=
+                    TextEditingController(),
                 focusNode: model.autoestimaValorFocusNode ??= FocusNode(),
-                decoration: InputDecoration(hintText: 'Puntaje', filled: true, fillColor: Colors.white),
+                decoration: InputDecoration(
+                    hintText: 'Puntaje', filled: true, fillColor: Colors.white),
                 keyboardType: TextInputType.number,
               ),
             ),
@@ -384,7 +416,9 @@ class EncuestaFormHelpers {
                 if (model.autoestimaEtiquetaTextController.text.isNotEmpty) {
                   model.addToRespuestaTamizaje(AtributosStruct(
                     etiqueta: model.autoestimaEtiquetaTextController.text,
-                    valor: int.tryParse(model.autoestimaValorTextController.text) ?? 0,
+                    valor: int.tryParse(
+                            model.autoestimaValorTextController.text) ??
+                        0,
                   ));
                   model.autoestimaEtiquetaTextController?.clear();
                   model.autoestimaValorTextController?.clear();
@@ -396,16 +430,21 @@ class EncuestaFormHelpers {
         ),
         if ((model.respuestaTamizaje as List<AtributosStruct>).isNotEmpty)
           Column(
-            children: (model.respuestaTamizaje as List<AtributosStruct>).asMap().entries.map((e) => ListTile(
-              title: Text('${e.key + 1}. ${e.value.etiqueta} (${e.value.valor})'),
-              trailing: IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  model.removeAtIndexFromRespuestaTamizaje(e.key);
-                  onUpdate();
-                },
-              ),
-            )).toList(),
+            children: (model.respuestaTamizaje as List<AtributosStruct>)
+                .asMap()
+                .entries
+                .map((e) => ListTile(
+                      title: Text(
+                          '${e.key + 1}. ${e.value.etiqueta} (${e.value.valor})'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          model.removeAtIndexFromRespuestaTamizaje(e.key);
+                          onUpdate();
+                        },
+                      ),
+                    ))
+                .toList(),
           ),
       ],
     );
@@ -418,30 +457,29 @@ class EncuestaFormHelpers {
           children: [
             Text('Variable:'),
             SizedBox(width: 10),
-            Builder(
-              builder: (context) {
-                 return FlutterFlowDropDown<String>(
-                  textStyle: FlutterFlowTheme.of(context).bodyMedium,
-                  controller: model.variableCDIValueController ??= FormFieldController<String>(null),
-                  options: model.tipoValue == 'Tamizaje CDI'
-                      ? const ['Disforia', 'Autoestima Negativa']
-                      : kVariablesBeckBDI,
-                  onChanged: (val) {
-                    model.variableCDIValue = val;
-                    onUpdate();
-                  },
-                  width: 320,
-                  height: 40,
-                  fillColor: Colors.white,
-                  elevation: 2.0,
-                  borderColor: Colors.transparent,
-                  borderWidth: 0.0,
-                  borderRadius: 8,
-                  margin: EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
-                  hidesUnderline: true,
-                );
-              }
-            ),
+            Builder(builder: (context) {
+              return FlutterFlowDropDown<String>(
+                textStyle: FlutterFlowTheme.of(context).bodyMedium,
+                controller: model.variableCDIValueController ??=
+                    FormFieldController<String>(null),
+                options: model.tipoValue == 'Tamizaje CDI'
+                    ? const ['Disforia', 'Autoestima Negativa']
+                    : kVariablesBeckBDI,
+                onChanged: (val) {
+                  model.variableCDIValue = val;
+                  onUpdate();
+                },
+                width: 320,
+                height: 40,
+                fillColor: Colors.white,
+                elevation: 2.0,
+                borderColor: Colors.transparent,
+                borderWidth: 0.0,
+                borderRadius: 8,
+                margin: EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
+                hidesUnderline: true,
+              );
+            }),
           ],
         ),
         SizedBox(height: 10),
@@ -451,16 +489,21 @@ class EncuestaFormHelpers {
               child: TextFormField(
                 controller: model.cdiTextController ??= TextEditingController(),
                 focusNode: model.cdiFocusNode ??= FocusNode(),
-                decoration: InputDecoration(hintText: 'Opciones de respuesta', filled: true, fillColor: Colors.white),
+                decoration: InputDecoration(
+                    hintText: 'Opciones de respuesta',
+                    filled: true,
+                    fillColor: Colors.white),
               ),
             ),
             SizedBox(width: 10),
             SizedBox(
               width: 80,
               child: TextFormField(
-                controller: model.cdiValorTextController ??= TextEditingController(),
+                controller: model.cdiValorTextController ??=
+                    TextEditingController(),
                 focusNode: model.cdiValorFocusNode ??= FocusNode(),
-                decoration: InputDecoration(hintText: 'Puntaje', filled: true, fillColor: Colors.white),
+                decoration: InputDecoration(
+                    hintText: 'Puntaje', filled: true, fillColor: Colors.white),
                 keyboardType: TextInputType.number,
               ),
             ),
@@ -471,7 +514,9 @@ class EncuestaFormHelpers {
                 onUpdate();
               },
             ),
-            Text('IS', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            Text('IS',
+                style:
+                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
             IconButton(
               icon: Icon(Icons.add_circle, color: Color(0xFF265294)),
               onPressed: () {
@@ -492,16 +537,21 @@ class EncuestaFormHelpers {
         ),
         if ((model.respuestaCDI as List<AtributosStruct>).isNotEmpty)
           Column(
-            children: (model.respuestaCDI as List<AtributosStruct>).asMap().entries.map((e) => ListTile(
-              title: Text('${e.key + 1}. ${e.value.etiqueta} (${e.value.valor})${e.value.ideacionSuicida ? " [IS]" : ""}'),
-              trailing: IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  model.removeAtIndexFromRespuestaCDI(e.key);
-                  onUpdate();
-                },
-              ),
-            )).toList(),
+            children: (model.respuestaCDI as List<AtributosStruct>)
+                .asMap()
+                .entries
+                .map((e) => ListTile(
+                      title: Text(
+                          '${e.key + 1}. ${e.value.etiqueta} (${e.value.valor})${e.value.ideacionSuicida ? " [IS]" : ""}'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          model.removeAtIndexFromRespuestaCDI(e.key);
+                          onUpdate();
+                        },
+                      ),
+                    ))
+                .toList(),
           ),
       ],
     );
@@ -511,8 +561,12 @@ class EncuestaFormHelpers {
     return Column(
       children: [
         TextFormField(
-          controller: model.crqNumeroPreguntaTextController ??= TextEditingController(),
-          decoration: InputDecoration(hintText: 'Número de pregunta original (ej. 17)', filled: true, fillColor: Colors.white),
+          controller: model.crqNumeroPreguntaTextController ??=
+              TextEditingController(),
+          decoration: InputDecoration(
+              hintText: 'Número de pregunta original (ej. 17)',
+              filled: true,
+              fillColor: Colors.white),
           keyboardType: TextInputType.number,
         ),
         SizedBox(height: 10),
@@ -520,16 +574,24 @@ class EncuestaFormHelpers {
           children: [
             Expanded(
               child: TextFormField(
-                controller: model.crqSiScoreTextController ??= TextEditingController(),
-                decoration: InputDecoration(hintText: 'Puntaje SI', filled: true, fillColor: Colors.white),
+                controller: model.crqSiScoreTextController ??=
+                    TextEditingController(),
+                decoration: InputDecoration(
+                    hintText: 'Puntaje SI',
+                    filled: true,
+                    fillColor: Colors.white),
                 keyboardType: TextInputType.number,
               ),
             ),
             SizedBox(width: 10),
             Expanded(
               child: TextFormField(
-                controller: model.crqNoScoreTextController ??= TextEditingController(),
-                decoration: InputDecoration(hintText: 'Puntaje NO', filled: true, fillColor: Colors.white),
+                controller: model.crqNoScoreTextController ??=
+                    TextEditingController(),
+                decoration: InputDecoration(
+                    hintText: 'Puntaje NO',
+                    filled: true,
+                    fillColor: Colors.white),
                 keyboardType: TextInputType.number,
               ),
             ),

@@ -290,6 +290,14 @@ class CrearencuestaModel extends FlutterFlowModel<CrearencuestaWidget> {
           AlertaStruct(nivel: 'Autoestima Elevada', min: 30, max: 999),
         ];
         break;
+      case 'Escala ansiedad':
+        nivelesAlerta = [
+          AlertaStruct(nivel: 'Sin sintomatología', min: 0, max: 7),
+          AlertaStruct(nivel: 'Leve', min: 8, max: 15),
+          AlertaStruct(nivel: 'Moderado', min: 16, max: 25),
+          AlertaStruct(nivel: 'Severo', min: 26, max: 999),
+        ];
+        break;
       case 'CDI':
         nivelesAlerta = [
           AlertaStruct(nivel: 'Sin sintomatología', min: 0, max: 6),

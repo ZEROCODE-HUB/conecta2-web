@@ -581,6 +581,8 @@ class _EncuestasAdolescenteOpenWidgetState
                                             if ((preguntasindeexItem.tipo ==
                                                     'Tamizaje autoestima') ||
                                                 (preguntasindeexItem.tipo ==
+                                                    'Tamizaje ansiedad') ||
+                                                (preguntasindeexItem.tipo ==
                                                     'Tamizaje CDI') ||
                                                 (preguntasindeexItem.tipo ==
                                                     'Tamizajes Depresion Beck') ||
@@ -1089,6 +1091,8 @@ class _EncuestasAdolescenteOpenWidgetState
                                                       .isNotEmpty;
                                             } else if (tipo ==
                                                     'Tamizaje autoestima' ||
+                                                tipo ==
+                                                    'Tamizaje ansiedad' ||
                                                 tipo == 'Tamizaje CDI' ||
                                                 tipo ==
                                                     'Tamizajes Depresion Beck' ||

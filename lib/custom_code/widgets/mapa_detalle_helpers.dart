@@ -7,6 +7,8 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
       isDialogOpen = true;
     });
 
+    Color darkYellow = Color(0xFFF6BD33);
+
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -70,7 +72,7 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: primaryColor,
+                                  color: darkYellow,
                                   letterSpacing: 1.2,
                                 ),
                               ),
@@ -102,7 +104,7 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                                 children: [
                                   CircularProgressIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                        primaryColor),
+                                        darkYellow),
                                   ),
                                   SizedBox(height: 16),
                                   Text(
@@ -170,10 +172,10 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                                     width: double.infinity,
                                     padding: EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: primaryColor.withOpacity(0.1),
+                                      color: darkYellow.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                        color: primaryColor.withOpacity(0.3),
+                                        color: darkYellow.withOpacity(0.3),
                                       ),
                                     ),
                                     child: Column(
@@ -183,7 +185,7 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                                           style: TextStyle(
                                             fontSize: 32,
                                             fontWeight: FontWeight.bold,
-                                            color: primaryColor,
+                                            color: darkYellow,
                                           ),
                                         ),
                                         Text(
@@ -272,7 +274,7 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                                                 Icon(
                                                   Icons.assignment_turned_in,
                                                   size: 18,
-                                                  color: primaryColor,
+                                                  color: darkYellow,
                                                 ),
                                                 SizedBox(width: 8),
                                                 Expanded(
@@ -299,7 +301,7 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.bold,
-                                                    color: primaryColor,
+                                                    color: darkYellow,
                                                   ),
                                                 ),
                                                 Container(
@@ -308,21 +310,21 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                                                     vertical: 4,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color: primaryColor
+                                                    color: darkYellow
                                                         .withOpacity(0.1),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             4),
                                                   ),
-                                                  child: Text(
-                                                    '$porcentaje%',
-                                                    style: TextStyle(
-                                                      fontSize: 13,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: primaryColor,
-                                                    ),
-                                                  ),
+                                                  // child: Text(
+                                                  //   '$porcentaje%',
+                                                  //   style: TextStyle(
+                                                  //     fontSize: 13,
+                                                  //     fontWeight:
+                                                  //         FontWeight.w600,
+                                                  //     color: darkYellow,
+                                                  //   ),
+                                                  // ),
                                                 ),
                                               ],
                                             ),

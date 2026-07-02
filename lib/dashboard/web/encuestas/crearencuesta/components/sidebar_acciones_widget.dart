@@ -98,8 +98,7 @@ class SidebarAccionesWidget extends StatelessWidget {
     AlertaStruct? moderado;
     AlertaStruct? alto;
     if (cat == 'Consumo de SPA') {
-      alertasFS =
-          getAlertaListFirestoreData(FFAppState().listaAlertasEnvio);
+      alertasFS = getAlertaListFirestoreData(FFAppState().listaAlertasEnvio);
     } else if ((cat == 'Escala autoestima' || cat == 'CDI') &&
         _model.nivelesAlerta.length >= 3) {
       // Guardamos en bajo/moderado/alto (acceso directo) y también
@@ -116,8 +115,7 @@ class SidebarAccionesWidget extends StatelessWidget {
           .map((a) => getAlertaFirestoreData(a, true))
           .toList();
     } else {
-      alertasFS =
-          getAlertaListFirestoreData(FFAppState().listaAlertasEnvio);
+      alertasFS = getAlertaListFirestoreData(FFAppState().listaAlertasEnvio);
     }
 
     final payload = <String, dynamic>{
@@ -208,18 +206,18 @@ class SidebarAccionesWidget extends StatelessWidget {
                                           .override(
                                             font: GoogleFonts.inter(
                                               fontWeight: FontWeight.w600,
-                                              fontStyle: FlutterFlowTheme.of(
-                                                      context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontStyle,
                                             ),
                                             fontSize: 18.0,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w600,
-                                            fontStyle: FlutterFlowTheme.of(
-                                                    context)
-                                                .bodyMedium
-                                                .fontStyle,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
                                           ),
                                     ),
                                   ),
@@ -394,9 +392,10 @@ class SidebarAccionesWidget extends StatelessWidget {
                                         elevation: 0,
                                         insetPadding: EdgeInsets.zero,
                                         backgroundColor: Colors.transparent,
-                                        alignment: AlignmentDirectional(0.0, 0.0)
-                                            .resolve(Directionality.of(
-                                                builderContext)),
+                                        alignment:
+                                            AlignmentDirectional(0.0, 0.0)
+                                                .resolve(Directionality.of(
+                                                    builderContext)),
                                         child: WebViewAware(
                                           child: SuccesspopupWidget(),
                                         ),
@@ -417,12 +416,14 @@ class SidebarAccionesWidget extends StatelessWidget {
                                       .titleSmall
                                       .override(
                                         font: GoogleFonts.inter(
-                                          fontWeight: FlutterFlowTheme.of(context)
-                                              .titleSmall
-                                              .fontWeight,
-                                          fontStyle: FlutterFlowTheme.of(context)
-                                              .titleSmall
-                                              .fontStyle,
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .titleSmall
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .titleSmall
+                                                  .fontStyle,
                                         ),
                                         color: Color(0xFF265294),
                                         fontSize: 18.0,
@@ -466,576 +467,747 @@ class SidebarAccionesWidget extends StatelessWidget {
         child: Container(
           width: MediaQuery.sizeOf(context).width * 0.2,
           decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    blurRadius: 50.0,
-                                                    color: Color(0x26000000),
-                                                    offset: Offset(
-                                                      20.0,
-                                                      20.0,
-                                                    ),
-                                                  )
-                                                ],
-                                                borderRadius:
-                                                    BorderRadius.circular(20.0),
-                                              ),
-                                              child: Visibility(
-                                                visible: _model.tipoValue ==
-                                                    'Tamizaje (Sustancias)',
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Align(
-                                                      alignment:
-                                                          AlignmentDirectional(
-                                                              -1.0, 0.0),
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    16.0,
-                                                                    20.0,
-                                                                    0.0,
-                                                                    0.0),
-                                                        child: Text(
-                                                          'Alertas',
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                fontSize: 16.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  4.0,
-                                                                  8.0,
-                                                                  0.0,
-                                                                  8.0),
-                                                      child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        children: [
-                                                          Text(
-                                                            'Sustancia: ',
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                          FlutterFlowDropDown<
-                                                              String>(
-                                                            controller: _model
-                                                                    .dropDownSustancia2ValueController ??=
-                                                                FormFieldController<
-                                                                        String>(
-                                                                    null),
-                                                            options: [
-                                                              'Tabaco',
-                                                              'Bebidas alcohólicas',
-                                                              'Cannabis',
-                                                              'Anfetaminas',
-                                                              'Inhalantes',
-                                                              'Tranquilizantes',
-                                                              'Alucinógenos',
-                                                              'Opiáceos',
-                                                              'Otros',
-                                                              'Cocaina'
-                                                            ],
-                                                            onChanged: (val) {
-                                                              _model.dropDownSustancia2Value =
-                                                                  val;
-                                                              onUpdate();
-                                                            },
-                                                            width: 200.0,
-                                                            height: 40.0,
-                                                            textStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .inter(
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                      fontWeight: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontStyle,
-                                                                    ),
-                                                            hintText:
-                                                                'Seleccione',
-                                                            icon: Icon(
-                                                              Icons
-                                                                  .keyboard_arrow_down_rounded,
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .secondaryText,
-                                                              size: 24.0,
-                                                            ),
-                                                            fillColor: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryBackground,
-                                                            elevation: 2.0,
-                                                            borderColor: Colors
-                                                                .transparent,
-                                                            borderWidth: 0.0,
-                                                            borderRadius: 8.0,
-                                                            margin:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        12.0,
-                                                                        0.0,
-                                                                        12.0,
-                                                                        0.0),
-                                                            hidesUnderline:
-                                                                true,
-                                                            isOverButton: false,
-                                                            isSearchable: false,
-                                                            isMultiSelect:
-                                                                false,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Builder(
-                                                      builder: (context) {
-                                                        final listaAlertasSustancias =
-                                                            FFAppState()
-                                                                .listaAlertasEnvio
-                                                                .toList();
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 50.0,
+                color: Color(0x26000000),
+                offset: Offset(
+                  20.0,
+                  20.0,
+                ),
+              )
+            ],
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Visibility(
+            visible: _model.tipoValue == 'Tamizaje (Sustancias)',
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Align(
+                  alignment: AlignmentDirectional(-1.0, 0.0),
+                  child: Padding(
+                    padding:
+                        EdgeInsetsDirectional.fromSTEB(16.0, 20.0, 0.0, 0.0),
+                    child: Text(
+                      'Alertas',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            font: GoogleFonts.inter(
+                              fontWeight: FontWeight.w600,
+                              fontStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontStyle,
+                            ),
+                            fontSize: 16.0,
+                            letterSpacing: 0.0,
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(4.0, 8.0, 0.0, 8.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Text(
+                        'Sustancia: ',
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              font: GoogleFonts.inter(
+                                fontWeight: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontWeight,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontStyle,
+                              ),
+                              letterSpacing: 0.0,
+                              fontWeight: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontWeight,
+                              fontStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontStyle,
+                            ),
+                      ),
+                      FlutterFlowDropDown<String>(
+                        controller: _model.dropDownSustancia2ValueController ??=
+                            FormFieldController<String>(null),
+                        options: [
+                          'Tabaco',
+                          'Bebidas alcohólicas',
+                          'Cannabis',
+                          'Anfetaminas',
+                          'Inhalantes',
+                          'Tranquilizantes',
+                          'Alucinógenos',
+                          'Opiáceos',
+                          'Otros',
+                          'Cocaina'
+                        ],
+                        onChanged: (val) {
+                          _model.dropDownSustancia2Value = val;
+                          onUpdate();
+                        },
+                        width: 200.0,
+                        height: 40.0,
+                        textStyle:
+                            FlutterFlowTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.inter(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                        hintText: 'Seleccione',
+                        icon: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: FlutterFlowTheme.of(context).secondaryText,
+                          size: 24.0,
+                        ),
+                        fillColor:
+                            FlutterFlowTheme.of(context).secondaryBackground,
+                        elevation: 2.0,
+                        borderColor: Colors.transparent,
+                        borderWidth: 0.0,
+                        borderRadius: 8.0,
+                        margin: EdgeInsetsDirectional.fromSTEB(
+                            12.0, 0.0, 12.0, 0.0),
+                        hidesUnderline: true,
+                        isOverButton: false,
+                        isSearchable: false,
+                        isMultiSelect: false,
+                      ),
+                    ],
+                  ),
+                ),
+                Builder(
+                  builder: (context) {
+                    final listaAlertasSustancias =
+                        FFAppState().listaAlertasEnvio.toList();
 
-                                                        return Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: List.generate(
-                                                              listaAlertasSustancias
-                                                                  .length,
-                                                              (listaAlertasSustanciasIndex) {
-                                                            final listaAlertasSustanciasItem =
-                                                                listaAlertasSustancias[
-                                                                    listaAlertasSustanciasIndex];
-                                                            return Visibility(
-                                                              visible: listaAlertasSustanciasItem
-                                                                      .sustancia ==
-                                                                  _model
-                                                                      .dropDownSustancia2Value,
-                                                              child: Padding(
-                                                                padding: EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        8.0,
-                                                                        20.0,
-                                                                        8.0,
-                                                                        16.0),
-                                                                child: Row(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .min,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    Expanded(
-                                                                      child:
-                                                                          Column(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.min,
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          Text(
-                                                                            listaAlertasSustanciasItem.nivel,
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  font: GoogleFonts.inter(
-                                                                                    fontWeight: FontWeight.w500,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                                  fontSize: 18.0,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.w500,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child:
-                                                                          Column(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.min,
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          Text(
-                                                                            'Min',
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  font: GoogleFonts.inter(
-                                                                                    fontWeight: FontWeight.w500,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                                  fontSize: 18.0,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.w500,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                          TextFieldAlertaWidget(
-                                                                            key:
-                                                                                Key('Keyswz_${listaAlertasSustanciasIndex}_of_${listaAlertasSustancias.length}'),
-                                                                            parameter1:
-                                                                                listaAlertasSustanciasItem.min,
-                                                                            accion:
-                                                                                (nuevoTexto) async {
-                                                                              FFAppState().updateListaAlertasEnvioAtIndex(
-                                                                                listaAlertasSustanciasIndex,
-                                                                                (e) => e..min = nuevoTexto,
-                                                                              );
-                                                                              onUpdate();
-                                                                            },
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child:
-                                                                          Column(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.min,
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          Text(
-                                                                            'Max',
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  font: GoogleFonts.inter(
-                                                                                    fontWeight: FontWeight.w500,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                                  fontSize: 18.0,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.w500,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                          TextFieldAlertaWidget(
-                                                                            key:
-                                                                                Key('Key82i_${listaAlertasSustanciasIndex}_of_${listaAlertasSustancias.length}'),
-                                                                            parameter1:
-                                                                                listaAlertasSustanciasItem.max,
-                                                                            accion:
-                                                                                (nuevoTexto) async {
-                                                                              FFAppState().updateListaAlertasEnvioAtIndex(
-                                                                                listaAlertasSustanciasIndex,
-                                                                                (e) => e..max = nuevoTexto,
-                                                                              );
-                                                                              onUpdate();
-                                                                            },
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                  ].divide(SizedBox(
-                                                                      width:
-                                                                          8.0)),
-                                                                ),
-                                                              ),
-                                                            );
-                                                          }),
-                                                        );
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(listaAlertasSustancias.length,
+                          (listaAlertasSustanciasIndex) {
+                        final listaAlertasSustanciasItem =
+                            listaAlertasSustancias[listaAlertasSustanciasIndex];
+                        return Visibility(
+                          visible: listaAlertasSustanciasItem.sustancia ==
+                              _model.dropDownSustancia2Value,
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                8.0, 20.0, 8.0, 16.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        listaAlertasSustanciasItem.nivel,
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              font: GoogleFonts.inter(
+                                                fontWeight: FontWeight.w500,
+                                                fontStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
                                               ),
+                                              fontSize: 18.0,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.w500,
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontStyle,
                                             ),
-                                          ),
-                                          Builder(
-                                            builder: (context) {
-                                              if (_model.categoriaValue != 'CRQ / SRQ' &&
-                                                  _model.categoriaValue != 'CRQ' &&
-                                                  _model.categoriaValue != 'SRQ') {
-                                                return SizedBox.shrink();
-                                              }
-                                              return Padding(
-                                                padding: EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 0.0, 0.0),
-                                                child: Container(
-                                                  width: MediaQuery.sizeOf(context).width * 0.2,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        blurRadius: 50.0,
-                                                        color: Color(0x26000000),
-                                                        offset: Offset(20.0, 20.0),
-                                                      )
-                                                    ],
-                                                    borderRadius: BorderRadius.circular(20.0),
-                                                  ),
-                                                  child: Padding(
-                                                    padding: EdgeInsets.all(16.0),
-                                                    child: Column(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Padding(
-                                                          padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 15.0),
-                                                          child: Text(
-                                                            'Alertas Especiales CRQ/SRQ',
-                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                  font: GoogleFonts.inter(fontWeight: FontWeight.w600, fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle),
-                                                                  fontSize: 16.0,
-                                                                  letterSpacing: 0.0,
-                                                                  fontWeight: FontWeight.w600,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                        TextFormField(
-                                                          controller: _model.alertaEspecialNombreTextController ??= TextEditingController(),
-                                                          focusNode: _model.alertaEspecialNombreFocusNode ??= FocusNode(),
-                                                          autofocus: false,
-                                                          obscureText: false,
-                                                          decoration: InputDecoration(
-                                                            hintText: 'Nombre de la alerta',
-                                                            hintStyle: FlutterFlowTheme.of(context).labelMedium.override(font: GoogleFonts.inter(fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight, fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle), color: Color(0xFF9E8888), fontSize: 14.0, letterSpacing: 0.0),
-                                                            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).alternate, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).primary, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                            errorBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).error, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                            focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).error, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                            filled: true,
-                                                            fillColor: FlutterFlowTheme.of(context).primaryBackground,
-                                                          ),
-                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight, fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle), letterSpacing: 0.0),
-                                                          validator: _model.alertaEspecialNombreTextControllerValidator.asValidator(context),
-                                                        ),
-                                                        Padding(
-                                                          padding: EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
-                                                          child: FlutterFlowDropDown<String>(
-                                                            controller: _model.alertaEspecialCondicionValueController ??= FormFieldController<String>(null),
-                                                            options: ['Todas en Sí', 'Al menos una en Sí', 'Al menos dos en Sí', 'Todas en No', 'Al menos una en No', 'Al menos dos en No', 'Puntaje igual a'],
-                                                            onChanged: (val) {
-                                                              _model.alertaEspecialCondicionValue =
-                                                                  val;
-                                                              onUpdate();
-                                                            },
-                                                            width: double.infinity,
-                                                            height: 44.0,
-                                                            textStyle: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight, fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle), letterSpacing: 0.0),
-                                                            hintText: 'Condición...',
-                                                            icon: Icon(Icons.keyboard_arrow_down_rounded, color: FlutterFlowTheme.of(context).secondaryText, size: 24.0),
-                                                            fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-                                                            elevation: 2.0,
-                                                            borderColor: Colors.transparent,
-                                                            borderWidth: 0.0,
-                                                            borderRadius: 8.0,
-                                                            margin: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
-                                                            hidesUnderline: true,
-                                                            isOverButton: false,
-                                                            isSearchable: false,
-                                                            isMultiSelect: false,
-                                                          ),
-                                                        ),
-                                                        if (_model.alertaEspecialCondicionValue == 'Puntaje igual a')
-                                                          Padding(
-                                                            padding: EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
-                                                            child: TextFormField(
-                                                              controller: _model.alertaEspecialPuntajeTextController ??= TextEditingController(),
-                                                              focusNode: _model.alertaEspecialPuntajeFocusNode ??= FocusNode(),
-                                                              autofocus: false,
-                                                              keyboardType: TextInputType.number,
-                                                              obscureText: false,
-                                                              decoration: InputDecoration(
-                                                                hintText: 'Puntaje',
-                                                                hintStyle: FlutterFlowTheme.of(context).labelMedium.override(font: GoogleFonts.inter(fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight, fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle), color: Color(0xFF9E8888), fontSize: 14.0, letterSpacing: 0.0),
-                                                                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).alternate, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).primary, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                                errorBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).error, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                                focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).error, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                                filled: true,
-                                                                fillColor: FlutterFlowTheme.of(context).primaryBackground,
-                                                              ),
-                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight, fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle), letterSpacing: 0.0),
-                                                              validator: _model.alertaEspecialPuntajeTextControllerValidator.asValidator(context),
-                                                            ),
-                                                          ),
-                                                        Padding(
-                                                          padding: EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
-                                                          child: TextFormField(
-                                                            controller: _model.alertaEspecialPreguntasTextController ??= TextEditingController(),
-                                                            focusNode: _model.alertaEspecialPreguntasFocusNode ??= FocusNode(),
-                                                            autofocus: false,
-                                                            obscureText: false,
-                                                            decoration: InputDecoration(
-                                                              hintText: 'Números de pregunta (ej: 1, 2, 11)',
-                                                              hintStyle: FlutterFlowTheme.of(context).labelMedium.override(font: GoogleFonts.inter(fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight, fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle), color: Color(0xFF9E8888), fontSize: 14.0, letterSpacing: 0.0),
-                                                              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).alternate, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).primary, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                              errorBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).error, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                              focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).error, width: 1.0), borderRadius: BorderRadius.circular(8.0)),
-                                                              filled: true,
-                                                              fillColor: FlutterFlowTheme.of(context).primaryBackground,
-                                                            ),
-                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight, fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle), letterSpacing: 0.0),
-                                                            validator: _model.alertaEspecialPreguntasTextControllerValidator.asValidator(context),
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
-                                                          child: Align(
-                                                            alignment: AlignmentDirectional.centerEnd,
-                                                            child: FFButtonWidget(
-                                                            onPressed: () async {
-                                                              if (_model.alertaEspecialNombreTextController?.text.isNotEmpty == true && _model.alertaEspecialCondicionValue != null) {
-                                                                final preguntasRaw = _model.alertaEspecialPreguntasTextController?.text ?? '';
-                                                                final List<int> preguntasParsed = preguntasRaw
-                                                                    .split(',')
-                                                                    .map((s) => int.tryParse(s.trim()))
-                                                                    .where((v) => v != null)
-                                                                    .cast<int>()
-                                                                    .toList();
-                                                                final nuevaAlerta = createAlertaEspecialStruct(
-                                                                  nombre: _model.alertaEspecialNombreTextController?.text ?? '',
-                                                                  condicion: _model.alertaEspecialCondicionValue ?? '',
-                                                                  puntaje: int.tryParse(_model.alertaEspecialPuntajeTextController?.text ?? '') ?? 0,
-                                                                  clearUnsetFields: false,
-                                                                );
-                                                                nuevaAlerta.preguntas = preguntasParsed;
-                                                                _model.addToAlertasEspeciales(nuevaAlerta);
-                                                                _model.alertaEspecialNombreTextController?.clear();
-                                                                _model.alertaEspecialCondicionValueController?.value = null;
-                                                                _model.alertaEspecialPuntajeTextController?.clear();
-                                                                _model.alertaEspecialPreguntasTextController?.clear();
-                                                                onUpdate();
-                                                              }
-                                                            },
-                                                            text: 'Agregar alerta especial',
-                                                            options: FFButtonOptions(
-                                                              height: 34.0,
-                                                              padding: const EdgeInsetsDirectional.fromSTEB(14.0, 0.0, 14.0, 0.0),
-                                                              color: const Color(0xFF265294),
-                                                              textStyle: GoogleFonts.inter(
-                                                                color: Colors.white,
-                                                                fontSize: 12.5,
-                                                                fontWeight: FontWeight.w600,
-                                                                letterSpacing: 0.0,
-                                                              ),
-                                                              borderRadius: BorderRadius.circular(8.0),
-                                                            ),
-                                                          ),
-                                                          ),
-                                                        ),
-                                                        if (_model.alertasEspeciales.isNotEmpty)
-                                                          Padding(
-                                                            padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
-                                                            child: Column(
-                                                              mainAxisSize: MainAxisSize.min,
-                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                              children: [
-                                                                Text(
-                                                                  'Alertas especiales guardadas',
-                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w500, fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle), fontSize: 14.0, letterSpacing: 0.0, fontWeight: FontWeight.w500),
-                                                                ),
-                                                                ...List.generate(_model.alertasEspeciales.length, (idx) {
-                                                                  final alerta = _model.alertasEspeciales[idx];
-                                                                  return Container(
-                                                                    margin: EdgeInsets.only(top: 8.0),
-                                                                    padding: EdgeInsets.all(8.0),
-                                                                    decoration: BoxDecoration(
-                                                                      color: FlutterFlowTheme.of(context).primaryBackground,
-                                                                      borderRadius: BorderRadius.circular(8.0),
-                                                                    ),
-                                                                    child: Row(
-                                                                      children: [
-                                                                        Expanded(
-                                                                          child: Column(
-                                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                                            children: [
-                                                                              Text(alerta.nombre, style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600, fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle), letterSpacing: 0.0, fontWeight: FontWeight.w600)),
-                                                                              Text(alerta.condicion + (alerta.condicion == 'Puntaje igual a' ? ': ${alerta.puntaje}' : ''), style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight, fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle), letterSpacing: 0.0)),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                        IconButton(
-                                                                          icon: Icon(Icons.delete_outline, color: Colors.red, size: 20.0),
-                                                                          onPressed: () {
-                                                                            _model.removeAtIndexFromAlertasEspeciales(idx);
-                                                                            onUpdate();
-                                                                          },
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  );
-                                                                }),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Min',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              font: GoogleFonts.inter(
+                                                fontWeight: FontWeight.w500,
+                                                fontStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
+                                              ),
+                                              fontSize: 18.0,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.w500,
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontStyle,
+                                            ),
+                                      ),
+                                      TextFieldAlertaWidget(
+                                        key: Key(
+                                            'Keyswz_${listaAlertasSustanciasIndex}_of_${listaAlertasSustancias.length}'),
+                                        parameter1:
+                                            listaAlertasSustanciasItem.min,
+                                        accion: (nuevoTexto) async {
+                                          FFAppState()
+                                              .updateListaAlertasEnvioAtIndex(
+                                            listaAlertasSustanciasIndex,
+                                            (e) => e..min = nuevoTexto,
+                                          );
+                                          onUpdate();
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Max',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              font: GoogleFonts.inter(
+                                                fontWeight: FontWeight.w500,
+                                                fontStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
+                                              ),
+                                              fontSize: 18.0,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.w500,
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontStyle,
+                                            ),
+                                      ),
+                                      TextFieldAlertaWidget(
+                                        key: Key(
+                                            'Key82i_${listaAlertasSustanciasIndex}_of_${listaAlertasSustancias.length}'),
+                                        parameter1:
+                                            listaAlertasSustanciasItem.max,
+                                        accion: (nuevoTexto) async {
+                                          FFAppState()
+                                              .updateListaAlertasEnvioAtIndex(
+                                            listaAlertasSustanciasIndex,
+                                            (e) => e..max = nuevoTexto,
+                                          );
+                                          onUpdate();
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ].divide(SizedBox(width: 8.0)),
+                            ),
+                          ),
+                        );
+                      }),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      Builder(
+        builder: (context) {
+          if (_model.categoriaValue != 'CRQ / SRQ' &&
+              _model.categoriaValue != 'CRQ' &&
+              _model.categoriaValue != 'SRQ') {
+            return SizedBox.shrink();
+          }
+          return Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 0.0, 0.0),
+            child: Container(
+              width: MediaQuery.sizeOf(context).width * 0.2,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 50.0,
+                    color: Color(0x26000000),
+                    offset: Offset(20.0, 20.0),
+                  )
+                ],
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 15.0),
+                      child: Text(
+                        'Alertas Especiales CRQ/SRQ',
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              font: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle),
+                              fontSize: 16.0,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                    TextFormField(
+                      controller: _model.alertaEspecialNombreTextController ??=
+                          TextEditingController(),
+                      focusNode: _model.alertaEspecialNombreFocusNode ??=
+                          FocusNode(),
+                      autofocus: false,
+                      obscureText: false,
+                      decoration: InputDecoration(
+                        hintText: 'Nombre de la alerta',
+                        hintStyle: FlutterFlowTheme.of(context)
+                            .labelMedium
+                            .override(
+                                font: GoogleFonts.inter(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .labelMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .labelMedium
+                                        .fontStyle),
+                                color: Color(0xFF9E8888),
+                                fontSize: 14.0,
+                                letterSpacing: 0.0),
+                        enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).alternate,
+                                width: 1.0),
+                            borderRadius: BorderRadius.circular(8.0)),
+                        focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).primary,
+                                width: 1.0),
+                            borderRadius: BorderRadius.circular(8.0)),
+                        errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).error,
+                                width: 1.0),
+                            borderRadius: BorderRadius.circular(8.0)),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).error,
+                                width: 1.0),
+                            borderRadius: BorderRadius.circular(8.0)),
+                        filled: true,
+                        fillColor:
+                            FlutterFlowTheme.of(context).primaryBackground,
+                      ),
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                              fontWeight: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontWeight,
+                              fontStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontStyle),
+                          letterSpacing: 0.0),
+                      validator: _model
+                          .alertaEspecialNombreTextControllerValidator
+                          .asValidator(context),
+                    ),
+                    Padding(
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                      child: FlutterFlowDropDown<String>(
+                        controller:
+                            _model.alertaEspecialCondicionValueController ??=
+                                FormFieldController<String>(null),
+                        options: [
+                          'Todas en Sí',
+                          'Al menos una en Sí',
+                          'Al menos dos en Sí',
+                          'Todas en No',
+                          'Al menos una en No',
+                          'Al menos dos en No',
+                          'Puntaje igual a'
+                        ],
+                        onChanged: (val) {
+                          _model.alertaEspecialCondicionValue = val;
+                          onUpdate();
+                        },
+                        width: double.infinity,
+                        height: 44.0,
+                        textStyle: FlutterFlowTheme.of(context)
+                            .bodyMedium
+                            .override(
+                                font: GoogleFonts.inter(
+                                    fontWeight:
+                                        FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle),
+                                letterSpacing: 0.0),
+                        hintText: 'Condición...',
+                        icon: Icon(Icons.keyboard_arrow_down_rounded,
+                            color: FlutterFlowTheme.of(context).secondaryText,
+                            size: 24.0),
+                        fillColor:
+                            FlutterFlowTheme.of(context).secondaryBackground,
+                        elevation: 2.0,
+                        borderColor: Colors.transparent,
+                        borderWidth: 0.0,
+                        borderRadius: 8.0,
+                        margin: EdgeInsetsDirectional.fromSTEB(
+                            12.0, 0.0, 12.0, 0.0),
+                        hidesUnderline: true,
+                        isOverButton: false,
+                        isSearchable: false,
+                        isMultiSelect: false,
+                      ),
+                    ),
+                    if (_model.alertaEspecialCondicionValue ==
+                        'Puntaje igual a')
+                      Padding(
+                        padding:
+                            EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                        child: TextFormField(
+                          controller:
+                              _model.alertaEspecialPuntajeTextController ??=
+                                  TextEditingController(),
+                          focusNode: _model.alertaEspecialPuntajeFocusNode ??=
+                              FocusNode(),
+                          autofocus: false,
+                          keyboardType: TextInputType.number,
+                          obscureText: false,
+                          decoration: InputDecoration(
+                            hintText: 'Puntaje',
+                            hintStyle: FlutterFlowTheme.of(context)
+                                .labelMedium
+                                .override(
+                                    font: GoogleFonts.inter(
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .fontStyle),
+                                    color: Color(0xFF9E8888),
+                                    fontSize: 14.0,
+                                    letterSpacing: 0.0),
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color:
+                                        FlutterFlowTheme.of(context).alternate,
+                                    width: 1.0),
+                                borderRadius: BorderRadius.circular(8.0)),
+                            focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    width: 1.0),
+                                borderRadius: BorderRadius.circular(8.0)),
+                            errorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: FlutterFlowTheme.of(context).error,
+                                    width: 1.0),
+                                borderRadius: BorderRadius.circular(8.0)),
+                            focusedErrorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: FlutterFlowTheme.of(context).error,
+                                    width: 1.0),
+                                borderRadius: BorderRadius.circular(8.0)),
+                            filled: true,
+                            fillColor:
+                                FlutterFlowTheme.of(context).primaryBackground,
+                          ),
+                          style: FlutterFlowTheme.of(context)
+                              .bodyMedium
+                              .override(
+                                  font: GoogleFonts.inter(
+                                      fontWeight: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .fontWeight,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .fontStyle),
+                                  letterSpacing: 0.0),
+                          validator: _model
+                              .alertaEspecialPuntajeTextControllerValidator
+                              .asValidator(context),
+                        ),
+                      ),
+                    Padding(
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                      child: TextFormField(
+                        controller:
+                            _model.alertaEspecialPreguntasTextController ??=
+                                TextEditingController(),
+                        focusNode: _model.alertaEspecialPreguntasFocusNode ??=
+                            FocusNode(),
+                        autofocus: false,
+                        obscureText: false,
+                        decoration: InputDecoration(
+                          hintText: 'Números de pregunta (ej: 1, 2, 11)',
+                          hintStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                  font: GoogleFonts.inter(
+                                      fontWeight: FlutterFlowTheme.of(context)
+                                          .labelMedium
+                                          .fontWeight,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .labelMedium
+                                          .fontStyle),
+                                  color: Color(0xFF9E8888),
+                                  fontSize: 14.0,
+                                  letterSpacing: 0.0),
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: FlutterFlowTheme.of(context).alternate,
+                                  width: 1.0),
+                              borderRadius: BorderRadius.circular(8.0)),
+                          focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: FlutterFlowTheme.of(context).primary,
+                                  width: 1.0),
+                              borderRadius: BorderRadius.circular(8.0)),
+                          errorBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: FlutterFlowTheme.of(context).error,
+                                  width: 1.0),
+                              borderRadius: BorderRadius.circular(8.0)),
+                          focusedErrorBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: FlutterFlowTheme.of(context).error,
+                                  width: 1.0),
+                              borderRadius: BorderRadius.circular(8.0)),
+                          filled: true,
+                          fillColor:
+                              FlutterFlowTheme.of(context).primaryBackground,
+                        ),
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            font: GoogleFonts.inter(
+                                fontWeight: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontWeight,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontStyle),
+                            letterSpacing: 0.0),
+                        validator: _model
+                            .alertaEspecialPreguntasTextControllerValidator
+                            .asValidator(context),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 12.0, 0.0, 0.0),
+                      child: Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: FFButtonWidget(
+                          onPressed: () async {
+                            if (_model.alertaEspecialNombreTextController?.text
+                                        .isNotEmpty ==
+                                    true &&
+                                _model.alertaEspecialCondicionValue != null) {
+                              final preguntasRaw = _model
+                                      .alertaEspecialPreguntasTextController
+                                      ?.text ??
+                                  '';
+                              final List<int> preguntasParsed = preguntasRaw
+                                  .split(',')
+                                  .map((s) => int.tryParse(s.trim()))
+                                  .where((v) => v != null)
+                                  .cast<int>()
+                                  .toList();
+                              final nuevaAlerta = createAlertaEspecialStruct(
+                                nombre: _model
+                                        .alertaEspecialNombreTextController
+                                        ?.text ??
+                                    '',
+                                condicion:
+                                    _model.alertaEspecialCondicionValue ?? '',
+                                puntaje: int.tryParse(_model
+                                            .alertaEspecialPuntajeTextController
+                                            ?.text ??
+                                        '') ??
+                                    0,
+                                clearUnsetFields: false,
+                              );
+                              nuevaAlerta.preguntas = preguntasParsed;
+                              _model.addToAlertasEspeciales(nuevaAlerta);
+                              _model.alertaEspecialNombreTextController
+                                  ?.clear();
+                              _model.alertaEspecialCondicionValueController
+                                  ?.value = null;
+                              _model.alertaEspecialPuntajeTextController
+                                  ?.clear();
+                              _model.alertaEspecialPreguntasTextController
+                                  ?.clear();
+                              onUpdate();
+                            }
+                          },
+                          text: 'Agregar alerta especial',
+                          options: FFButtonOptions(
+                            height: 34.0,
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                                14.0, 0.0, 14.0, 0.0),
+                            color: const Color(0xFF265294),
+                            textStyle: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.0,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (_model.alertasEspeciales.isNotEmpty)
+                      Padding(
+                        padding:
+                            EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Alertas especiales guardadas',
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                      font: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w500,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle),
+                                      fontSize: 14.0,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w500),
+                            ),
+                            ...List.generate(_model.alertasEspeciales.length,
+                                (idx) {
+                              final alerta = _model.alertasEspeciales[idx];
+                              return Container(
+                                margin: EdgeInsets.only(top: 8.0),
+                                padding: EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: FlutterFlowTheme.of(context)
+                                      .primaryBackground,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(alerta.nombre,
+                                              style: FlutterFlowTheme.of(
+                                                      context)
+                                                  .bodyMedium
+                                                  .override(
+                                                      font: GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontStyle),
+                                                      letterSpacing: 0.0,
+                                                      fontWeight:
+                                                          FontWeight.w600)),
+                                          Text(
+                                              alerta.condicion +
+                                                  (alerta.condicion ==
+                                                          'Puntaje igual a'
+                                                      ? ': ${alerta.puntaje}'
+                                                      : ''),
+                                              style: FlutterFlowTheme.of(
+                                                      context)
+                                                  .bodyMedium
+                                                  .override(
+                                                      font: GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontStyle),
+                                                      letterSpacing: 0.0)),
+                                        ],
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.delete_outline,
+                                          color: Colors.red, size: 20.0),
+                                      onPressed: () {
+                                        _model
+                                            .removeAtIndexFromAlertasEspeciales(
+                                                idx);
+                                        onUpdate();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
       _buildNivelesClinicos(context),
     ];
   }
@@ -1050,6 +1222,7 @@ class SidebarAccionesWidget extends StatelessWidget {
       'Escala autoestima',
       'CDI',
       'Depresión Beck',
+      'Escala ansiedad',
     ];
     if (!categoriasConNiveles.contains(cat) || _model.nivelesAlerta.isEmpty) {
       return const SizedBox.shrink();
@@ -1060,7 +1233,9 @@ class SidebarAccionesWidget extends StatelessWidget {
         ? 'Niveles de autoestima'
         : cat == 'CDI'
             ? 'Niveles de depresión (CDI)'
-            : 'Niveles de depresión (Beck)';
+            : cat == 'Escala ansiedad'
+                ? 'Niveles de ansiedad'
+                : 'Niveles de depresión (Beck)';
 
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 0.0, 0.0),
@@ -1097,7 +1272,8 @@ class SidebarAccionesWidget extends StatelessWidget {
               ),
               // Encabezado de columnas
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
                 child: Row(
                   children: [
                     Expanded(
@@ -1129,8 +1305,8 @@ class SidebarAccionesWidget extends StatelessWidget {
               ),
               for (int i = 0; i < _model.nivelesAlerta.length; i++)
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 4.0, vertical: 6.0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [

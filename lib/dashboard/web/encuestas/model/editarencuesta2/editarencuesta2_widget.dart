@@ -55,11 +55,16 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
     final doc = widget.docencuestas2;
     if (doc != null) {
       final cat = doc.categoria;
-      if (cat == 'CDI' || cat == 'Escala autoestima') {
-        if (doc.alertas.length >= 3) {
+      if (cat == 'CDI' ||
+          cat == 'Escala autoestima' ||
+          cat == 'Escala ansiedad') {
+        // Ansiedad tiene 4 niveles, los demás 3. alertasTripletePorDefecto maneja ambos.
+        final minAlerts = cat == 'Escala ansiedad' ? 4 : 3;
+        if (doc.alertas.length >= minAlerts) {
           FFAppState().listaAlertasEnvio =
               doc.alertas.toList().cast<AlertaStruct>();
-        } else if (doc.bajo.hasMax() &&
+        } else if (cat != 'Escala ansiedad' &&
+            doc.bajo.hasMax() &&
             doc.moderado.hasMax() &&
             doc.alto.hasMax()) {
           FFAppState().listaAlertasEnvio = [
@@ -68,8 +73,7 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
             doc.alto,
           ];
         } else {
-          FFAppState().listaAlertasEnvio =
-              alertasTripletePorDefecto(cat);
+          FFAppState().listaAlertasEnvio = alertasTripletePorDefecto(cat);
         }
       } else if (doc.alertas.length > 2) {
         FFAppState().listaAlertasEnvio =
@@ -87,7 +91,8 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
       _model.categoriaValue = doc.categoria;
       _model.categoriaValueController =
           FormFieldController<String>(_model.categoriaValue);
-      _model.alertasEspeciales = List<AlertaEspecialStruct>.from(doc.alertasEspeciales);
+      _model.alertasEspeciales =
+          List<AlertaEspecialStruct>.from(doc.alertasEspeciales);
     }
 
     _model.textController1 ??= TextEditingController();
@@ -267,15 +272,17 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                _buildDatosPrincipalesSection(context),
-                                                _buildAgregarPreguntasButton(context),
+                                                _buildDatosPrincipalesSection(
+                                                    context),
+                                                _buildAgregarPreguntasButton(
+                                                    context),
                                                 Padding(
                                                   padding: EdgeInsets.all(20.0),
                                                   child: StreamBuilder<
                                                       EncuestasRecord>(
                                                     stream: EncuestasRecord
-                                                        .getDocument(widget
-                                                            .encuestaID!),
+                                                        .getDocument(
+                                                            widget.encuestaID!),
                                                     builder:
                                                         (context, snapshot) {
                                                       // Customize what your widget looks like when it's loading.
@@ -322,7 +329,8 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
                                                                 MainAxisSize
                                                                     .max,
                                                             children: [
-                                                              _buildPreguntasList(containerEncuestasRecord),
+                                                              _buildPreguntasList(
+                                                                  containerEncuestasRecord),
                                                             ],
                                                           ),
                                                         ),
@@ -516,7 +524,8 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
                                                               ),
                                                             ],
                                                           ),
-                                                          ..._buildActionButtons(context),
+                                                          ..._buildActionButtons(
+                                                              context),
                                                         ],
                                                       ),
                                                     ),
@@ -527,10 +536,13 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
                                           ),
                                           if (widget.tipo == 'Tamizajes') ...[
                                             _buildTamizajesAlertsPanel(context),
-                                            if (_model.categoriaValue == 'CRQ / SRQ' ||
-                                                _model.categoriaValue == 'CRQ' ||
+                                            if (_model.categoriaValue ==
+                                                    'CRQ / SRQ' ||
+                                                _model.categoriaValue ==
+                                                    'CRQ' ||
                                                 _model.categoriaValue == 'SRQ')
-                                              _buildTamizajesAlertsEspecialesPanel(context),
+                                              _buildTamizajesAlertsEspecialesPanel(
+                                                  context),
                                           ],
                                         ],
                                       ),

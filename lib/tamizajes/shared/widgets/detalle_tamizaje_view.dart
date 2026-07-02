@@ -120,6 +120,9 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
         case 'Depresión Beck':
           titulo = 'beck';
           break;
+        case 'Escala ansiedad':
+          titulo = 'ansiedad';
+          break;
         default:
           titulo = _encuesta!.titulo;
       }
@@ -145,7 +148,9 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
   // umbrales — en ese caso classifyNivel usará defaults clínicos.
   UmbralesConfig? _umbralesFrom(EncuestasRecord e) {
     final cat = e.categoria;
-    if (cat == 'Escala autoestima' || cat == 'CDI') {
+    if (cat == 'Escala autoestima' ||
+        cat == 'CDI' ||
+        cat == 'Escala ansiedad') {
       return umbralesTripleteDesdeEncuesta(e);
     }
     if (cat == 'Depresión Beck' && e.alertas.length >= 4) {
@@ -164,7 +169,10 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
         n.contains('sin ') ||
         n.contains('mínima') ||
         n.contains('minima')) return kSuccess;
-    if (n.contains('media') || n.contains('moderad') || n.contains('leve')) {
+    if (n.contains('media') ||
+        n.contains('moderad') ||
+        n.contains('moderado') ||
+        n.contains('leve')) {
       return const Color(0xFFF6BD33);
     }
     if (n.contains('elevada') ||
@@ -237,6 +245,15 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
         return 'Consumo moderado. Requiere seguimiento.';
       if (n.contains('severo'))
         return 'Consumo severo. Intervención especializada.';
+    }
+    if (categoria == 'Escala ansiedad') {
+      if (n.contains('sin ')) return 'Sin sintomatología de ansiedad.';
+      if (n.contains('leve'))
+        return 'Ansiedad leve. Seguimiento preventivo recomendado.';
+      if (n.contains('moderado'))
+        return 'Ansiedad moderada. Requiere atención por psicología.';
+      if (n.contains('severo'))
+        return 'Ansiedad severa. Requiere atención clínica prioritaria.';
     }
     if (categoria == 'CRQ / SRQ' || categoria == 'CRQ' || categoria == 'SRQ') {
       if (n.contains('sin ')) return 'Sin alerta psicosocial.';
@@ -377,6 +394,69 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
                                       'Se recomienda intervención inmediata.',
                                       style: GoogleFonts.inter(
                                         color: Colors.red.shade600,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      // ── Alerta clínica ansiedad moderada/severa ────────
+                      if (_encuesta?.categoria == 'Escala ansiedad' &&
+                          (_nivelCalculado()
+                                  .toLowerCase()
+                                  .contains('moderado') ||
+                              _nivelCalculado()
+                                  .toLowerCase()
+                                  .contains('severo'))) ...[
+                        const SizedBox(height: 16.0),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16.0),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF3CD),
+                            borderRadius: BorderRadius.circular(12.0),
+                            border: Border.all(
+                                color: const Color(0xFFE6A817), width: 1.2),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE6A817)
+                                      .withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: const Icon(Icons.psychology_outlined,
+                                    color: Color(0xFFB97900), size: 24),
+                              ),
+                              const SizedBox(width: 14.0),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Alerta — Atención psicológica requerida',
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF7A4F00),
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'El nivel de ansiedad detectado '
+                                      '(${_nivelCalculado()}) requiere '
+                                      'atención por psicología de forma inmediata.',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF7A4F00),
                                         fontSize: 13,
                                       ),
                                     ),

@@ -309,11 +309,11 @@ class _TamizajeRespuestaWidgetState extends State<TamizajeRespuestaWidget> {
                                         .secondaryBackground,
                                     activeColor:
                                         FlutterFlowTheme.of(context).primary,
-                                    checkColor: (widget.respuesta?.select2 !=
-                                                null &&
-                                            widget.respuesta?.select2 != '')
-                                        ? null
-                                        : FlutterFlowTheme.of(context).info,
+                                    checkColor:
+                                        (widget.respuesta?.select2 != null &&
+                                                widget.respuesta?.select2 != '')
+                                            ? null
+                                            : FlutterFlowTheme.of(context).info,
                                     dense: false,
                                     controlAffinity:
                                         ListTileControlAffinity.leading,
@@ -333,6 +333,7 @@ class _TamizajeRespuestaWidgetState extends State<TamizajeRespuestaWidget> {
               ],
             ),
           if ((widget.respuesta?.tipo == 'Tamizaje autoestima') ||
+              (widget.respuesta?.tipo == 'Tamizaje ansiedad') ||
               (widget.respuesta?.tipo == 'Tamizaje CDI') ||
               (widget.respuesta?.tipo == 'Tamizajes Depresion Beck'))
             Column(
@@ -583,10 +584,10 @@ class _TamizajeRespuestaWidgetState extends State<TamizajeRespuestaWidget> {
                                                   .checkboxValue1 = newValue!);
                                             },
                                   side: BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                        ),
+                                    width: 2,
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                  ),
                                   activeColor:
                                       FlutterFlowTheme.of(context).primary,
                                   checkColor:
@@ -660,10 +661,10 @@ class _TamizajeRespuestaWidgetState extends State<TamizajeRespuestaWidget> {
                                                   .checkboxValue2 = newValue!);
                                             },
                                   side: BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                        ),
+                                    width: 2,
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                  ),
                                   activeColor:
                                       FlutterFlowTheme.of(context).tertiary,
                                   checkColor:

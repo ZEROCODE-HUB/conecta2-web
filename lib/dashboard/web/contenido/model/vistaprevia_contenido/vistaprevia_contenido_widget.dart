@@ -2,9 +2,9 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_web_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'vistaprevia_contenido_model.dart';
 export 'vistaprevia_contenido_model.dart';
@@ -270,8 +270,8 @@ class _VistapreviaContenidoWidgetState
                                                                 .start,
                                                         children: [
                                                           if (rowContenidoRecord
-                                                                      .imagePortada !=
-                                                                  '')
+                                                                  .imagePortada !=
+                                                              '')
                                                             Flexible(
                                                               child: Container(
                                                                 width: MediaQuery.sizeOf(
@@ -475,8 +475,8 @@ class _VistapreviaContenidoWidgetState
                                                       ),
                                                     ),
                                                     if (rowContenidoRecord
-                                                                .imageProfile !=
-                                                            '')
+                                                            .imageProfile !=
+                                                        '')
                                                       Align(
                                                         alignment:
                                                             AlignmentDirectional(
@@ -513,19 +513,20 @@ class _VistapreviaContenidoWidgetState
                                                                   20.0,
                                                                   0.0,
                                                                   0.0),
-                                                      child: FlutterFlowWebView(
-                                                        content:
-                                                            rowContenidoRecord
-                                                                .html,
-                                                        width:
-                                                            MediaQuery.sizeOf(
-                                                                        context)
-                                                                    .width *
-                                                                1.0,
-                                                        height: 500.0,
-                                                        verticalScroll: true,
-                                                        horizontalScroll: true,
-                                                        html: true,
+                                                      child: Html(
+                                                        data: rowContenidoRecord
+                                                            .html,
+                                                        style: {
+                                                          "body": Style(
+                                                            height:
+                                                                Height(1000),
+                                                            margin:
+                                                                Margins.zero,
+                                                            padding:
+                                                                HtmlPaddings
+                                                                    .zero,
+                                                          ),
+                                                        },
                                                       ),
                                                     ),
                                                   ],

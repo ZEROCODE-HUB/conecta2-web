@@ -12,8 +12,10 @@ import 'package:flutter/material.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
 
 class MyHtmlEditorWidget extends StatefulWidget {
   const MyHtmlEditorWidget(
@@ -39,11 +41,38 @@ class _MyHtmlEditorWidgetState extends State<MyHtmlEditorWidget> {
     super.initState();
 
     if (widget.initialHtml != null && widget.initialHtml!.isNotEmpty) {
-      final doc = quill.Document()..insert(0, widget.initialHtml!);
-      _controller = quill.QuillController(
-        document: doc,
-        selection: const TextSelection.collapsed(offset: 0),
-      );
+      if (widget.initialHtml!.startsWith('<!-- quill-delta: ')) {
+        final endIndex = widget.initialHtml!.indexOf('-->');
+        if (endIndex != -1) {
+          final deltaStr = widget.initialHtml!.substring(18, endIndex).trim();
+          try {
+            final deltaJson = jsonDecode(deltaStr) as List;
+            final doc = quill.Document.fromJson(deltaJson);
+            _controller = quill.QuillController(
+              document: doc,
+              selection: const TextSelection.collapsed(offset: 0),
+            );
+          } catch (e) {
+            final doc = quill.Document()..insert(0, widget.initialHtml!);
+            _controller = quill.QuillController(
+              document: doc,
+              selection: const TextSelection.collapsed(offset: 0),
+            );
+          }
+        } else {
+          final doc = quill.Document()..insert(0, widget.initialHtml!);
+          _controller = quill.QuillController(
+            document: doc,
+            selection: const TextSelection.collapsed(offset: 0),
+          );
+        }
+      } else {
+        final doc = quill.Document()..insert(0, widget.initialHtml!);
+        _controller = quill.QuillController(
+          document: doc,
+          selection: const TextSelection.collapsed(offset: 0),
+        );
+      }
     } else {
       _controller = quill.QuillController.basic();
     }
@@ -53,12 +82,23 @@ class _MyHtmlEditorWidgetState extends State<MyHtmlEditorWidget> {
 
   void _startContentUpdateTimer() {
     _debounce = Timer.periodic(const Duration(seconds: 1), (timer) {
-      String newContent = _controller.document.toPlainText();
-      if (newContent != FFAppState().HTML) {
-        FFAppState().update(() {
-          FFAppState().HTML = newContent;
-        });
-        print("Contenido actualizado en AppState: $newContent");
+      try {
+        final delta = _controller.document.toDelta().toJson();
+        final converter = QuillDeltaToHtmlConverter(
+          List.castFrom(delta),
+        );
+        final rawHtml = converter.convert();
+        final deltaJson = jsonEncode(delta);
+        final newContent = '<!-- quill-delta: $deltaJson -->\n$rawHtml';
+
+        if (newContent != FFAppState().HTML) {
+          FFAppState().update(() {
+            FFAppState().HTML = newContent;
+          });
+          print("Contenido actualizado en AppState con formato HTML.");
+        }
+      } catch (e) {
+        print("Error converting to HTML: $e");
       }
     });
   }

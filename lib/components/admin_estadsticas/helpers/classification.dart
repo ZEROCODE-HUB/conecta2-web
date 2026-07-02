@@ -13,6 +13,9 @@ class UmbralesConfig {
     this.beckMinimaMax,
     this.beckLeveMax,
     this.beckModeradaMax,
+    this.ansiedad1Max,
+    this.ansiedad2Max,
+    this.ansiedad3Max,
   });
 
   /// For 3-level tamizajes (Autoestima/CDI): max value still considered
@@ -32,11 +35,20 @@ class UmbralesConfig {
   /// For Beck: max value of "Moderada". Values above are "Grave".
   final int? beckModeradaMax;
 
+  /// For Ansiedad (4 levels): max of "Sin sintomatología".
+  final int? ansiedad1Max;
+
+  /// For Ansiedad: max of "Leve".
+  final int? ansiedad2Max;
+
+  /// For Ansiedad: max of "Moderado". Values above are "Severo".
+  final int? ansiedad3Max;
+
   bool get hasThreeLevel => bajoMax != null && moderadoMax != null;
   bool get hasBeck =>
-      beckMinimaMax != null &&
-      beckLeveMax != null &&
-      beckModeradaMax != null;
+      beckMinimaMax != null && beckLeveMax != null && beckModeradaMax != null;
+  bool get hasFourLevel =>
+      ansiedad1Max != null && ansiedad2Max != null && ansiedad3Max != null;
 }
 
 /// Canonical gender buckets used across charts and aggregations.
@@ -56,12 +68,12 @@ String tipoKeyFromTitulo(String titulo) {
   if (t.contains('rosemberg') ||
       t.contains('rosenberg') ||
       t.contains('autoestima')) return 'autoestima';
+  if (t.contains('ansiedad')) return 'ansiedad';
   if (t.contains('crq')) return 'crq';
   if (t.contains('srq')) return 'srq';
   if (t.contains('beck') || t.contains('bdi')) return 'bdi';
-  if (t.contains('sustancia') ||
-      t.contains('assist') ||
-      t.contains('consumo')) return 'sustancias';
+  if (t.contains('sustancia') || t.contains('assist') || t.contains('consumo'))
+    return 'sustancias';
   return 'otros';
 }
 
@@ -168,6 +180,20 @@ String classifyNivel(
       if (total >= 17) return 'Severo';
       if (total >= 11) return 'Leve';
       return 'Sin sintomatología';
+    case 'ansiedad':
+      // Escala Ansiedad: 4 niveles configurables (Sin sintomatología / Leve / Moderado / Severo).
+      // Si el admin configuró umbrales, se usan; de lo contrario se usan defaults clínicos.
+      if (umbrales?.hasFourLevel == true) {
+        if (total <= umbrales!.ansiedad1Max!) return 'Sin sintomatología';
+        if (total <= umbrales.ansiedad2Max!) return 'Leve';
+        if (total <= umbrales.ansiedad3Max!) return 'Moderado';
+        return 'Severo';
+      }
+      // Defaults clínicos (ajustables por el admin al crear la encuesta).
+      if (total >= 22) return 'Severo';
+      if (total >= 16) return 'Moderado';
+      if (total >= 8) return 'Leve';
+      return 'Sin sintomatología';
     case 'bdi':
       if (umbrales?.hasBeck == true) {
         if (total <= umbrales!.beckMinimaMax!) return 'Mínima';
@@ -225,6 +251,17 @@ String mapNivelToBucket(String nivel, List<String> buckets) {
   if (n.contains('moderad') || n.contains('leve') || n.contains('media')) {
     return firstMatching(['moderada', 'moderado', 'leve', 'media']) ??
         buckets[buckets.length ~/ 2];
+  }
+  if (n.contains('moderado')) {
+    return firstMatching(['moderado', 'moderada']) ??
+        buckets[buckets.length ~/ 2];
+  }
+  if (n.contains('severo') ||
+      n.contains('severa') ||
+      n.contains('baja') ||
+      n.contains('alto') ||
+      n.contains('alta')) {
+    return firstMatching(['severo', 'severa']) ?? buckets.last;
   }
   // 'sin sintomatología', 'mínima', 'sin alerta', 'elevada' → healthy
   return firstMatching(

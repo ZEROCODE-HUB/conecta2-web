@@ -66,6 +66,8 @@ class _ChartDistribucionNivelesState extends State<ChartDistribucionNiveles> {
     switch (widget.stats.tipo) {
       case TamizajeTipo.autoestima:
         return 'Nivel de autoestima';
+      case TamizajeTipo.ansiedad:
+        return 'Nivel de ansiedad';
       case TamizajeTipo.cdi:
         return 'Nivel de depresión (CDI)';
       case TamizajeTipo.beck:

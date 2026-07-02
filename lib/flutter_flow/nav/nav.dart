@@ -341,89 +341,104 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: WebWidget.routeName,
           path: WebWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => WebWidget(),
           routes: [
             FFRoute(
               name: 'WebUsuarios',
               path: 'usuarios',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.usuarios),
             ),
             FFRoute(
               name: 'WebPacientes',
               path: 'pacientes',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.pacientes),
             ),
             FFRoute(
               name: 'WebEncuestas',
               path: 'encuestas',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.encuestas),
             ),
             FFRoute(
               name: 'WebTamizajes',
               path: 'tamizajes',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.tamizajes),
             ),
             FFRoute(
               name: 'WebTamizajesManuales',
               path: 'tamizajes-manuales',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.tamizajesManuales),
             ),
             FFRoute(
               name: 'WebNotificaciones',
               path: 'notificaciones',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.notificaciones),
             ),
             FFRoute(
               name: 'WebContenido',
               path: 'contenido',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.contenido),
             ),
             FFRoute(
               name: 'WebEstadisticas',
               path: 'estadisticas',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.estadisticas),
             ),
             FFRoute(
               name: 'WebMapa',
               path: 'mapa',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.mapa),
             ),
             FFRoute(
               name: 'WebExcel',
               path: 'excel',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.excel),
             ),
             FFRoute(
               name: 'WebInstituciones',
               path: 'instituciones',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.instituciones),
             ),
             FFRoute(
               name: 'WebBarrios',
               path: 'barrios',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.barrios),
             ),
             FFRoute(
               name: 'WebRecordatorios',
               path: 'recordatorios',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.recordatorios),
             ),
             FFRoute(
               name: 'WebPerfil',
               path: 'perfil',
+              requireAuth: true,
               builder: (context, params) =>
                   WebWidget(section: WebSection.perfil),
             ),
@@ -799,7 +814,7 @@ class FFRoute {
 
           if (requireAuth && !appStateNotifier.loggedIn) {
             appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
-            return '/splash';
+            return LoginWidget.routePath;
           }
           return null;
         },

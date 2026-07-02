@@ -415,6 +415,7 @@ class _EncuestaPreguntasTWidgetState extends State<EncuestaPreguntasTWidget> {
               ],
             ),
           if ((widget.pregunta?.tipo == 'Tamizaje autoestima') ||
+              (widget.pregunta?.tipo == 'Tamizaje ansiedad') ||
               (widget.pregunta?.tipo == 'Tamizaje CDI') ||
               (widget.pregunta?.tipo == 'Tamizajes Depresion Beck') ||
               (widget.pregunta?.tipo == 'Tamizaje CRQ / SRQ') ||

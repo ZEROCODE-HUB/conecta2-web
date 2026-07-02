@@ -29,6 +29,7 @@ const List<String> kCategoriasTamizaje = [
   'Beck',
   'CRQ/SRQ',
   'Autoestima',
+  'Ansiedad',
   'Consumo de SPA',
 ];
 

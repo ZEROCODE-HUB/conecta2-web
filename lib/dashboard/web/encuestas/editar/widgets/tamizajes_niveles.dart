@@ -56,6 +56,12 @@ const Map<String, List<String>> kNivelesPorCategoria = {
     'Moderado',
     'Alto',
   ],
+  'Escala ansiedad': [
+    'Sin sintomatología',
+    'Leve',
+    'Moderado',
+    'Severo',
+  ],
 };
 
 /// Returns the list of level labels configured for [categoria]. Empty list
@@ -73,6 +79,7 @@ bool usaNivelesGlobales(String? categoria) {
     case 'Escala autoestima':
     case 'CDI':
     case 'Depresión Beck':
+    case 'Escala ansiedad':
       return true;
     default:
       return false;
@@ -100,6 +107,13 @@ List<AlertaStruct> alertasTripletePorDefecto(String? categoria) {
         AlertaStruct(nivel: 'Leve', min: 7, max: 19),
         AlertaStruct(nivel: 'Severo', min: 20, max: 999),
       ];
+    case 'Escala ansiedad':
+      return [
+        AlertaStruct(nivel: 'Sin sintomatología', min: 0, max: 7),
+        AlertaStruct(nivel: 'Leve', min: 8, max: 15),
+        AlertaStruct(nivel: 'Moderado', min: 16, max: 21),
+        AlertaStruct(nivel: 'Severo', min: 22, max: 999),
+      ];
     default:
       return [];
   }
@@ -107,6 +121,36 @@ List<AlertaStruct> alertasTripletePorDefecto(String? categoria) {
 
 UmbralesConfig? umbralesTripleteDesdeEncuesta(EncuestasRecord e) {
   final cat = e.categoria;
+
+  // ── Escala ansiedad (4 niveles) ──────────────────────────────────────────
+  if (cat == 'Escala ansiedad') {
+    final orden = nivelesPorCategoria(cat);
+    if (orden.length < 4) return null;
+    final byNombre = <String, AlertaStruct>{};
+    for (final a in e.alertas) {
+      if (a.nivel.isNotEmpty) byNombre[a.nivel] = a;
+    }
+    final a0 = byNombre[orden[0]];
+    final a1 = byNombre[orden[1]];
+    final a2 = byNombre[orden[2]];
+    if (a0 != null &&
+        a1 != null &&
+        a2 != null &&
+        a0.hasMax() &&
+        a1.hasMax() &&
+        a2.hasMax() &&
+        a0.max < a1.max &&
+        a1.max < a2.max) {
+      return UmbralesConfig(
+        ansiedad1Max: a0.max,
+        ansiedad2Max: a1.max,
+        ansiedad3Max: a2.max,
+      );
+    }
+    return null;
+  }
+
+  // ── 3-level (Autoestima / CDI) ────────────────────────────────────────────
   if (cat != 'Escala autoestima' && cat != 'CDI') return null;
 
   final orden = nivelesPorCategoria(cat);
@@ -119,8 +163,7 @@ UmbralesConfig? umbralesTripleteDesdeEncuesta(EncuestasRecord e) {
   final a1 = byNombre[orden[1]];
 
   // Umbrales coherentes: el segundo tramo debe terminar después del primero.
-  bool tripleteValido(int bajoMax, int moderadoMax) =>
-      bajoMax < moderadoMax;
+  bool tripleteValido(int bajoMax, int moderadoMax) => bajoMax < moderadoMax;
 
   // 1) Preferir `alertas`: AlertasConfig (editor clásico) solo persiste este
   //    array; `bajo`/`moderado` pueden quedar desactualizados y forzar nivel
@@ -165,9 +208,8 @@ String calcularNivelAlerta({
 
   // Filter alerts that belong to this category (sustancia left empty for
   // global-level tamizajes).
-  final relevantes = alertas
-      .where((a) => niveles.contains(a.nivel))
-      .toList(growable: false);
+  final relevantes =
+      alertas.where((a) => niveles.contains(a.nivel)).toList(growable: false);
 
   if (relevantes.isEmpty) {
     // No persisted ranges -> cannot classify.

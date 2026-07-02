@@ -17,6 +17,7 @@ export 'classification.dart';
 enum TamizajeTipo {
   todas,
   autoestima,
+  ansiedad,
   cdi,
   beck,
   crq,
@@ -31,6 +32,8 @@ extension TamizajeTipoX on TamizajeTipo {
         return 'Todas';
       case TamizajeTipo.autoestima:
         return 'Autoestima';
+      case TamizajeTipo.ansiedad:
+        return 'Ansiedad';
       case TamizajeTipo.cdi:
         return 'CDI';
       case TamizajeTipo.beck:
@@ -49,6 +52,8 @@ extension TamizajeTipoX on TamizajeTipo {
     switch (this) {
       case TamizajeTipo.autoestima:
         return const ['Baja', 'Media', 'Elevada'];
+      case TamizajeTipo.ansiedad:
+        return const ['Sin sintomatología', 'Leve', 'Moderado', 'Severo'];
       case TamizajeTipo.cdi:
         return const ['Sin sintomatología', 'Leve', 'Severo'];
       case TamizajeTipo.beck:
@@ -68,10 +73,13 @@ extension TamizajeTipoX on TamizajeTipo {
 bool _matchesTipo(TamizajeTipo tipo, String titulo) {
   if (tipo == TamizajeTipo.todas) return true;
   final key = tipoKeyFromTitulo(titulo);
-  final isLegacy = titulo.toLowerCase().contains('crq / srq') || titulo.toLowerCase().contains('crq/srq');
+  final isLegacy = titulo.toLowerCase().contains('crq / srq') ||
+      titulo.toLowerCase().contains('crq/srq');
   switch (tipo) {
     case TamizajeTipo.autoestima:
       return key == 'autoestima';
+    case TamizajeTipo.ansiedad:
+      return key == 'ansiedad';
     case TamizajeTipo.cdi:
       return key == 'cdi';
     case TamizajeTipo.beck:
@@ -92,6 +100,8 @@ TamizajeTipo _resolveTipoForTitulo(String titulo) {
   switch (key) {
     case 'autoestima':
       return TamizajeTipo.autoestima;
+    case 'ansiedad':
+      return TamizajeTipo.ansiedad;
     case 'cdi':
       return TamizajeTipo.cdi;
     case 'bdi':
@@ -103,7 +113,8 @@ TamizajeTipo _resolveTipoForTitulo(String titulo) {
     case 'sustancias':
       return TamizajeTipo.sustancias;
     default:
-      if (titulo.toLowerCase().contains('crq') && titulo.toLowerCase().contains('srq')) {
+      if (titulo.toLowerCase().contains('crq') &&
+          titulo.toLowerCase().contains('srq')) {
         return TamizajeTipo.srq;
       }
       return TamizajeTipo.todas;
@@ -161,6 +172,8 @@ String? categoriaForTipo(TamizajeTipo tipo) {
   switch (tipo) {
     case TamizajeTipo.autoestima:
       return 'Escala autoestima';
+    case TamizajeTipo.ansiedad:
+      return 'Ansiedad';
     case TamizajeTipo.cdi:
       return 'CDI';
     case TamizajeTipo.beck:
@@ -237,7 +250,7 @@ Future<StatsAggregates> loadStats(
       if (tituloEncuesta != null && tituloEncuesta.isNotEmpty) {
         if (titulo != tituloEncuesta) continue;
       }
-      
+
       if ((data['invalidado'] as bool?) == true) continue;
 
       if (rango != null) {
@@ -407,9 +420,7 @@ class StatsColors {
     if (n.contains('baja')) {
       return rojo;
     }
-    if (n.contains('mínima') ||
-        n.contains('minima') ||
-        n.contains('sin')) {
+    if (n.contains('mínima') || n.contains('minima') || n.contains('sin')) {
       return verde;
     }
     return gris;

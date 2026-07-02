@@ -52,6 +52,7 @@ class _BookSingleWidgetState extends State<BookSingleWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    print(widget.contenido);
 
     return GestureDetector(
       onTap: () {
@@ -233,7 +234,40 @@ class _BookSingleWidgetState extends State<BookSingleWidget> {
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 20.0, 0.0, 20.0),
                               child: FlutterFlowWebView(
-                                content: widget.contenido!.html,
+                                content: '''
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .ql-container.ql-snow {
+      border: none;
+    }
+    .ql-editor {
+      padding: 0;
+      overflow-y: visible;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="ql-container ql-snow">
+    <div class="ql-editor">
+      ${widget.contenido!.html}
+    </div>
+  </div>
+</body>
+</html>
+''',
                                 width: MediaQuery.sizeOf(context).width * 1.0,
                                 height: MediaQuery.sizeOf(context).height * 1.0,
                                 verticalScroll: true,

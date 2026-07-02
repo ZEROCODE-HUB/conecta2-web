@@ -569,14 +569,24 @@ class _EncuestasParentsOpenWidgetState
                                         btnText: 'Enviar',
                                         btnAction: () async {
                                           if (widget.encuesta != null) {
-                                            final encuestaDoc = await EncuestasRecord.getDocumentOnce(widget.encuesta!);
-                                            final preguntas = encuestaDoc.preguntas;
-                                            for (int i = 0; i < preguntas.length; i++) {
+                                            final encuestaDoc =
+                                                await EncuestasRecord
+                                                    .getDocumentOnce(
+                                                        widget.encuesta!);
+                                            final preguntas =
+                                                encuestaDoc.preguntas;
+                                            for (int i = 0;
+                                                i < preguntas.length;
+                                                i++) {
                                               final p = preguntas[i];
                                               if (p.nPregunta != 1) continue;
-                                              if (p.tipo == 'Descriptiva') continue;
+                                              if (p.tipo == 'Descriptiva')
+                                                continue;
 
-                                              final r = i < FFAppState().RespuestaEnc.length
+                                              final r = i <
+                                                      FFAppState()
+                                                          .RespuestaEnc
+                                                          .length
                                                   ? FFAppState().RespuestaEnc[i]
                                                   : null;
 
@@ -584,34 +594,61 @@ class _EncuestasParentsOpenWidgetState
                                               if (r != null) {
                                                 final tipo = p.tipo;
                                                 if (tipo == 'abiertas') {
-                                                  respondida = r.respuesta.trim().isNotEmpty;
-                                                } else if (tipo == 'Verdadero o falso') {
-                                                  respondida = r.hasTrueAndFalse();
-                                                } else if (tipo == 'Selección única') {
-                                                  respondida = r.respuestaSeleccionUnica.isNotEmpty;
-                                                } else if (tipo == 'selección' || tipo == 'Condicionante') {
-                                                  respondida = r.respuestasSeleccionadas.isNotEmpty;
+                                                  respondida = r.respuesta
+                                                      .trim()
+                                                      .isNotEmpty;
+                                                } else if (tipo ==
+                                                    'Verdadero o falso') {
+                                                  respondida =
+                                                      r.hasTrueAndFalse();
+                                                } else if (tipo ==
+                                                    'Selección única') {
+                                                  respondida = r
+                                                      .respuestaSeleccionUnica
+                                                      .isNotEmpty;
+                                                } else if (tipo ==
+                                                        'selección' ||
+                                                    tipo == 'Condicionante') {
+                                                  respondida = r
+                                                      .respuestasSeleccionadas
+                                                      .isNotEmpty;
                                                 } else if (tipo == 'Tamizaje') {
-                                                  final visible = FFAppState().TamizajeSustanciaPermitidas.contains(p.sustancia);
-                                                  respondida = !visible || r.respuestaTamizaje.isNotEmpty;
-                                                } else if (tipo == 'Tamizaje autoestima' ||
-                                                           tipo == 'Tamizaje CDI' ||
-                                                           tipo == 'Tamizajes Depresion Beck' ||
-                                                           tipo == 'Tamizaje CRQ / SRQ' ||
-                                                           tipo == 'Tamizaje CRQ' ||
-                                                           tipo == 'Tamizaje SRQ') {
-                                                  respondida = r.respuestaTamizaje.isNotEmpty;
+                                                  final visible = FFAppState()
+                                                      .TamizajeSustanciaPermitidas
+                                                      .contains(p.sustancia);
+                                                  respondida = !visible ||
+                                                      r.respuestaTamizaje
+                                                          .isNotEmpty;
+                                                } else if (tipo ==
+                                                        'Tamizaje autoestima' ||
+                                                    tipo ==
+                                                        'Tamizaje ansiedad' ||
+                                                    tipo == 'Tamizaje CDI' ||
+                                                    tipo ==
+                                                        'Tamizajes Depresion Beck' ||
+                                                    tipo ==
+                                                        'Tamizaje CRQ / SRQ' ||
+                                                    tipo == 'Tamizaje CRQ' ||
+                                                    tipo == 'Tamizaje SRQ') {
+                                                  respondida = r
+                                                      .respuestaTamizaje
+                                                      .isNotEmpty;
                                                 } else {
-                                                  respondida = r.respuestaTamizaje.isNotEmpty;
+                                                  respondida = r
+                                                      .respuestaTamizaje
+                                                      .isNotEmpty;
                                                 }
                                               }
 
                                               if (!respondida) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
                                                   SnackBar(
-                                                    content: Text('Falta responder la pregunta: ${p.pregunta}'),
+                                                    content: Text(
+                                                        'Falta responder la pregunta: ${p.pregunta}'),
                                                     backgroundColor: Colors.red,
-                                                    duration: const Duration(seconds: 3),
+                                                    duration: const Duration(
+                                                        seconds: 3),
                                                   ),
                                                 );
                                                 return;

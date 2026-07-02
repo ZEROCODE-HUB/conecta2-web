@@ -90,7 +90,7 @@ class _HeaderWidgetState extends State<HeaderWidget> {
                   }(),
                   'https://i.postimg.cc/nLX7K1tW/Group-223.png',
                 ),
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
               ),
             ),
             Row(
