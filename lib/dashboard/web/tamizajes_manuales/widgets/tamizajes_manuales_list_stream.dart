@@ -17,6 +17,7 @@ class TamizajesManualesListStream extends StatefulWidget {
     required this.paginaActual,
     required this.onCambiarPagina,
     this.onVerDetalle,
+    this.isAdmin = false,
   });
 
   final DocumentReference profesionalRef;
@@ -26,6 +27,7 @@ class TamizajesManualesListStream extends StatefulWidget {
   final ValueChanged<int> onCambiarPagina;
   final void Function(RespuestasRecord respuesta, UsersRecord? adolescente)?
       onVerDetalle;
+  final bool isAdmin;
 
   @override
   State<TamizajesManualesListStream> createState() =>
@@ -40,8 +42,12 @@ class _TamizajesManualesListStreamState
   @override
   void initState() {
     super.initState();
-    _adolescentesStream =
-        TamizajeService.adolescentesAsignados(widget.profesionalRef);
+    if (widget.isAdmin) {
+      _adolescentesStream = TamizajeService.todosLosAdolescentes();
+    } else {
+      _adolescentesStream =
+          TamizajeService.adolescentesAsignados(widget.profesionalRef);
+    }
     _respuestasStream = TamizajeService.todasLasRespuestas();
   }
 

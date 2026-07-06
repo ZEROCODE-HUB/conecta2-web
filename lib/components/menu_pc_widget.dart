@@ -31,12 +31,12 @@ class _MenuPcWidgetState extends State<MenuPcWidget> {
     _model = createModel(context, () => MenuPcModel());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Keep `_model.select` aligned with the current URL so the
-      // active menu item highlights correctly on first paint and
-      // after deep links.
-      final s = WebSection.fromPath(GoRouterState.of(context).uri.path);
-      if (s != null) _model.select = s.legacySelect;
-      safeSetState(() {});
+      if (!mounted) return;
+      try {
+        final s = WebSection.fromPath(GoRouterState.of(context).uri.path);
+        if (s != null) _model.select = s.legacySelect;
+        safeSetState(() {});
+      } catch (_) {}
     });
   }
 
@@ -44,6 +44,7 @@ class _MenuPcWidgetState extends State<MenuPcWidget> {
   /// `_model.select` value in sync so [MenuselectWidget] keeps rendering
   /// the right "active" state until that logic is also migrated.
   void _goToSection(WebSection section) {
+    FFAppState().selectUser = '';
     _model.select = section.legacySelect;
     _model.updatePage(() {});
     context.go(section.fullPath);

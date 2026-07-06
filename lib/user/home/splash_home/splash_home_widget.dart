@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -20,6 +23,7 @@ class SplashHomeWidget extends StatefulWidget {
 
 class _SplashHomeWidgetState extends State<SplashHomeWidget> {
   late SplashHomeModel _model;
+  StreamSubscription? _authSub;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -28,87 +32,101 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
     super.initState();
     _model = createModel(context, () => SplashHomeModel());
 
-    // On page load action.
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (valueOrDefault(currentUserDocument?.rol, '') ==
-          valueOrDefault<String>(
-            FFAppConstants.adolescente,
-            'Adolescente',
-          )) {
-        context.goNamed(
-          HomeWidget.routeName,
-          extra: <String, dynamic>{
-            '__transition_info__': TransitionInfo(
-              hasTransition: true,
-              transitionType: PageTransitionType.fade,
-              duration: Duration(milliseconds: 0),
-            ),
-          },
-        );
-      } else if (valueOrDefault(currentUserDocument?.rol, '') ==
-          valueOrDefault<String>(
-            FFAppConstants.acudiente,
-            'Acudiente',
-          )) {
-        context.goNamed(
-          HomeParentsWidget.routeName,
-          extra: <String, dynamic>{
-            '__transition_info__': TransitionInfo(
-              hasTransition: true,
-              transitionType: PageTransitionType.fade,
-              duration: Duration(milliseconds: 0),
-            ),
-          },
-        );
-      } else if ((valueOrDefault(currentUserDocument?.rol, '') ==
-              valueOrDefault<String>(
-                FFAppConstants.Profesional,
-                'Profesional',
-              )) &&
-          (MediaQuery.sizeOf(context).width < kBreakpointLarge || !isWeb)) {
-        context.goNamed(
-          PacientesWidget.routeName,
-          extra: <String, dynamic>{
-            '__transition_info__': TransitionInfo(
-              hasTransition: true,
-              transitionType: PageTransitionType.fade,
-              duration: Duration(milliseconds: 0),
-            ),
-          },
-        );
-      } else if ((valueOrDefault(currentUserDocument?.rol, '') ==
-              'Administrador') ||
-          (valueOrDefault(currentUserDocument?.rol, '') ==
-              valueOrDefault<String>(
-                FFAppConstants.Profesional,
-                'Profesional',
-              ))) {
-        context.goNamed(
-          WebWidget.routeName,
-          extra: <String, dynamic>{
-            '__transition_info__': TransitionInfo(
-              hasTransition: true,
-              transitionType: PageTransitionType.fade,
-              duration: Duration(milliseconds: 0),
-            ),
-          },
-        );
-      } else {
-        context.goNamed(SplashWidget.routeName);
-
+    _authSub = authenticatedUserStream.listen((userDoc) {
+      if (userDoc == null) {
+        // Si no estamos autenticados en Firebase Auth, enviamos al splash/login
+        if (FirebaseAuth.instance.currentUser == null) {
+          context.goNamed(SplashWidget.routeName);
+        }
         return;
       }
 
-      await currentUserReference!.update(createUsersRecordData(
-        lastconnectedday: getCurrentTimestamp,
-      ));
+      _authSub?.cancel();
+      _redirectBasedOnRole(userDoc);
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
+  void _redirectBasedOnRole(UsersRecord userDoc) async {
+    if (!mounted) return;
+    final rol = userDoc.rol;
+
+    if (rol ==
+        valueOrDefault<String>(
+          FFAppConstants.adolescente,
+          'Adolescente',
+        )) {
+      context.goNamed(
+        HomeWidget.routeName,
+        extra: <String, dynamic>{
+          '__transition_info__': TransitionInfo(
+            hasTransition: true,
+            transitionType: PageTransitionType.fade,
+            duration: Duration(milliseconds: 0),
+          ),
+        },
+      );
+    } else if (rol ==
+        valueOrDefault<String>(
+          FFAppConstants.acudiente,
+          'Acudiente',
+        )) {
+      context.goNamed(
+        HomeParentsWidget.routeName,
+        extra: <String, dynamic>{
+          '__transition_info__': TransitionInfo(
+            hasTransition: true,
+            transitionType: PageTransitionType.fade,
+            duration: Duration(milliseconds: 0),
+          ),
+        },
+      );
+    } else if ((rol ==
+            valueOrDefault<String>(
+              FFAppConstants.Profesional,
+              'Profesional',
+            )) &&
+        (MediaQuery.sizeOf(context).width < kBreakpointLarge || !isWeb)) {
+      context.goNamed(
+        PacientesWidget.routeName,
+        extra: <String, dynamic>{
+          '__transition_info__': TransitionInfo(
+            hasTransition: true,
+            transitionType: PageTransitionType.fade,
+            duration: Duration(milliseconds: 0),
+          ),
+        },
+      );
+    } else if ((rol == 'Administrador') ||
+        (rol ==
+            valueOrDefault<String>(
+              FFAppConstants.Profesional,
+              'Profesional',
+            ))) {
+      context.goNamed(
+        WebWidget.routeName,
+        extra: <String, dynamic>{
+          '__transition_info__': TransitionInfo(
+            hasTransition: true,
+            transitionType: PageTransitionType.fade,
+            duration: Duration(milliseconds: 0),
+          ),
+        },
+      );
+    } else {
+      context.goNamed(SplashWidget.routeName);
+      return;
+    }
+
+    await userDoc.reference.update(createUsersRecordData(
+      lastconnectedday: getCurrentTimestamp,
+    ));
+  }
+
   @override
   void dispose() {
+    _authSub?.cancel();
     _model.dispose();
 
     super.dispose();

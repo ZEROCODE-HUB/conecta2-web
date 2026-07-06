@@ -123,6 +123,8 @@ class _TamizajesManualesWidgetState extends State<TamizajesManualesWidget> {
   }
 
   Widget _buildListado(FlutterFlowTheme theme, DocumentReference? profesionalRef) {
+    final isAdmin = valueOrDefault(currentUserDocument?.rol, '') == 'Administrador';
+
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -136,16 +138,16 @@ class _TamizajesManualesWidgetState extends State<TamizajesManualesWidget> {
             focusNode: _model.searchFocusNode,
             ordenDescendente: _model.ordenDescendente,
             onChangedSearch: (v) {
-              setState(() {
-                _model.busqueda = v;
-                _model.paginaActual = 0;
-              });
+               setState(() {
+                 _model.busqueda = v;
+                 _model.paginaActual = 0;
+               });
             },
             onToggleOrden: () {
-              setState(() {
-                _model.ordenDescendente = !_model.ordenDescendente;
-                _model.paginaActual = 0;
-              });
+               setState(() {
+                 _model.ordenDescendente = !_model.ordenDescendente;
+                 _model.paginaActual = 0;
+               });
             },
           ),
           const Divider(height: 1, thickness: 1),
@@ -162,6 +164,7 @@ class _TamizajesManualesWidgetState extends State<TamizajesManualesWidget> {
                     onCambiarPagina: (p) =>
                         setState(() => _model.paginaActual = p),
                     onVerDetalle: _abrirDetalle,
+                    isAdmin: isAdmin,
                   ),
           ),
         ],

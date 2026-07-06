@@ -21,6 +21,14 @@ class TamizajeService {
     );
   }
 
+  /// Stream de todos los adolescentes (para administradores).
+  static Stream<List<UsersRecord>> todosLosAdolescentes() {
+    return queryUsersRecord(
+      queryBuilder: (q) => q.where('rol', isEqualTo: 'Adolescente'),
+    );
+  }
+
+
   /// Stream de todas las respuestas (collectionGroup).
   static Stream<List<RespuestasRecord>> todasLasRespuestas() {
     return queryRespuestasRecord(

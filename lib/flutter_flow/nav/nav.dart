@@ -404,8 +404,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               name: 'WebMapa',
               path: 'mapa',
               requireAuth: true,
-              builder: (context, params) =>
-                  WebWidget(section: WebSection.mapa),
+              builder: (context, params) => WebWidget(section: WebSection.mapa),
             ),
             FFRoute(
               name: 'WebExcel',

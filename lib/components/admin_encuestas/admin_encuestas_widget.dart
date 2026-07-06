@@ -69,30 +69,36 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
     // Sub-routes handled via FFAppState().selectUser.
     final selectUser = FFAppState().selectUser;
     if (selectUser == 'Crearencuesta') {
-      return wrapWithModel(
-        model: _model.crearencuestaModel,
-        updateCallback: _onStateChanged,
-        updateOnChange: true,
-        child: CrearencuestaWidget(
-          encuestaID: _model.documentID,
-          tipo: widget.tipo!,
-        ),
-      );
+      if (widget.tipo != null) {
+        return wrapWithModel(
+          model: _model.crearencuestaModel,
+          updateCallback: _onStateChanged,
+          updateOnChange: true,
+          child: CrearencuestaWidget(
+            encuestaID: _model.documentID,
+            tipo: widget.tipo!,
+          ),
+        );
+      }
     } else if (selectUser == 'Resultados') {
-      return wrapWithModel(
-        model: _model.resultadosModel,
-        updateCallback: _onStateChanged,
-        updateOnChange: true,
-        child: ResultadosWidget(documentID: _model.documentID!),
-      );
+      if (_model.documentID != null) {
+        return wrapWithModel(
+          model: _model.resultadosModel,
+          updateCallback: _onStateChanged,
+          updateOnChange: true,
+          child: ResultadosWidget(documentID: _model.documentID!),
+        );
+      }
     } else if (selectUser == 'ResultadosTamizaje') {
-      return ResultadosTamiV2Widget(
-        encuestaID: _model.documentID!,
-        onClose: () {
-          FFAppState().selectUser = '';
-          safeSetState(() {});
-        },
-      );
+      if (_model.documentID != null) {
+        return ResultadosTamiV2Widget(
+          encuestaID: _model.documentID!,
+          onClose: () {
+            FFAppState().selectUser = '';
+            safeSetState(() {});
+          },
+        );
+      }
     } else if (selectUser == 'ListadoTamizajes') {
       return ListadoTamizajesWidget(
         onVolver: () {
@@ -112,15 +118,17 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
         child: VistaPreviaCopyWidget(encuestaID: previewRef),
       );
     } else if (selectUser == 'Editar Encuesta') {
-      return wrapWithModel(
-        model: _model.editarencuesta2Model,
-        updateCallback: _onStateChanged,
-        child: Editarencuesta2Widget(
-          encuestaID: _model.documentID!,
-          docencuestas2: _model.doc!,
-          tipo: widget.tipo!,
-        ),
-      );
+      if (_model.documentID != null && _model.doc != null && widget.tipo != null) {
+        return wrapWithModel(
+          model: _model.editarencuesta2Model,
+          updateCallback: _onStateChanged,
+          child: Editarencuesta2Widget(
+            encuestaID: _model.documentID!,
+            docencuestas2: _model.doc!,
+            tipo: widget.tipo!,
+          ),
+        );
+      }
     }
 
     return StreamBuilder<List<EncuestasRecord>>(

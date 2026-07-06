@@ -21,7 +21,7 @@ void main() async {
 
   await initFirebase();
 
-  final appState = FFAppState(); // Initialize FFAppState
+  final appState = FFAppState();
   await appState.initializePersistedState();
 
   runApp(ChangeNotifierProvider(
@@ -31,7 +31,6 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  // This widget is the root of your application.
   @override
   State<MyApp> createState() => _MyAppState();
 
@@ -39,20 +38,24 @@ class MyApp extends StatefulWidget {
       context.findAncestorStateOfType<_MyAppState>()!;
 }
 
+/// Permite arrastrar el contenido con mouse, touch, stylus y trackpad.
 class MyAppScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.mouse,
         PointerDeviceKind.touch,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.trackpad,
       };
 }
 
 class _MyAppState extends State<MyApp> {
   Locale? _locale;
-
   ThemeMode _themeMode = ThemeMode.system;
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
         routeMatch ?? _router.routerDelegate.currentConfiguration.last;
@@ -66,6 +69,7 @@ class _MyAppState extends State<MyApp> {
       _router.routerDelegate.currentConfiguration.matches
           .map((e) => getRoute(e))
           .toList();
+
   late Stream<BaseAuthUser> userStream;
 
   final authUserSub = authenticatedUserStream.listen((_) {});
@@ -124,10 +128,28 @@ class _MyAppState extends State<MyApp> {
       ],
       theme: ThemeData(
         brightness: Brightness.light,
+        // Configuración clave para scroll tipo navegador desktop
         scrollbarTheme: ScrollbarThemeData(
-          thumbVisibility: WidgetStateProperty.all(false),
-          trackVisibility: WidgetStateProperty.all(false),
-          interactive: false,
+          // Muestra el thumb siempre (como en navegadores desktop)
+          thumbVisibility: WidgetStateProperty.all(true),
+          // Muestra el track (la pista del scroll)
+          trackVisibility: WidgetStateProperty.all(true),
+          // PERMITE ARRASTRAR EL THUMB CON EL MOUSE
+          interactive: true,
+          // Grosor cómodo para agarrar con el cursor
+          thickness: WidgetStateProperty.all(10.0),
+          // Bordes redondeados
+          radius: const Radius.circular(5),
+          // Color del thumb (ajusta a tu gusto)
+          thumbColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.hovered)) {
+              return Colors.grey[700];
+            }
+            return Colors.grey[500];
+          }),
+          // Color del track
+          trackColor: WidgetStateProperty.all(Colors.grey[200]),
+          trackBorderColor: WidgetStateProperty.all(Colors.grey[300]),
         ),
         useMaterial3: false,
       ),
