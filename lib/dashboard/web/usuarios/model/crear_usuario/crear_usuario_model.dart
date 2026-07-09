@@ -41,6 +41,39 @@ class CrearUsuarioModel extends FlutterFlowModel<CrearUsuarioWidget> {
   FocusNode? textFieldFocusNode4;
   TextEditingController? textController4;
   String? Function(BuildContext, String?)? textController4Validator;
+  
+  // New fields
+  FocusNode? textFieldedadFocusNode;
+  TextEditingController? textFieldedadTextController;
+  String? Function(BuildContext, String?)? textFieldedadTextControllerValidator;
+
+  String? dropDownGeneroValue;
+  FormFieldController<String>? dropDownGeneroValueController;
+
+  FocusNode? textFieldfechaNacimientoFocusNode;
+  TextEditingController? textFieldfechaNacimientoTextController;
+  String? Function(BuildContext, String?)? textFieldfechaNacimientoTextControllerValidator;
+  
+  FocusNode? textFieldcolegioFocusNode;
+  TextEditingController? textFieldcolegioTextController;
+  String? Function(BuildContext, String?)? textFieldcolegioTextControllerValidator;
+
+  FocusNode? textFieldepsFocusNode;
+  TextEditingController? textFieldepsTextController;
+  String? Function(BuildContext, String?)? textFieldepsTextControllerValidator;
+
+  FocusNode? textFieldgradoFocusNode;
+  TextEditingController? textFieldgradoTextController;
+  String? Function(BuildContext, String?)? textFieldgradoTextControllerValidator;
+
+  FocusNode? textFieldmunicipioFocusNode;
+  TextEditingController? textFieldmunicipioTextController;
+  String? Function(BuildContext, String?)? textFieldmunicipioTextControllerValidator;
+
+  FocusNode? textFieldbarrioFocusNode;
+  TextEditingController? textFieldbarrioTextController;
+  String? Function(BuildContext, String?)? textFieldbarrioTextControllerValidator;
+
   // State field(s) for password widget.
   FocusNode? passwordFocusNode;
   TextEditingController? passwordTextController;
@@ -81,6 +114,29 @@ class CrearUsuarioModel extends FlutterFlowModel<CrearUsuarioWidget> {
 
     textFieldFocusNode4?.dispose();
     textController4?.dispose();
+    
+    textFieldedadFocusNode?.dispose();
+    textFieldedadTextController?.dispose();
+
+
+
+    textFieldfechaNacimientoFocusNode?.dispose();
+    textFieldfechaNacimientoTextController?.dispose();
+
+    textFieldcolegioFocusNode?.dispose();
+    textFieldcolegioTextController?.dispose();
+
+    textFieldepsFocusNode?.dispose();
+    textFieldepsTextController?.dispose();
+
+    textFieldgradoFocusNode?.dispose();
+    textFieldgradoTextController?.dispose();
+
+    textFieldmunicipioFocusNode?.dispose();
+    textFieldmunicipioTextController?.dispose();
+
+    textFieldbarrioFocusNode?.dispose();
+    textFieldbarrioTextController?.dispose();
 
     passwordFocusNode?.dispose();
     passwordTextController?.dispose();

@@ -50,6 +50,17 @@ class EditarUsuarioModel extends FlutterFlowModel<EditarUsuarioWidget> {
   TextEditingController? textFieldcolegioTextController;
   String? Function(BuildContext, String?)? textFieldcolegioTextControllerValidator;
 
+  FocusNode? textFieldedadFocusNode;
+  TextEditingController? textFieldedadTextController;
+  String? Function(BuildContext, String?)? textFieldedadTextControllerValidator;
+
+  String? dropDownGeneroValue;
+  FormFieldController<String>? dropDownGeneroValueController;
+
+  FocusNode? textFieldfechaNacimientoFocusNode;
+  TextEditingController? textFieldfechaNacimientoTextController;
+  String? Function(BuildContext, String?)? textFieldfechaNacimientoTextControllerValidator;
+
   FocusNode? textFieldepsFocusNode;
   TextEditingController? textFieldepsTextController;
   String? Function(BuildContext, String?)? textFieldepsTextControllerValidator;
@@ -91,6 +102,14 @@ class EditarUsuarioModel extends FlutterFlowModel<EditarUsuarioWidget> {
     textFieldaddressFocusNode?.dispose();
     textFieldaddressTextController?.dispose();
     
+    textFieldedadFocusNode?.dispose();
+    textFieldedadTextController?.dispose();
+
+
+
+    textFieldfechaNacimientoFocusNode?.dispose();
+    textFieldfechaNacimientoTextController?.dispose();
+
     textFieldcolegioFocusNode?.dispose();
     textFieldcolegioTextController?.dispose();
 

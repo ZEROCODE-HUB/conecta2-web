@@ -92,10 +92,10 @@ Future<Map<String, dynamic>?> obtenerDatosPacienteFirestoreSeguro(
       'colegio': data['colegio']?.toString() ?? 'NO REGISTRADO',
       'grado': data['grado']?.toString() ?? 'NO REGISTRADO',
       'rol': data['rol']?.toString() ?? 'Usuario',
-      'acudienteNombre': acudienteNombre,
-      'acudienteTelefono': acudienteTelefono,
-      'acudienteCorreo': acudienteCorreo,
-      'acudienteParentesco': acudienteParentesco,
+      'acudienteNombre': acudienteNombre ?? 'NO REGISTRADO',
+      'acudienteTelefono': acudienteTelefono ?? 'NO REGISTRADO',
+      'acudienteCorreo': acudienteCorreo ?? 'NO REGISTRADO',
+      'acudienteParentesco': acudienteParentesco ?? 'NO REGISTRADO',
       'fechaCreacion': _extraerFechaSegura(data['created_time']),
       'ultimaConexion': _extraerFechaSegura(data['Lastconnectedday']),
     };
@@ -240,6 +240,8 @@ pw.Widget buildContactoBlock(Map<String, dynamic> datos) {
   final acudiente = (datos['acudienteNombre']?.toString() ?? '').toUpperCase();
   final parentesco =
       (datos['acudienteParentesco']?.toString() ?? '').toUpperCase();
+  final telefonoAcudiente = datos['acudienteTelefono']?.toString() ?? '';
+  final acudienteCorreo = datos['acudienteCorreo']?.toString() ?? '';
 
   return pw.Container(
     padding: const pw.EdgeInsets.symmetric(vertical: 10),
@@ -272,6 +274,8 @@ pw.Widget buildContactoBlock(Map<String, dynamic> datos) {
               children: [
                 _labeledField('ACUDIENTE:', acudiente),
                 _labeledField('PARENTESCO:', parentesco),
+                _labeledField('TELÉFONO:', telefonoAcudiente),
+                _labeledField('CORREO:', acudienteCorreo),
               ],
             ),
           ),

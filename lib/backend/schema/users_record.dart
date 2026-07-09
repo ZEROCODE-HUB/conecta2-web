@@ -106,6 +106,11 @@ class UsersRecord extends FirestoreRecord {
   String get barrio => _barrio ?? '';
   bool hasBarrio() => _barrio != null;
 
+  // "edad" field.
+  String? _edad;
+  String get edad => _edad ?? '';
+  bool hasEdad() => _edad != null;
+
   // "colegio" field.
   String? _colegio;
   String get colegio => _colegio ?? '';
@@ -142,6 +147,7 @@ class UsersRecord extends FirestoreRecord {
     _page = castToType<int>(snapshotData['page']);
     _fechaNacimiento = snapshotData['fecha_nacimiento'] as DateTime?;
     _genero = snapshotData['genero'] as String?;
+    _edad = snapshotData['edad'] as String?;
     _municipio = snapshotData['municipio'] as String?;
     _barrio = snapshotData['barrio'] as String?;
     _colegio = snapshotData['colegio'] as String?;
@@ -199,6 +205,7 @@ Map<String, dynamic> createUsersRecordData({
   int? page,
   DateTime? fechaNacimiento,
   String? genero,
+  String? edad,
   String? municipio,
   String? barrio,
   String? colegio,
@@ -223,6 +230,7 @@ Map<String, dynamic> createUsersRecordData({
       'page': page,
       'fecha_nacimiento': fechaNacimiento,
       'genero': genero,
+      'edad': edad,
       'municipio': municipio,
       'barrio': barrio,
       'colegio': colegio,
@@ -261,6 +269,7 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.page == e2?.page &&
         e1?.fechaNacimiento == e2?.fechaNacimiento &&
         e1?.genero == e2?.genero &&
+        e1?.edad == e2?.edad &&
         e1?.municipio == e2?.municipio &&
         e1?.barrio == e2?.barrio &&
         e1?.colegio == e2?.colegio &&
@@ -286,6 +295,7 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.page,
         e?.fechaNacimiento,
         e?.genero,
+        e?.edad,
         e?.municipio,
         e?.barrio,
         e?.colegio,

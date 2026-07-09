@@ -66,7 +66,8 @@ Future generarImprimirPDF(String userUid) async {
     try {
       print('PASO 2: Obteniendo respuestas de tamizaje...');
       var resultado = await _obtenerRespuestasTamizajeSeguro(userUid);
-      respuestasTamizaje = List<RespustaTamizajeStruct>.from(resultado['respuestas'] ?? []);
+      respuestasTamizaje =
+          List<RespustaTamizajeStruct>.from(resultado['respuestas'] ?? []);
       tamizajeCompletadoSinRespuestas = resultado['completadoSinRespuestas'];
 
       if (respuestasTamizaje.isNotEmpty) {
@@ -322,9 +323,9 @@ Future<Map<String, dynamic>?> _obtenerDatosPacienteFirestoreSeguro(
       'grado': data['grado']?.toString() ?? 'No registrado',
       'rol': data['rol']?.toString() ?? 'Usuario',
       'acudienteNombre': acudienteNombre,
-      'acudienteTelefono': acudienteTelefono,
-      'acudienteCorreo': acudienteCorreo,
-      'acudienteParentesco': acudienteParentesco,
+      'acudienteTelefono': acudienteTelefono ?? 'No registrado',
+      'acudienteCorreo': acudienteCorreo ?? 'No registrado',
+      'acudienteParentesco': acudienteParentesco ?? 'No especificado',
       'fechaCreacion': _extraerFechaSegura(data['created_time']),
       'ultimaConexion': _extraerFechaSegura(data['Lastconnectedday']),
     };
@@ -484,20 +485,22 @@ void _procesarDocRespuestaImprimir(
     for (final item in items) {
       if (item is! Map) continue;
       final m = Map<String, dynamic>.from(item);
-      
+
       final structItem = RespuestaTestStruct.fromMap(m);
       String respuestaText = structItem.respuesta.trim();
       if (respuestaText.isEmpty) {
         respuestaText = structItem.respuestaSeleccionUnica.trim();
       }
-      if (respuestaText.isEmpty && structItem.respuestasSeleccionadas.isNotEmpty) {
+      if (respuestaText.isEmpty &&
+          structItem.respuestasSeleccionadas.isNotEmpty) {
         respuestaText = structItem.respuestasSeleccionadas.join(', ');
       }
       if (respuestaText.isEmpty && structItem.respuestaSelection.isNotEmpty) {
         respuestaText = structItem.respuestaSelection.join(', ');
       }
       if (respuestaText.isEmpty && structItem.respuestaTamizaje.isNotEmpty) {
-        respuestaText = structItem.respuestaTamizaje.map((e) => e.etiqueta).join(', ');
+        respuestaText =
+            structItem.respuestaTamizaje.map((e) => e.etiqueta).join(', ');
       }
 
       final tipo = (m['Tipo'] ?? m['tipo'] ?? titulo).toString();
@@ -537,7 +540,8 @@ Future<Map<String, dynamic>> _obtenerRespuestasTamizajeSeguro(
         _procesarDocRespuestaImprimir(doc.data(), respuestasAgregadas);
       }
     } catch (e) {
-      print('  Info: no se pudo leer collectionGroup Respuestas en Imprimir: $e');
+      print(
+          '  Info: no se pudo leer collectionGroup Respuestas en Imprimir: $e');
     }
 
     // 2) Fallback: Respuestas guardadas bajo /users/{userUid}/Respuestas/...
@@ -551,7 +555,8 @@ Future<Map<String, dynamic>> _obtenerRespuestasTamizajeSeguro(
           _procesarDocRespuestaImprimir(doc.data(), respuestasAgregadas);
         }
       } catch (e) {
-        print('  Info: no se pudo leer users/$userUid/Respuestas en Imprimir: $e');
+        print(
+            '  Info: no se pudo leer users/$userUid/Respuestas en Imprimir: $e');
       }
     }
 

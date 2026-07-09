@@ -14,6 +14,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'crear_usuario_model.dart';
 export 'crear_usuario_model.dart';
@@ -54,6 +55,22 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
 
     _model.textController4 ??= TextEditingController();
     _model.textFieldFocusNode4 ??= FocusNode();
+
+    _model.textFieldedadTextController ??= TextEditingController();
+    _model.textFieldedadFocusNode ??= FocusNode();
+
+    _model.textFieldfechaNacimientoTextController ??= TextEditingController();
+    _model.textFieldfechaNacimientoFocusNode ??= FocusNode();
+    _model.textFieldcolegioTextController ??= TextEditingController();
+    _model.textFieldcolegioFocusNode ??= FocusNode();
+    _model.textFieldepsTextController ??= TextEditingController();
+    _model.textFieldepsFocusNode ??= FocusNode();
+    _model.textFieldgradoTextController ??= TextEditingController();
+    _model.textFieldgradoFocusNode ??= FocusNode();
+    _model.textFieldmunicipioTextController ??= TextEditingController();
+    _model.textFieldmunicipioFocusNode ??= FocusNode();
+    _model.textFieldbarrioTextController ??= TextEditingController();
+    _model.textFieldbarrioFocusNode ??= FocusNode();
 
     _model.passwordTextController ??= TextEditingController();
     _model.passwordFocusNode ??= FocusNode();
@@ -369,29 +386,37 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
           key: _formKey,
           autovalidateMode: AutovalidateMode.disabled,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.max,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(25.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          0.0, 20.0, 0.0, 0.0),
-                      child: buildSectionTitle(context, 'Datos personales'),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(25.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              0.0, 20.0, 0.0, 0.0),
+                          child: buildSectionTitle(context, 'Datos personales'),
+                        ),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              0.0, 20.0, 0.0, 0.0),
+                          child: _buildTipoAndNombreRow(context),
+                        ),
+                        _buildEmailPhoneRow(context),
+                        _buildIdentityAddressRow(context),
+                        _buildEdadGeneroRow(context),
+                        _buildNacimientoRow(context),
+                        _buildColegioEpsRow(context),
+                        _buildMunicipioBarrioRow(context),
+                        _buildGradoRow(context),
+                        _buildPasswordRow(context),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          0.0, 20.0, 0.0, 0.0),
-                      child: _buildTipoAndNombreRow(context),
-                    ),
-                    _buildEmailPhoneRow(context),
-                    _buildIdentityAddressRow(context),
-                    _buildPasswordRow(context),
-                  ],
+                  ),
                 ),
               ),
               _buildActionButtons(context),
@@ -501,6 +526,157 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
               validator: _model.textController4Validator.asValidator(context),
             ),
           ),
+        ].divide(const SizedBox(width: 25.0)),
+      ),
+    );
+  }
+
+  Widget _buildEdadGeneroRow(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: LabeledTextField(
+              label: 'Edad',
+              controller: _model.textFieldedadTextController,
+              focusNode: _model.textFieldedadFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldedadTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildFieldLabel(context, 'Género'),
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                  child: buildStyledDropDown(
+                    context: context,
+                    controller: _model.dropDownGeneroValueController ??=
+                        FormFieldController<String>(null),
+                    options: ['Masculino', 'Femenino', 'Otro'],
+                    onChanged: (val) =>
+                        safeSetState(() => _model.dropDownGeneroValue = val),
+                    hintText: 'Seleccionar género',
+                    width: double.infinity,
+                    height: 47.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ].divide(const SizedBox(width: 25.0)),
+      ),
+    );
+  }
+
+  Widget _buildNacimientoRow(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: LabeledTextField(
+              label: 'Fecha de nacimiento',
+              hintText: '(DD/MM/YYYY)',
+              controller: _model.textFieldfechaNacimientoTextController,
+              focusNode: _model.textFieldfechaNacimientoFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldfechaNacimientoTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+          Expanded(child: const SizedBox()),
+        ].divide(const SizedBox(width: 25.0)),
+      ),
+    );
+  }
+
+  Widget _buildColegioEpsRow(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: LabeledTextField(
+              label: 'Colegio',
+              controller: _model.textFieldcolegioTextController,
+              focusNode: _model.textFieldcolegioFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldcolegioTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+          Expanded(
+            child: LabeledTextField(
+              label: 'EPS',
+              controller: _model.textFieldepsTextController,
+              focusNode: _model.textFieldepsFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldepsTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+        ].divide(const SizedBox(width: 25.0)),
+      ),
+    );
+  }
+
+  Widget _buildMunicipioBarrioRow(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: LabeledTextField(
+              label: 'Municipio',
+              controller: _model.textFieldmunicipioTextController,
+              focusNode: _model.textFieldmunicipioFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldmunicipioTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+          Expanded(
+            child: LabeledTextField(
+              label: 'Barrio',
+              controller: _model.textFieldbarrioTextController,
+              focusNode: _model.textFieldbarrioFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldbarrioTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+        ].divide(const SizedBox(width: 25.0)),
+      ),
+    );
+  }
+
+  Widget _buildGradoRow(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: LabeledTextField(
+              label: 'Grado Escolar',
+              controller: _model.textFieldgradoTextController,
+              focusNode: _model.textFieldgradoFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldgradoTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+          Expanded(child: const SizedBox()),
         ].divide(const SizedBox(width: 25.0)),
       ),
     );
@@ -686,6 +862,15 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
             clearUnsetFields: false,
           ),
           identidad: _model.textController3.text,
+          edad: _model.textFieldedadTextController.text,
+          genero: _model.dropDownGeneroValue,
+          fechaNacimiento: DateTime.tryParse(
+              _model.textFieldfechaNacimientoTextController.text),
+          colegio: _model.textFieldcolegioTextController.text,
+          eps: _model.textFieldepsTextController.text,
+          grado: _model.textFieldgradoTextController.text,
+          municipio: _model.textFieldmunicipioTextController.text,
+          barrio: _model.textFieldbarrioTextController.text,
         ));
 
     await showDialog(

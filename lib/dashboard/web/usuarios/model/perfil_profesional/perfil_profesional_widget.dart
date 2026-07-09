@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '/backend/backend.dart';
@@ -262,6 +263,22 @@ class _PerfilProfesionalWidgetState extends State<PerfilProfesionalWidget> {
             label: 'Fecha de registro',
             value: _formatDate(user.createdTime),
           ),
+        ),
+        InfoRow(
+          left: InfoField(label: 'Edad', value: user.edad.isNotEmpty ? user.edad : 'No registrado'),
+          right: InfoField(label: 'Género', value: user.genero.isNotEmpty ? user.genero : 'No registrado'),
+        ),
+        InfoRow(
+          left: InfoField(label: 'Fecha de nacimiento', value: user.fechaNacimiento != null ? DateFormat('dd/MM/yyyy').format(user.fechaNacimiento!) : 'No registrado'),
+          right: InfoField(label: 'Colegio', value: user.colegio.isNotEmpty ? user.colegio : 'No registrado'),
+        ),
+        InfoRow(
+          left: InfoField(label: 'EPS', value: user.eps.isNotEmpty ? user.eps : 'No registrado'),
+          right: InfoField(label: 'Grado Escolar', value: user.grado.isNotEmpty ? user.grado : 'No registrado'),
+        ),
+        InfoRow(
+          left: InfoField(label: 'Municipio', value: user.municipio.isNotEmpty ? user.municipio : 'No registrado'),
+          right: InfoField(label: 'Barrio', value: user.barrio.isNotEmpty ? user.barrio : 'No registrado'),
         ),
       ],
     );

@@ -12,6 +12,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'editar_usuario_model.dart';
 export 'editar_usuario_model.dart';
@@ -54,17 +55,28 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
           _model.textFieldNombresTextController?.text =
               widget.userdoc!.displayName;
           _model.emailTextController?.text = widget.userdoc!.email;
-          _model.textFieldphoneTextController?.text = widget.userdoc!.phoneNumber;
+          _model.textFieldphoneTextController?.text =
+              widget.userdoc!.phoneNumber;
           _model.textFielddniTextController?.text = widget.userdoc!.identidad;
           _model.textFieldaddressTextController?.text = widget.userdoc!.address;
           _model.textFieldcolegioTextController?.text = widget.userdoc!.colegio;
           _model.textFieldepsTextController?.text = widget.userdoc!.eps;
           _model.textFieldgradoTextController?.text = widget.userdoc!.grado;
-          _model.textFieldmunicipioTextController?.text = widget.userdoc!.municipio;
+          _model.textFieldmunicipioTextController?.text =
+              widget.userdoc!.municipio;
           _model.textFieldbarrioTextController?.text = widget.userdoc!.barrio;
+          _model.textFieldedadTextController?.text = widget.userdoc!.edad;
+          _model.dropDownGeneroValueController?.value = widget.userdoc!.genero;
+          _model.dropDownGeneroValue = widget.userdoc!.genero;
+          _model.textFieldfechaNacimientoTextController?.text =
+              widget.userdoc!.fechaNacimiento != null
+                  ? DateFormat('dd/MM/yyyy')
+                      .format(widget.userdoc!.fechaNacimiento!)
+                  : '';
           _model.dropDownProfesionalValueController?.value =
               widget.userdoc!.profesionales.nombre;
-          _model.dropDownProfesionalValue = widget.userdoc!.profesionales.nombre;
+          _model.dropDownProfesionalValue =
+              widget.userdoc!.profesionales.nombre;
         });
       }
     });
@@ -79,6 +91,8 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     _model.textFieldgradoFocusNode ??= FocusNode();
     _model.textFieldmunicipioFocusNode ??= FocusNode();
     _model.textFieldbarrioFocusNode ??= FocusNode();
+    _model.textFieldedadFocusNode ??= FocusNode();
+    _model.textFieldfechaNacimientoFocusNode ??= FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
@@ -613,10 +627,13 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                         Padding(
                           padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 20.0, 0.0, 0.0),
-                          child: _buildTipoAndNombreRow(context, rowUsersRecord),
+                          child:
+                              _buildTipoAndNombreRow(context, rowUsersRecord),
                         ),
                         _buildEmailPhoneRow(context, rowUsersRecord),
                         _buildDniAddressRow(context, rowUsersRecord),
+                        _buildEdadGeneroRow(context, rowUsersRecord),
+                        _buildNacimientoRow(context, rowUsersRecord),
                         _buildColegioEpsRow(context, rowUsersRecord),
                         _buildMunicipioBarrioRow(context, rowUsersRecord),
                         _buildGradoRow(context, rowUsersRecord),
@@ -780,7 +797,8 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     );
   }
 
-  Widget _buildMunicipioBarrioRow(BuildContext context, UsersRecord rowUsersRecord) {
+  Widget _buildMunicipioBarrioRow(
+      BuildContext context, UsersRecord rowUsersRecord) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
       child: Row(
@@ -827,6 +845,79 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
               focusNode: _model.textFieldgradoFocusNode,
               useErrorColor: false,
               validator: _model.textFieldgradoTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+          Expanded(child: const SizedBox()),
+        ].divide(const SizedBox(width: 25.0)),
+      ),
+    );
+  }
+
+  Widget _buildEdadGeneroRow(BuildContext context, UsersRecord rowUsersRecord) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: LabeledTextField(
+              label: 'Edad',
+              controller: _model.textFieldedadTextController ??=
+                  TextEditingController(text: rowUsersRecord.edad),
+              focusNode: _model.textFieldedadFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldedadTextControllerValidator
+                  .asValidator(context),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildFieldLabel(context, 'Género'),
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                  child: buildStyledDropDown(
+                    context: context,
+                    controller: _model.dropDownGeneroValueController ??=
+                        FormFieldController<String>(
+                            _model.dropDownGeneroValue ??= rowUsersRecord.genero),
+                    options: ['Masculino', 'Femenino', 'Otro'],
+                    onChanged: (val) =>
+                        safeSetState(() => _model.dropDownGeneroValue = val),
+                    width: double.infinity,
+                    height: 47.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ].divide(const SizedBox(width: 25.0)),
+      ),
+    );
+  }
+
+  Widget _buildNacimientoRow(BuildContext context, UsersRecord rowUsersRecord) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: LabeledTextField(
+              label: 'Fecha de nacimiento',
+              hintText: '(DD/MM/YYYY)',
+              controller: _model.textFieldfechaNacimientoTextController ??=
+                  TextEditingController(
+                      text: rowUsersRecord.fechaNacimiento != null
+                          ? DateFormat('dd/MM/yyyy')
+                              .format(rowUsersRecord.fechaNacimiento!)
+                          : ''),
+              focusNode: _model.textFieldfechaNacimientoFocusNode,
+              useErrorColor: false,
+              validator: _model.textFieldfechaNacimientoTextControllerValidator
                   .asValidator(context),
             ),
           ),
@@ -977,6 +1068,10 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
       ),
       address: _model.textFieldaddressTextController.text,
       identidad: _model.textFielddniTextController.text,
+      edad: _model.textFieldedadTextController.text,
+      genero: _model.dropDownGeneroValue,
+      fechaNacimiento:
+          DateTime.tryParse(_model.textFieldfechaNacimientoTextController.text),
       colegio: _model.textFieldcolegioTextController.text,
       eps: _model.textFieldepsTextController.text,
       grado: _model.textFieldgradoTextController.text,
