@@ -48,6 +48,7 @@ class _ExportarPdfButtonState extends State<ExportarPdfButton> {
         preguntas: preguntas,
         invalidado: widget.respuesta.invalidado,
         hayIdeacionSuicida: hasIdeacion(widget.respuesta.test),
+        respuesta: widget.respuesta,
       );
     } catch (e) {
       if (mounted) {

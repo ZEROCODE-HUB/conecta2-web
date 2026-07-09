@@ -1,4 +1,6 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
+import 'package:conecta2/backend/schema/encuestas_record.dart';
+import 'package:conecta2/backend/schema/respuestas_record.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -32,18 +34,51 @@ Future<void> exportarResultadosPDF({
   required List<_PreguntaExport> preguntas,
   required bool invalidado,
   required bool hayIdeacionSuicida,
+  RespuestasRecord? respuesta,
 }) async {
   final logoData = await rootBundle.load('assets/pdf/logo.png');
   final logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
 
   final pdf = pw.Document();
 
-  // Nivel de riesgo derivado del puntaje y la ideación suicida.
   final _Severity severity = _deriveSeverity(
     puntaje: puntaje,
     hayIdeacionSuicida: hayIdeacionSuicida,
     invalidado: invalidado,
   );
+
+  String? cdiCalculation;
+  if (respuesta != null) {
+    try {
+      final encuesta =
+          await EncuestasRecord.getDocumentOnce(respuesta.parentReference);
+      if (encuesta.categoria == 'CDI') {
+        int d = 0, a = 0;
+        bool tieneVariables = false;
+        final listPreguntas = encuesta.preguntas;
+        for (int i = 0; i < respuesta.test.length; i++) {
+          final r = respuesta.test[i];
+          final pregIdx = r.nPregunta > 0 ? r.nPregunta - 1 : i;
+          if (pregIdx < listPreguntas.length) {
+            final variable =
+                listPreguntas[pregIdx].variable.trim().toUpperCase();
+            final isDisforia = variable == 'D' || variable.contains('DISFORIA');
+            final isAutoestima =
+                variable == 'A' || variable.contains('AUTOESTIMA');
+            if (isDisforia || isAutoestima) tieneVariables = true;
+            final valor = r.respuestaTamizaje.isNotEmpty
+                ? r.respuestaTamizaje.first.valor
+                : 0;
+            if (isDisforia) d += valor;
+            if (isAutoestima) a += valor;
+          }
+        }
+        if (tieneVariables) {
+          cdiCalculation = 'Disforia $d | Autoestima negativa $a';
+        }
+      }
+    } catch (_) {}
+  }
 
   pdf.addPage(
     pw.MultiPage(
@@ -71,6 +106,7 @@ Future<void> exportarResultadosPDF({
             severity: severity,
             puntaje: puntaje,
             invalidado: invalidado,
+            cdiCalculation: cdiCalculation,
           ),
           pw.SizedBox(height: 16),
 
@@ -207,6 +243,7 @@ pw.Widget _buildSummaryCard({
   required _Severity severity,
   required int puntaje,
   required bool invalidado,
+  String? cdiCalculation,
 }) {
   final PdfColor borderColor;
   switch (severity) {
@@ -245,6 +282,14 @@ pw.Widget _buildSummaryCard({
           value: puntaje.toString(),
           valueColor: _darkGrey,
         ),
+        if (cdiCalculation != null) ...[
+          pw.SizedBox(height: 6),
+          _summaryLine(
+            label: 'SUBESCALAS:',
+            value: cdiCalculation,
+            valueColor: _darkGrey,
+          ),
+        ],
         pw.SizedBox(height: 6),
         _summaryLine(
           label: 'ESTADO:',
@@ -280,8 +325,7 @@ pw.Widget _summaryLine({
         style: pw.TextStyle(
           fontSize: 11,
           color: valueColor,
-          fontWeight:
-              valueBold ? pw.FontWeight.bold : pw.FontWeight.normal,
+          fontWeight: valueBold ? pw.FontWeight.bold : pw.FontWeight.normal,
         ),
       ),
     ],
@@ -454,8 +498,7 @@ pw.Widget _buildRespuestasSection(List<_PreguntaExport> preguntas) {
       pw.SizedBox(height: 12),
       pw.Table(
         border: pw.TableBorder(
-          horizontalInside:
-              pw.BorderSide(color: PdfColors.grey300, width: 0.4),
+          horizontalInside: pw.BorderSide(color: PdfColors.grey300, width: 0.4),
           bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.4),
         ),
         columnWidths: {

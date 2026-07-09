@@ -483,6 +483,11 @@ extension _LoginDesktop on _LoginWidgetState {
                   ),
                   FFButtonWidget(
                     onPressed: () async {
+                      FFAppState().EmailAdmin =
+                          _model.emailTextController.text;
+                      FFAppState().PasswordAdmin = _model
+                          .passwordTextController.text;
+
                       GoRouter.of(context)
                           .prepareAuthEvent();
 
@@ -493,13 +498,11 @@ extension _LoginDesktop on _LoginWidgetState {
                         _model.passwordTextController.text,
                       );
                       if (user == null) {
+                        FFAppState().EmailAdmin = '';
+                        FFAppState().PasswordAdmin = '';
                         return;
                       }
 
-                      FFAppState().EmailAdmin =
-                          _model.emailTextController.text;
-                      FFAppState().PasswordAdmin = _model
-                          .passwordTextController.text;
                       safeSetState(() {});
                       if (valueOrDefault(
                               currentUserDocument?.rol,

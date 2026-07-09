@@ -200,12 +200,17 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
       final pregIdx = r.nPregunta > 0 ? r.nPregunta - 1 : i;
       if (pregIdx < preguntas.length) {
         final variable = preguntas[pregIdx].variable.trim().toUpperCase();
-        if (variable == 'D' || variable == 'A') tieneVariables = true;
+        final isDisforia = variable == 'D' || variable.contains('DISFORIA');
+        final isAutoestima = variable == 'A' || variable.contains('AUTOESTIMA');
+
+        if (isDisforia || isAutoestima) tieneVariables = true;
+
         final valor = r.respuestaTamizaje.isNotEmpty
             ? r.respuestaTamizaje.first.valor
             : 0;
-        if (variable == 'D') d += valor;
-        if (variable == 'A') a += valor;
+
+        if (isDisforia) d += valor;
+        if (isAutoestima) a += valor;
       }
     }
     return (d: d, a: a, tieneVariables: tieneVariables);
@@ -314,7 +319,8 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
 
                       // ── Nivel de alerta ────────────────────────────────
                       if (_nivelCalculado().isNotEmpty &&
-                          !(_nivelCalculado().toLowerCase().trim() == 'sin alerta' &&
+                          !(_nivelCalculado().toLowerCase().trim() ==
+                                  'sin alerta' &&
                               (respuesta.alertasEspeciales
                                       .where((a) => a.trim().isNotEmpty)
                                       .isNotEmpty ||
@@ -328,20 +334,21 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
                           puntaje: respuesta.puntajeTotal,
                           color: _colorNivel(_nivelCalculado()),
                           theme: theme,
+                          cdiSub: cdiSub,
                         ),
                       ],
 
-                      // ── Subescalas CDI (D + A) ─────────────────────────
-                      if (esCdi && cdiSub != null && cdiSub.tieneVariables) ...[
-                        const SizedBox(height: 12.0),
-                        _CdiSubescalasCard(
-                          g: respuesta.puntajeTotal,
-                          d: cdiSub.d,
-                          a: cdiSub.a,
-                          nivelCalculado: _nivelCalculado().toLowerCase(),
-                          theme: theme,
-                        ),
-                      ],
+                      // // ── Subescalas CDI (D + A) ─────────────────────────
+                      // if (esCdi && cdiSub != null && cdiSub.tieneVariables) ...[
+                      //   const SizedBox(height: 12.0),
+                      //   _CdiSubescalasCard(
+                      //     g: respuesta.puntajeTotal,
+                      //     d: cdiSub.d,
+                      //     a: cdiSub.a,
+                      //     nivelCalculado: _nivelCalculado().toLowerCase(),
+                      //     theme: theme,
+                      //   ),
+                      // ],
 
                       // ── Alertas especiales disparadas ──────────────────
                       if (respuesta.alertasEspeciales
@@ -785,6 +792,7 @@ class _NivelCard extends StatelessWidget {
     required this.puntaje,
     required this.color,
     required this.theme,
+    this.cdiSub,
   });
 
   final String nivel;
@@ -793,6 +801,7 @@ class _NivelCard extends StatelessWidget {
   final int puntaje;
   final Color color;
   final FlutterFlowTheme theme;
+  final ({int d, int a, bool tieneVariables})? cdiSub;
 
   @override
   Widget build(BuildContext context) {
@@ -866,6 +875,25 @@ class _NivelCard extends StatelessWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       height: 1.35,
+                    ),
+                  ),
+                ],
+                if (categoria == 'CDI') ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: color.withValues(alpha: 0.25)),
+                    ),
+                    child: Text(
+                      'Disforia: ${cdiSub!.d}\nAutoestima negativa: ${cdiSub!.a}',
+                      style: GoogleFonts.inter(
+                        color: theme.primaryText,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -1041,117 +1069,81 @@ class _PreguntaRespuestaCard extends StatelessWidget {
   }
 }
 
-/// Tarjeta de subescalas CDI: muestra G, D y A con sus valores.
-class _CdiSubescalasCard extends StatelessWidget {
-  const _CdiSubescalasCard({
-    required this.g,
-    required this.d,
-    required this.a,
-    required this.nivelCalculado,
-    required this.theme,
-  });
+// /// Tarjeta de subescalas CDI: muestra G, D y A con sus valores.
+// class _CdiSubescalasCard extends StatelessWidget {
+//   const _CdiSubescalasCard({
+//     required this.g,
+//     required this.d,
+//     required this.a,
+//     required this.nivelCalculado,
+//     required this.theme,
+//   });
 
-  final int g;
-  final int d;
-  final int a;
-  final String nivelCalculado;
-  final FlutterFlowTheme theme;
+//   final int g;
+//   final int d;
+//   final int a;
+//   final String nivelCalculado;
+//   final FlutterFlowTheme theme;
 
-  @override
-  Widget build(BuildContext context) {
-    String nivelTexto = nivelCalculado;
-    if (nivelCalculado.contains('severo') || nivelCalculado.contains('grave')) {
-      nivelTexto = 'una depresión severa';
-    } else if (nivelCalculado.contains('leve')) {
-      nivelTexto = 'una depresión leve';
-    } else if (nivelCalculado.contains('sin sintomatología')) {
-      nivelTexto = 'sin sintomatología depresiva';
-    }
+//   @override
+//   Widget build(BuildContext context) {
+//     String nivelTexto = nivelCalculado;
+//     if (nivelCalculado.contains('severo') || nivelCalculado.contains('grave')) {
+//       nivelTexto = 'una depresión severa';
+//     } else if (nivelCalculado.contains('leve')) {
+//       nivelTexto = 'una depresión leve';
+//     } else if (nivelCalculado.contains('sin sintomatología')) {
+//       nivelTexto = 'sin sintomatología depresiva';
+//     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: kNavy.withValues(alpha: 0.15)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Subescalas CDI',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: kNavy,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'G= $g (G, es la suma de D + A) lo que equivale a $nivelTexto.',
-            style: GoogleFonts.inter(fontSize: 14, color: theme.primaryText),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'D= $d',
-            style: GoogleFonts.inter(fontSize: 14, color: theme.primaryText),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'A= $a',
-            style: GoogleFonts.inter(fontSize: 14, color: theme.primaryText),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//     return Container();
+//   }
+// }
 
-class _SubescalaChip extends StatelessWidget {
-  const _SubescalaChip({
-    required this.label,
-    required this.valor,
-    required this.color,
-  });
+// class _SubescalaChip extends StatelessWidget {
+//   const _SubescalaChip({
+//     required this.label,
+//     required this.valor,
+//     required this.color,
+//   });
 
-  final String label;
-  final int valor;
-  final Color color;
+//   final String label;
+//   final int valor;
+//   final Color color;
 
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.25)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '$valor pts',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Expanded(
+//       child: Container(
+//         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+//         decoration: BoxDecoration(
+//           color: color.withValues(alpha: 0.08),
+//           borderRadius: BorderRadius.circular(8),
+//           border: Border.all(color: color.withValues(alpha: 0.25)),
+//         ),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(
+//               label,
+//               style: GoogleFonts.inter(
+//                 fontSize: 10,
+//                 fontWeight: FontWeight.w600,
+//                 color: color,
+//               ),
+//             ),
+//             const SizedBox(height: 2),
+//             Text(
+//               '$valor pts',
+//               style: GoogleFonts.inter(
+//                 fontSize: 16,
+//                 fontWeight: FontWeight.w800,
+//                 color: color,
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }

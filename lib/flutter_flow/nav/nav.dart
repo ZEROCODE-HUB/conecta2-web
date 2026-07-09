@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '/app_state.dart';
 import '/backend/backend.dart';
 
 import '/auth/base_auth_user_provider.dart';
@@ -53,6 +55,10 @@ class AppStateNotifier extends ChangeNotifier {
   void updateNotifyOnAuthChange(bool notify) => notifyOnAuthChange = notify;
 
   void update(BaseAuthUser newUser) {
+    if (newUser.loggedIn && FFAppState().EmailAdmin.isEmpty) {
+      FirebaseAuth.instance.signOut();
+      return;
+    }
     final shouldUpdate =
         user?.uid == null || newUser.uid == null || user?.uid != newUser.uid;
     initialUser ??= newUser;
@@ -805,6 +811,10 @@ class FFRoute {
         name: name,
         path: path,
         redirect: (context, state) {
+          if (appStateNotifier.loading) {
+            return null;
+          }
+
           if (appStateNotifier.shouldRedirect) {
             final redirectLocation = appStateNotifier.getRedirectLocation();
             appStateNotifier.clearRedirectLocation();

@@ -483,6 +483,11 @@ extension _LoginMobile on _LoginWidgetState {
             child: RegistartionButtonWidget(
               btnText: 'Iniciar Sesion',
               btnAction: () async {
+                FFAppState().EmailAdmin =
+                    _model.emailTextController1.text;
+                FFAppState().PasswordAdmin =
+                    _model.passwordTextController1.text;
+
                 GoRouter.of(context).prepareAuthEvent();
 
                 final user =
@@ -492,6 +497,8 @@ extension _LoginMobile on _LoginWidgetState {
                   _model.passwordTextController1.text,
                 );
                 if (user == null) {
+                  FFAppState().EmailAdmin = '';
+                  FFAppState().PasswordAdmin = '';
                   return;
                 }
 

@@ -894,6 +894,7 @@ class _ExportarTamizajeBotonState extends State<_ExportarTamizajeBoton> {
         preguntas: preguntas,
         invalidado: respuesta.invalidado,
         hayIdeacionSuicida: widget.hasIdeacionSuicida(respuesta.test),
+        respuesta: respuesta,
       );
     } catch (e) {
       if (mounted) {
