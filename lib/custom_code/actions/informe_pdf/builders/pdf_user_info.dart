@@ -164,7 +164,7 @@ pw.Widget buildPatientHeaderBlock(Map<String, dynamic> datos) {
               'TARJETA DE IDENTIDAD: $numeroId',
               style: pw.TextStyle(
                 fontSize: 8.5,
-                color: PdfBrand.darkGrey,
+                color: PdfColors.black,
               ),
             ),
             pw.SizedBox(height: 2),
@@ -172,7 +172,7 @@ pw.Widget buildPatientHeaderBlock(Map<String, dynamic> datos) {
               'EPS: $eps  \u2022  GÉNERO: $genero',
               style: pw.TextStyle(
                 fontSize: 8.5,
-                color: PdfBrand.darkGrey,
+                color: PdfColors.black,
               ),
             ),
           ],
@@ -221,7 +221,7 @@ pw.Widget _labeledField(String label, String value) {
             text: value,
             style: pw.TextStyle(
               fontSize: 8.5,
-              color: PdfBrand.lightGrey,
+              color: PdfBrand.darkGrey,
             ),
           ),
         ],
@@ -244,7 +244,7 @@ pw.Widget buildContactoBlock(Map<String, dynamic> datos) {
   final acudienteCorreo = datos['acudienteCorreo']?.toString() ?? '';
 
   return pw.Container(
-    padding: const pw.EdgeInsets.symmetric(vertical: 10),
+    padding: const pw.EdgeInsets.symmetric(vertical: 4),
     child: pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [

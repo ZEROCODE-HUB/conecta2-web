@@ -10,6 +10,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import '/components/rich_text_notas/rich_text_notas_widget.dart'
     show quillDeltaToPlainText;
 
+import '/custom_code/actions/informe_pdf/builders/pdf_user_info.dart';
+
 // ─── Paleta de marca ─────────────────────────────────────────────────────────
 const PdfColor _yellowBrand = PdfColor.fromInt(0xFFF6C04F);
 const PdfColor _redAlert = PdfColor.fromInt(0xFFE83F3F);
@@ -38,6 +40,22 @@ Future<void> exportarResultadosPDF({
 }) async {
   final logoData = await rootBundle.load('assets/pdf/logo.png');
   final logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+
+  Map<String, dynamic> datosPaciente = generarDatosPersonalesPorDefecto(
+      respuesta?.userRespuesta?.id ?? 'Desconocido');
+  if (respuesta != null && respuesta.userRespuesta != null) {
+    final datos =
+        await obtenerDatosPacienteFirestoreSeguro(respuesta.userRespuesta!.id);
+    if (datos != null) {
+      datosPaciente = datos;
+    } else {
+      datosPaciente['nombres'] = nombrePaciente;
+      datosPaciente['apellidos'] = '';
+    }
+  } else {
+    datosPaciente['nombres'] = nombrePaciente;
+    datosPaciente['apellidos'] = '';
+  }
 
   final pdf = pw.Document();
 
@@ -96,10 +114,17 @@ Future<void> exportarResultadosPDF({
           // ── Título del tamizaje + subtítulo ─────────────────────────
           _buildTitleSection(
             titulo: titloTamizaje,
-            paciente: nombrePaciente,
             fecha: fecha,
           ),
-          pw.SizedBox(height: 22),
+          pw.SizedBox(height: 16),
+
+          // ── Información del Paciente ─────────────────────────────────
+          buildPatientHeaderBlock(datosPaciente),
+          pw.SizedBox(height: 6),
+          pw.Divider(color: PdfColors.grey500, thickness: 1),
+          buildContactoBlock(datosPaciente),
+          pw.Divider(color: PdfColors.grey500, thickness: 1),
+          pw.SizedBox(height: 12),
 
           // ── Tarjeta resumen (Nivel / Puntaje / Estado) ──────────────
           _buildSummaryCard(
@@ -111,10 +136,14 @@ Future<void> exportarResultadosPDF({
           pw.SizedBox(height: 16),
 
           // ── Badges de alerta ─────────────────────────────────────────
-          _buildAlertBadges(
-            hayIdeacionSuicida: hayIdeacionSuicida,
-            severity: severity,
-          ),
+          if (hayIdeacionSuicida ||
+              severity == _Severity.severo ||
+              severity == _Severity.alto) ...[
+            _buildAlertBadges(
+              hayIdeacionSuicida: hayIdeacionSuicida,
+              severity: severity,
+            ),
+          ],
 
           // ── Respuestas ───────────────────────────────────────────────
           if (preguntas.isNotEmpty) ...[
@@ -146,11 +175,15 @@ Future<void> exportarResultadosPDF({
 // ─────────────────────────────────────────────────────────────────────────────
 
 pw.Widget _buildTopBar() {
-  return pw.Container(
-    height: 5,
-    width: double.infinity,
-    color: _yellowBrand,
-    margin: const pw.EdgeInsets.only(bottom: 0),
+  return pw.Column(
+    children: [
+      pw.Container(
+        height: 5,
+        width: double.infinity,
+        color: _yellowBrand,
+      ),
+      pw.SizedBox(height: 25),
+    ],
   );
 }
 
@@ -200,7 +233,6 @@ pw.Widget _buildInstitutionalHeader(pw.MemoryImage logoImage) {
 
 pw.Widget _buildTitleSection({
   required String titulo,
-  required String paciente,
   required String fecha,
 }) {
   return pw.Column(
@@ -215,25 +247,14 @@ pw.Widget _buildTitleSection({
           letterSpacing: 0.3,
         ),
       ),
-      pw.SizedBox(height: 6),
-      pw.Row(
-        children: [
-          pw.Text(
-            paciente.toUpperCase(),
-            style: pw.TextStyle(
-              fontSize: 12,
-              fontWeight: pw.FontWeight.bold,
-              color: _darkGrey,
-            ),
-          ),
-          pw.SizedBox(width: 10),
-          pw.Container(width: 1, height: 12, color: _lightGrey),
-          pw.SizedBox(width: 10),
-          pw.Text(
-            'Fecha: $fecha',
-            style: const pw.TextStyle(fontSize: 11, color: _darkGrey),
-          ),
-        ],
+      pw.SizedBox(height: 4),
+      pw.Text(
+        'FECHA DE REALIZACIÓN: $fecha',
+        style: pw.TextStyle(
+          fontSize: 10,
+          fontWeight: pw.FontWeight.bold,
+          color: _darkGrey,
+        ),
       ),
     ],
   );
@@ -245,60 +266,52 @@ pw.Widget _buildSummaryCard({
   required bool invalidado,
   String? cdiCalculation,
 }) {
-  final PdfColor borderColor;
-  switch (severity) {
-    case _Severity.severo:
-      borderColor = _yellowBrand;
-      break;
-    case _Severity.alto:
-      borderColor = _redAlert;
-      break;
-    case _Severity.normal:
-      borderColor = _lightGrey;
-      break;
-  }
-
   final bool riskIsRed =
       severity == _Severity.alto || severity == _Severity.severo;
 
-  return pw.Container(
-    padding: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-    decoration: pw.BoxDecoration(
-      border: pw.Border.all(color: borderColor, width: 1.4),
-      borderRadius: pw.BorderRadius.circular(16),
-    ),
-    child: pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        _summaryLine(
-          label: 'NIVEL DE RIESGO:',
-          value: severity.label,
-          valueColor: riskIsRed ? _redAlert : _darkGrey,
-          valueBold: true,
+  return pw.Row(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      pw.Expanded(
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              'NIVEL DE RIESGO: ${severity.label}',
+              style: pw.TextStyle(
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+                color: riskIsRed ? _redAlert : PdfColors.black,
+              ),
+            ),
+            pw.SizedBox(height: 4),
+            pw.Text(
+              'PUNTAJE: ${puntaje.toString()}',
+              style: pw.TextStyle(
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.black,
+              ),
+            ),
+            pw.SizedBox(height: 6),
+            _summaryLine(
+              label: 'ESTADO:',
+              value: invalidado ? 'INVALIDADA' : 'VÁLIDA',
+              valueColor: invalidado ? _redAlert : _darkGrey,
+              valueBold: invalidado,
+            ),
+            if (cdiCalculation != null) ...[
+              pw.SizedBox(height: 4),
+              _summaryLine(
+                label: 'SUBESCALAS:',
+                value: cdiCalculation,
+                valueColor: _darkGrey,
+              ),
+            ],
+          ],
         ),
-        pw.SizedBox(height: 6),
-        _summaryLine(
-          label: 'PUNTAJE:',
-          value: puntaje.toString(),
-          valueColor: _darkGrey,
-        ),
-        if (cdiCalculation != null) ...[
-          pw.SizedBox(height: 6),
-          _summaryLine(
-            label: 'SUBESCALAS:',
-            value: cdiCalculation,
-            valueColor: _darkGrey,
-          ),
-        ],
-        pw.SizedBox(height: 6),
-        _summaryLine(
-          label: 'ESTADO:',
-          value: invalidado ? 'INVALIDADA' : 'VÁLIDA',
-          valueColor: invalidado ? _redAlert : _darkGrey,
-          valueBold: invalidado,
-        ),
-      ],
-    ),
+      ),
+    ],
   );
 }
 
@@ -308,27 +321,30 @@ pw.Widget _summaryLine({
   required PdfColor valueColor,
   bool valueBold = false,
 }) {
-  return pw.Row(
-    crossAxisAlignment: pw.CrossAxisAlignment.start,
-    children: [
-      pw.Text(
-        label,
-        style: pw.TextStyle(
-          fontSize: 11,
-          fontWeight: pw.FontWeight.bold,
-          color: PdfColors.black,
-        ),
+  return pw.Padding(
+    padding: const pw.EdgeInsets.only(bottom: 3),
+    child: pw.RichText(
+      text: pw.TextSpan(
+        children: [
+          pw.TextSpan(
+            text: '$label ',
+            style: pw.TextStyle(
+              fontSize: 8.5,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.black,
+            ),
+          ),
+          pw.TextSpan(
+            text: value,
+            style: pw.TextStyle(
+              fontSize: 8.5,
+              color: valueColor,
+              fontWeight: valueBold ? pw.FontWeight.bold : pw.FontWeight.normal,
+            ),
+          ),
+        ],
       ),
-      pw.SizedBox(width: 6),
-      pw.Text(
-        value,
-        style: pw.TextStyle(
-          fontSize: 11,
-          color: valueColor,
-          fontWeight: valueBold ? pw.FontWeight.bold : pw.FontWeight.normal,
-        ),
-      ),
-    ],
+    ),
   );
 }
 
@@ -344,7 +360,7 @@ pw.Widget _buildAlertBadges({
     badges.add(_impactoBadge());
   }
 
-  if (badges.isEmpty) return pw.SizedBox();
+  if (badges.isEmpty) return pw.Container(height: 0, width: 0);
 
   return pw.Padding(
     padding: const pw.EdgeInsets.only(top: 14),
@@ -496,38 +512,32 @@ pw.Widget _buildRespuestasSection(List<_PreguntaExport> preguntas) {
         ),
       ),
       pw.SizedBox(height: 12),
-      pw.Table(
-        border: pw.TableBorder(
-          horizontalInside: pw.BorderSide(color: PdfColors.grey300, width: 0.4),
-          bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.4),
-        ),
-        columnWidths: {
-          0: const pw.FixedColumnWidth(34),
-          1: const pw.FlexColumnWidth(2.2),
-          2: const pw.FlexColumnWidth(2.8),
-        },
-        children: [
-          pw.TableRow(
-            decoration: const pw.BoxDecoration(color: _decorYellowSoft),
+      ...preguntas.map((p) {
+        return pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(vertical: 6),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              _headerCell('#'),
-              _headerCell('Pregunta'),
-              _headerCell('Respuesta'),
+              pw.Text(
+                '${p.numero}. ${p.pregunta}',
+                style: pw.TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.black,
+                ),
+              ),
+              pw.SizedBox(height: 2),
+              pw.Text(
+                'Respuesta: ${p.respuesta}',
+                style: const pw.TextStyle(
+                  fontSize: 10.5,
+                  color: _darkGrey,
+                ),
+              ),
             ],
           ),
-          for (int i = 0; i < preguntas.length; i++)
-            pw.TableRow(
-              decoration: pw.BoxDecoration(
-                color: i.isEven ? PdfColors.white : PdfColors.grey50,
-              ),
-              children: [
-                _bodyCell('${preguntas[i].numero}', center: true),
-                _bodyCell(preguntas[i].pregunta, bold: true),
-                _bodyCell(preguntas[i].respuesta),
-              ],
-            ),
-        ],
-      ),
+        );
+      }).toList(),
     ],
   );
 }
@@ -548,14 +558,9 @@ pw.Widget _buildObservacionesSection(String notas) {
           letterSpacing: 0.3,
         ),
       ),
-      pw.SizedBox(height: 8),
-      pw.Container(
-        width: double.infinity,
-        padding: const pw.EdgeInsets.all(14),
-        decoration: pw.BoxDecoration(
-          color: _obsBlueBg,
-          borderRadius: pw.BorderRadius.circular(10),
-        ),
+      pw.SizedBox(height: 12),
+      pw.Padding(
+        padding: const pw.EdgeInsets.only(top: 8, bottom: 14),
         child: pw.Text(
           notas.trim().isNotEmpty ? notas : 'Sin notas registradas.',
           style: pw.TextStyle(
@@ -658,35 +663,6 @@ pw.Widget _logoPlaceholder(double size) {
       child: pw.Text(
         'LOGO',
         style: pw.TextStyle(color: PdfColors.grey500, fontSize: 10),
-      ),
-    ),
-  );
-}
-
-pw.Widget _headerCell(String text) {
-  return pw.Padding(
-    padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-    child: pw.Text(
-      text,
-      style: pw.TextStyle(
-        fontSize: 10.5,
-        fontWeight: pw.FontWeight.bold,
-        color: PdfColors.black,
-      ),
-    ),
-  );
-}
-
-pw.Widget _bodyCell(String text, {bool bold = false, bool center = false}) {
-  return pw.Padding(
-    padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-    child: pw.Text(
-      text,
-      textAlign: center ? pw.TextAlign.center : pw.TextAlign.left,
-      style: pw.TextStyle(
-        fontSize: 10,
-        color: PdfColors.black,
-        fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
       ),
     ),
   );
