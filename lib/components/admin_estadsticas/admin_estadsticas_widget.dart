@@ -51,12 +51,14 @@ class _AdminEstadsticas2WidgetState extends State<AdminEstadsticas2Widget> {
   }
 
   void _refreshStats() {
+    final isProfesional = valueOrDefault(currentUserDocument?.rol, '') == 'Profesional';
     _statsFuture = loadStats(
       _tipoSeleccionado,
       colegio: _model.filtroColegio.isEmpty ? null : _model.filtroColegio,
       rango: _rangoFechas,
       tituloEncuesta: _encuestaSeleccionada,
       nivelAlerta: _nivelAlerta,
+      profesionalRef: isProfesional ? currentUserReference : null,
     );
   }
 

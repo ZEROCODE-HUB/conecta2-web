@@ -8,6 +8,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '/auth/firebase_auth/auth_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+
 import 'data/substance_data.dart';
 import 'helpers/data_transformers.dart';
 import 'helpers/excel_export.dart';
@@ -204,6 +207,21 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
       }
       _columnasVisibles = dynamicColumnasVisibles;
 
+      final isProfesional = valueOrDefault(currentUserDocument?.rol, '') == 'Profesional';
+      final profesionalRef = isProfesional ? currentUserReference : null;
+
+      Set<DocumentReference>? patientRefs;
+      if (profesionalRef != null) {
+        final patientsSnap = await FirebaseFirestore.instance
+            .collection('users')
+            .where('Profesionales.Ref', isEqualTo: profesionalRef)
+            .get();
+        patientRefs = patientsSnap.docs
+            .where((doc) => doc.data()['rol'] == 'Adolescente')
+            .map((doc) => doc.reference)
+            .toSet();
+      }
+
       final respuestasSnapshot = await FirebaseFirestore.instance
           .collection('Encuestas')
           .doc(tamizajeId)
@@ -217,6 +235,9 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
         final userRef = respuestaData['User_respuesta'] as DocumentReference?;
 
         if (userRef != null) {
+          if (profesionalRef != null && !patientRefs!.contains(userRef)) {
+            continue;
+          }
           final userDoc = await userRef.get();
           if (userDoc.exists) {
             final userData = userDoc.data() as Map<String, dynamic>;

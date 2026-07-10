@@ -50,7 +50,7 @@ class StatsFilters extends StatelessWidget {
             model.filtroTamizaje = val ?? '';
             onChanged();
           },
-          width: 200.0,
+          width: 320.0,
           height: 40.0,
           textStyle: _dropdownTextStyle(context),
           hintText: 'Seleccione tamizaje',

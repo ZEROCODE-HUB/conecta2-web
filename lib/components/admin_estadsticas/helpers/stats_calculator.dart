@@ -229,30 +229,71 @@ Future<StatsAggregates> loadStats(
   DateTimeRange? rango,
   String? tituloEncuesta,
   String? nivelAlerta,
+  DocumentReference? profesionalRef,
 }) async {
   final responses = <ClassifiedResponse>[];
   final userCache = <String, Map<String, dynamic>>{};
   final nivelesEje = tipo.niveles;
 
   try {
-    final snap = await FirebaseFirestore.instance
-        .collectionGroup('Respuestas')
-        .get()
-        .timeout(const Duration(seconds: 20));
+    Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs;
 
-    for (final doc in snap.docs) {
+    if (profesionalRef != null) {
+      final patientsSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .where('Profesionales.Ref', isEqualTo: profesionalRef)
+          .get()
+          .timeout(const Duration(seconds: 15));
+
+      final patients = patientsSnap.docs.where((d) => d.data()['rol'] == 'Adolescente').toList();
+      if (patients.isEmpty) {
+        return StatsAggregates.empty(tipo);
+      }
+
+      for (var p in patients) {
+        userCache[p.reference.path] = p.data();
+      }
+
+      final patientRefs = patients.map((p) => p.reference).toList();
+      final List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocsList = [];
+
+      const chunkSize = 30;
+      final chunks = <List<DocumentReference>>[];
+      for (var i = 0; i < patientRefs.length; i += chunkSize) {
+        chunks.add(patientRefs.sublist(
+          i,
+          i + chunkSize > patientRefs.length ? patientRefs.length : i + chunkSize,
+        ));
+      }
+
+      final queryTasks = chunks.map((chunk) {
+        return FirebaseFirestore.instance
+            .collectionGroup('Respuestas')
+            .where('User_respuesta', whereIn: chunk)
+            .get();
+      });
+
+      final queryResults = await Future.wait(queryTasks);
+      for (var res in queryResults) {
+        allDocsList.addAll(res.docs);
+      }
+      allDocs = allDocsList;
+    } else {
+      final snap = await FirebaseFirestore.instance
+          .collectionGroup('Respuestas')
+          .get()
+          .timeout(const Duration(seconds: 20));
+      allDocs = snap.docs;
+    }
+
+    final filteredDocs = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+    for (final doc in allDocs) {
       final data = doc.data();
       final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
       if (titulo.isEmpty) continue;
       if (!_matchesTipo(tipo, titulo)) continue;
-
-      // Filter by specific encuesta title when drill-down is active.
-      if (tituloEncuesta != null && tituloEncuesta.isNotEmpty) {
-        if (titulo != tituloEncuesta) continue;
-      }
-
+      if (tituloEncuesta != null && tituloEncuesta.isNotEmpty && titulo != tituloEncuesta) continue;
       if ((data['invalidado'] as bool?) == true) continue;
-
       if (rango != null) {
         final fecha = _fechaFromDoc(data);
         if (fecha == null) continue;
@@ -260,12 +301,26 @@ Future<StatsAggregates> loadStats(
         final endInclusive = rango.end.add(const Duration(days: 1));
         if (!fecha.isBefore(endInclusive)) continue;
       }
+      filteredDocs.add(doc);
+    }
 
+    final uniqueUserRefs = filteredDocs
+        .map((doc) => doc.data()['User_respuesta'])
+        .whereType<DocumentReference>()
+        .toSet();
+
+    await Future.wait(uniqueUserRefs.map((ref) => _fetchUser(ref, userCache)));
+
+    for (final doc in filteredDocs) {
+      final data = doc.data();
+      final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
       final userRef = data['User_respuesta'];
       if (userRef is! DocumentReference) continue;
 
       final userData = await _fetchUser(userRef, userCache);
       if (userData == null) continue;
+
+
 
       if (colegio != null && colegio.isNotEmpty) {
         final uc = (userData['colegio'] ?? '').toString();

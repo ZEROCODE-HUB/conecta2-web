@@ -61,9 +61,9 @@ class ContenidoRecord extends FirestoreRecord {
     _publicado = snapshotData['Publicado'] as bool?;
     _createAt = snapshotData['CreateAt'] as DateTime?;
     _userRef = snapshotData['userRef'] as DocumentReference?;
-    _imageProfile = snapshotData['ImageProfile'] as String?;
+    _imageProfile = (snapshotData['ImageProfile'] ?? snapshotData['imageProfile']) as String?;
     _html = snapshotData['html'] as String?;
-    _imagePortada = snapshotData['ImagePortada'] as String?;
+    _imagePortada = (snapshotData['ImagePortada'] ?? snapshotData['imagePortada']) as String?;
   }
 
   static CollectionReference get collection =>

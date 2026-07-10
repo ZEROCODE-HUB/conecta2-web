@@ -218,7 +218,7 @@ class _ExcelPageWidgetState extends State<ExcelPageWidget> {
                           optionLabels: <String>[],
                           onChanged: (val) => safeSetState(
                               () => _model.dropDownTamizajValue = val),
-                          width: 200.0,
+                          width: 320.0,
                           height: 40.0,
                           textStyle:
                               FlutterFlowTheme.of(context).bodyMedium.override(

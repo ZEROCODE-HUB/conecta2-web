@@ -40,8 +40,7 @@ class ProfileResetPasswordButton extends StatelessWidget {
         options: FFButtonOptions(
           width: 245.0,
           height: 40.0,
-          padding:
-              const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+          padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
           iconPadding: EdgeInsetsDirectional.zero,
           color: const Color(0xFFF6BD33),
           textStyle: FlutterFlowTheme.of(context).titleSmall.override(
@@ -80,8 +79,7 @@ class ProfileSaveButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-          const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 40.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 40.0),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.end,

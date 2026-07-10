@@ -148,6 +148,8 @@ class _MyHtmlEditorWidgetState extends State<MyHtmlEditorWidget> {
                 showLink: true,
                 showUndo: true,
                 showRedo: true,
+                showFontSize: true,
+                showFontFamily: true,
               ),
             ),
             Expanded(

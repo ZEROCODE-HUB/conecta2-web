@@ -17,6 +17,7 @@ import '/flutter_flow/custom_functions.dart';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gm;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/auth/firebase_auth/auth_util.dart';
 
 
 part 'mapa_barrio_dialog.dart';
@@ -370,15 +371,43 @@ class _MapaInstitucionesEducativasState
     try {
       print('🔍 Obteniendo estadísticas para: $nombreInstitucion');
 
-      // 1. Obtener todos los usuarios de esta institución
-      final usersSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('colegio', isEqualTo: nombreInstitucion)
-          .get();
+      // Obtener rol del usuario actual
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserUid).get();
+      final userRol = userDoc.data()?['rol'] as String?;
 
-      final usuariosInstitucion = usersSnapshot.docs;
-      print(
-          '👥 Usuarios encontrados en la institución: ${usuariosInstitucion.length}');
+      List<QueryDocumentSnapshot> usuariosInstitucion = [];
+
+      if (userRol == 'Profesional') {
+        // Filtrar solo los pacientes asignados
+        final pacientesSnap = await FirebaseFirestore.instance
+            .collection('users')
+            .where('Profesionales.Ref', isEqualTo: userDoc.reference)
+            .get();
+            
+        // Filtrar los que pertenecen a esta institución (ignorando espacios/mayúsculas)
+        usuariosInstitucion = pacientesSnap.docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>?;
+          if (data == null) return false;
+          final col = (data['colegio']?.toString() ?? '').trim().toLowerCase();
+          return col == nombreInstitucion.trim().toLowerCase();
+        }).toList();
+      } else {
+        // Para Administrador (u otros): buscar TODOS los estudiantes de esta institución
+        // Como 'colegio' puede tener espacios extras, usamos una consulta más amplia
+        final allUsersSnap = await FirebaseFirestore.instance
+            .collection('users')
+            .where('rol', isEqualTo: 'Adolescente')
+            .get();
+            
+        usuariosInstitucion = allUsersSnap.docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>?;
+          if (data == null) return false;
+          final col = (data['colegio']?.toString() ?? '').trim().toLowerCase();
+          return col == nombreInstitucion.trim().toLowerCase();
+        }).toList();
+      }
+
+      print('👥 Usuarios encontrados en la institución ($userRol): ${usuariosInstitucion.length}');
 
       // Filtrar por año si está seleccionado
       List<QueryDocumentSnapshot> usuariosFiltrados = usuariosInstitucion;
@@ -405,51 +434,43 @@ class _MapaInstitucionesEducativasState
       // 2. Buscar tamizajes respondidos por estos usuarios
       Map<String, Map<String, dynamic>> tamizajesRespondidosMap = {};
 
-      // Obtener todos los tamizajes publicados
-      print('📋 Buscando tamizajes publicados...');
+      final patientRefs = usuariosFiltrados.map((doc) => doc.reference).toList();
+      final List<QueryDocumentSnapshot<Map<String, dynamic>>> allRespuestas = [];
 
-      final tamizajesSnapshot = await FirebaseFirestore.instance
-          .collection('Encuestas')
-          .where('tipo', isEqualTo: 'Tamizajes')
-          .where('Publicado', isEqualTo: true)
-          .get();
+      const chunkSize = 30;
+      final chunks = <List<DocumentReference>>[];
+      for (var i = 0; i < patientRefs.length; i += chunkSize) {
+        chunks.add(patientRefs.sublist(
+          i,
+          i + chunkSize > patientRefs.length ? patientRefs.length : i + chunkSize,
+        ));
+      }
 
-      print('📋 Total tamizajes publicados: ${tamizajesSnapshot.docs.length}');
+      print('📋 Buscando respuestas para ${patientRefs.length} usuarios en ${chunks.length} lotes...');
 
-      // Iterar sobre cada tamizaje
-      for (var tamizajeDoc in tamizajesSnapshot.docs) {
-        final tamizajeData = tamizajeDoc.data();
-        final tituloTamizaje =
-            tamizajeData['titulo'] ?? tamizajeData['nombre'] ?? 'Sin título';
-        final tamizajeId = tamizajeDoc.id;
-        final userRefList = tamizajeData['user_Ref'] as List<dynamic>? ?? [];
+      final queryTasks = chunks.map((chunk) {
+        return FirebaseFirestore.instance
+            .collectionGroup('Respuestas')
+            .where('User_respuesta', whereIn: chunk)
+            .get();
+      });
 
-        print('🔎 Verificando tamizaje: $tituloTamizaje (ID: $tamizajeId)');
-        print('   - Total user_Ref en tamizaje: ${userRefList.length}');
+      final queryResults = await Future.wait(queryTasks);
+      for (var res in queryResults) {
+        allRespuestas.addAll(res.docs);
+      }
 
-        Set<String> uniqueResponders = {};
+      for (var respuestaDoc in allRespuestas) {
+        final data = respuestaDoc.data();
+        if ((data['invalidado'] as bool?) == true) continue;
 
-        // Verificar cada referencia de usuario en el array user_Ref
-        for (var userRef in userRefList) {
-          if (userRef is DocumentReference) {
-            // Verificar si este usuario pertenece a la institución
-            if (userPaths.contains(userRef.path)) {
-              uniqueResponders.add(userRef.path);
-            }
-          }
+        final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
+        if (titulo.isEmpty) continue;
+
+        if (!tamizajesRespondidosMap.containsKey(titulo)) {
+          tamizajesRespondidosMap[titulo] = {'respuestas': 0};
         }
-
-        int count = uniqueResponders.length;
-
-        if (count > 0) {
-          tamizajesRespondidosMap[tituloTamizaje] = {
-            'respuestas': count,
-            'id': tamizajeId,
-          };
-          print('   ✅ Respuestas encontradas: $count');
-        } else {
-          print('   ❌ Sin respuestas de esta institución');
-        }
+        tamizajesRespondidosMap[titulo]!['respuestas'] = (tamizajesRespondidosMap[titulo]!['respuestas'] as int) + 1;
       }
 
       // Extraer listas para retornar

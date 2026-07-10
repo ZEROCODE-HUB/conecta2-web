@@ -549,7 +549,9 @@ class _EditarContenidoWidgetState extends State<EditarContenidoWidget> {
                                                                                 BoxFit.contain,
                                                                             image:
                                                                                 Image.network(
-                                                                              _model.uploadedFileUrl_uploadDataMes2 == '' ? rowContenidoRecord.imageProfile : _model.uploadedFileUrl_uploadDataMes2,
+                                                                              (_model.uploadedFileUrl_uploadDataMes2 == '' ? rowContenidoRecord.imageProfile : _model.uploadedFileUrl_uploadDataMes2).isNotEmpty
+                                                                                  ? (_model.uploadedFileUrl_uploadDataMes2 == '' ? rowContenidoRecord.imageProfile : _model.uploadedFileUrl_uploadDataMes2)
+                                                                                  : 'https://i.postimg.cc/k47tksd9/placeholder.png',
                                                                             ).image,
                                                                           ),
                                                                           borderRadius:
@@ -691,7 +693,9 @@ class _EditarContenidoWidgetState extends State<EditarContenidoWidget> {
                                                                                 BoxFit.cover,
                                                                             image:
                                                                                 Image.network(
-                                                                              _model.uploadedFileUrl_uploadDataMes2 == '' ? rowContenidoRecord.imagePortada : _model.uploadedFileUrl_uploadDataXz5,
+                                                                              (_model.uploadedFileUrl_uploadDataXz5 == '' ? rowContenidoRecord.imagePortada : _model.uploadedFileUrl_uploadDataXz5).isNotEmpty
+                                                                                  ? (_model.uploadedFileUrl_uploadDataXz5 == '' ? rowContenidoRecord.imagePortada : _model.uploadedFileUrl_uploadDataXz5)
+                                                                                  : 'https://i.postimg.cc/k47tksd9/placeholder.png',
                                                                             ).image,
                                                                           ),
                                                                           borderRadius:
