@@ -11,6 +11,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
@@ -35,6 +36,49 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
   late EditarUsuarioModel _model;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  List<String> _colegiosNombres = [];
+  bool _isLoadingColegios = true;
+  String? _unregisteredColegio;
+
+  Future<void> _loadColegios() async {
+    try {
+      final colegios = await queryColegiosRecordOnce();
+      final nombres = colegios
+          .map((c) => c.nombre)
+          .where((n) => n.isNotEmpty)
+          .toSet()
+          .toList();
+      nombres.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+      final existingColegio = widget.userdoc?.colegio ?? '';
+      if (existingColegio.isNotEmpty && !nombres.contains(existingColegio)) {
+        _unregisteredColegio = existingColegio;
+      }
+
+      if (mounted) {
+        setState(() {
+          _colegiosNombres = nombres;
+          _isLoadingColegios = false;
+
+          if (_colegiosNombres.contains(existingColegio)) {
+            _model.colegioDropDownController =
+                FormFieldController<String>(existingColegio);
+          } else {
+            _model.colegioDropDownController =
+                FormFieldController<String>(null);
+          }
+        });
+      }
+    } catch (e) {
+      print('Error cargando colegios: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingColegios = false;
+        });
+      }
+    }
+  }
+
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
@@ -45,6 +89,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => EditarUsuarioModel());
+    _loadColegios();
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -765,27 +810,74 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
   }
 
   Widget _buildColegioEpsRow(BuildContext context, UsersRecord rowUsersRecord) {
+    _model.textFieldcolegioTextController ??=
+        TextEditingController(text: rowUsersRecord.colegio);
+    _model.textFieldepsTextController ??=
+        TextEditingController(text: rowUsersRecord.eps);
+
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
           Expanded(
-            child: LabeledTextField(
-              label: 'Colegio',
-              controller: _model.textFieldcolegioTextController ??=
-                  TextEditingController(text: rowUsersRecord.colegio),
-              focusNode: _model.textFieldcolegioFocusNode,
-              useErrorColor: false,
-              validator: _model.textFieldcolegioTextControllerValidator
-                  .asValidator(context),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildFieldLabel(context, 'Colegio *'),
+                Padding(
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                  child: _isLoadingColegios
+                      ? Container(
+                          height: 47.0,
+                          decoration: BoxDecoration(
+                            color: kFormFieldFillColor,
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: const SizedBox(
+                            width: 20.0,
+                            height: 20.0,
+                            child: CircularProgressIndicator(strokeWidth: 2.0),
+                          ),
+                        )
+                      : buildSearchableDropDown(
+                          context: context,
+                          controller: _model.colegioDropDownController ??=
+                              FormFieldController<String>(
+                            _colegiosNombres.contains(
+                                    _model.textFieldcolegioTextController?.text)
+                                ? _model.textFieldcolegioTextController?.text
+                                : null,
+                          ),
+                          options: _colegiosNombres,
+                          onChanged: (val) {
+                            safeSetState(() {
+                              _model.textFieldcolegioTextController?.text =
+                                  val ?? '';
+                              _unregisteredColegio = null;
+                            });
+                          },
+                          hintText: _colegiosNombres.contains(
+                                  _model.textFieldcolegioTextController?.text)
+                              ? _model.textFieldcolegioTextController?.text ??
+                                  'Seleccionar colegio'
+                              : 'Seleccionar colegio',
+                          searchHintText: 'Buscar colegio',
+                          width: double.infinity,
+                          height: 47.0,
+                        ),
+                ),
+              ],
             ),
           ),
           Expanded(
             child: LabeledTextField(
               label: 'EPS',
-              controller: _model.textFieldepsTextController ??=
-                  TextEditingController(text: rowUsersRecord.eps),
+              controller: _model.textFieldepsTextController,
               focusNode: _model.textFieldepsFocusNode,
               useErrorColor: false,
               validator: _model.textFieldepsTextControllerValidator
@@ -878,12 +970,13 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
               children: [
                 buildFieldLabel(context, 'Género'),
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                   child: buildStyledDropDown(
                     context: context,
                     controller: _model.dropDownGeneroValueController ??=
-                        FormFieldController<String>(
-                            _model.dropDownGeneroValue ??= rowUsersRecord.genero),
+                        FormFieldController<String>(_model
+                            .dropDownGeneroValue ??= rowUsersRecord.genero),
                     options: ['Masculino', 'Femenino', 'Otro'],
                     onChanged: (val) =>
                         safeSetState(() => _model.dropDownGeneroValue = val),
@@ -917,6 +1010,10 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                           : ''),
               focusNode: _model.textFieldfechaNacimientoFocusNode,
               useErrorColor: false,
+              keyboardType: TextInputType.datetime,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+              ],
               validator: _model.textFieldfechaNacimientoTextControllerValidator
                   .asValidator(context),
             ),
@@ -1003,12 +1100,31 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     final nombre = _model.textFieldNombresTextController?.text.trim() ?? '';
     final dni = _model.textFielddniTextController?.text.trim() ?? '';
     final address = _model.textFieldaddressTextController?.text.trim() ?? '';
+    final colegio = _model.textFieldcolegioTextController?.text.trim() ?? '';
+    final rol = _model.ddTipoValue;
 
     if (email.isEmpty || nombre.isEmpty || dni.isEmpty || address.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             'Por favor complete los datos obligatorios.',
+            style: TextStyle(
+              color: FlutterFlowTheme.of(context).primaryBackground,
+            ),
+          ),
+          backgroundColor: FlutterFlowTheme.of(context).error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    if (rol == 'Adolescente' &&
+        (colegio.isEmpty || _unregisteredColegio != null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Por favor, selecciona una institución de la lista.',
             style: TextStyle(
               color: FlutterFlowTheme.of(context).primaryBackground,
             ),

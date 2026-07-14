@@ -49,6 +49,7 @@ class EditarUsuarioModel extends FlutterFlowModel<EditarUsuarioWidget> {
   FocusNode? textFieldcolegioFocusNode;
   TextEditingController? textFieldcolegioTextController;
   String? Function(BuildContext, String?)? textFieldcolegioTextControllerValidator;
+  FormFieldController<String>? colegioDropDownController;
 
   FocusNode? textFieldedadFocusNode;
   TextEditingController? textFieldedadTextController;

@@ -4,6 +4,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Default fallback avatar url used across the Usuarios screens.
@@ -161,6 +162,8 @@ class LabeledTextField extends StatelessWidget {
     this.suffixIcon,
     this.useErrorColor = true,
     this.fontWeight,
+    this.keyboardType,
+    this.inputFormatters,
   });
 
   final String label;
@@ -174,6 +177,8 @@ class LabeledTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final bool useErrorColor;
   final FontWeight? fontWeight;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -192,6 +197,8 @@ class LabeledTextField extends StatelessWidget {
               autofocus: autofocus,
               obscureText: obscureText,
               maxLength: maxLength,
+              keyboardType: keyboardType,
+              inputFormatters: inputFormatters,
               decoration: sharedInputDecoration(
                 context,
                 hintText: hintText ?? label,

@@ -131,7 +131,7 @@ class _MapaInstitucionesEducativasState
       for (var doc in usersSnapshot.docs) {
         if (userPaths.contains(doc.reference.path)) {
           final data = doc.data();
-          final colegio = data['colegio']?.toString().trim();
+          final colegio = data['colegio']?.toString().trim().toLowerCase();
           if (colegio != null && colegio.isNotEmpty) {
             colegiosConTamizaje.add(colegio);
           }
@@ -200,7 +200,7 @@ class _MapaInstitucionesEducativasState
         final nombreColegio = data['nombre']?.toString().trim() ?? 'Sin nombre';
 
         // Filtrar: Solo agregar si el colegio está en la lista de colegios con tamizaje
-        if (!colegiosConTamizaje.contains(nombreColegio)) continue;
+        if (!colegiosConTamizaje.contains(nombreColegio.toLowerCase())) continue;
 
         // Parsear latitud y longitud desde strings
         double? latitud = _parseCoordinate(data['latitud']);
@@ -432,8 +432,6 @@ class _MapaInstitucionesEducativasState
       print('🔍 User paths a buscar: ${userPaths.length}');
 
       // 2. Buscar tamizajes respondidos por estos usuarios
-      Map<String, Map<String, dynamic>> tamizajesRespondidosMap = {};
-
       final patientRefs = usuariosFiltrados.map((doc) => doc.reference).toList();
       final List<QueryDocumentSnapshot<Map<String, dynamic>>> allRespuestas = [];
 
@@ -448,44 +446,73 @@ class _MapaInstitucionesEducativasState
 
       print('📋 Buscando respuestas para ${patientRefs.length} usuarios en ${chunks.length} lotes...');
 
-      final queryTasks = chunks.map((chunk) {
-        return FirebaseFirestore.instance
-            .collectionGroup('Respuestas')
-            .where('User_respuesta', whereIn: chunk)
-            .get();
-      });
+      Set<String> validTamizajeTitles = {};
 
-      final queryResults = await Future.wait(queryTasks);
-      for (var res in queryResults) {
-        allRespuestas.addAll(res.docs);
+      if (patientRefs.isNotEmpty) {
+        // 1. Obtener títulos válidos (para filtrar respuestas a cuestionarios generales)
+        final tamizajesSnap = await FirebaseFirestore.instance
+            .collection('Encuestas')
+            .where('tipo', isEqualTo: 'Tamizajes')
+            .get();
+            
+        validTamizajeTitles = tamizajesSnap.docs.map((doc) {
+          final data = doc.data();
+          return (data['titulo'] ?? data['Titulo'] ?? '').toString().trim().toLowerCase();
+        }).where((t) => t.isNotEmpty).toSet();
+
+        // 2. Obtener las respuestas de los usuarios de la institución
+        final queryTasks = chunks.map((chunk) {
+          return FirebaseFirestore.instance
+              .collectionGroup('Respuestas')
+              .where('User_respuesta', whereIn: chunk)
+              .get();
+        });
+
+        final queryResults = await Future.wait(queryTasks);
+        for (var res in queryResults) {
+          allRespuestas.addAll(res.docs);
+        }
       }
+
+      Map<String, Set<String>> uniqueUsersPerTamizaje = {};
+      Set<String> uniqueRespondedUsers = {};
 
       for (var respuestaDoc in allRespuestas) {
         final data = respuestaDoc.data();
         if ((data['invalidado'] as bool?) == true) continue;
 
-        final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
-        if (titulo.isEmpty) continue;
+        final tituloRaw = (data['Titlo'] ?? data['titlo'] ?? '').toString().trim();
+        if (tituloRaw.isEmpty) continue;
 
-        if (!tamizajesRespondidosMap.containsKey(titulo)) {
-          tamizajesRespondidosMap[titulo] = {'respuestas': 0};
+        // Ignorar encuestas/cuestionarios que no son 'Tamizajes'
+        if (!validTamizajeTitles.contains(tituloRaw.toLowerCase())) continue;
+
+        final titulo = tituloRaw;
+
+        final userRef = data['User_respuesta'] as DocumentReference?;
+        if (userRef == null) continue;
+
+        uniqueRespondedUsers.add(userRef.path);
+
+        if (!uniqueUsersPerTamizaje.containsKey(titulo)) {
+          uniqueUsersPerTamizaje[titulo] = {};
         }
-        tamizajesRespondidosMap[titulo]!['respuestas'] = (tamizajesRespondidosMap[titulo]!['respuestas'] as int) + 1;
+        uniqueUsersPerTamizaje[titulo]!.add(userRef.path);
       }
 
       // Extraer listas para retornar
       Map<String, int> respuestasPorTamizaje = {};
       List<String> tamizajesRespondidos = [];
 
-      tamizajesRespondidosMap.forEach((titulo, data) {
-        respuestasPorTamizaje[titulo] = data['respuestas'] as int;
+      uniqueUsersPerTamizaje.forEach((titulo, userPathsSet) {
+        respuestasPorTamizaje[titulo] = userPathsSet.length;
         tamizajesRespondidos.add(titulo);
       });
 
       print('📊 Resultado final para $nombreInstitucion:');
-      print('   - Total usuarios: $totalUsuariosFiltrados');
+      print('   - Total usuarios adolescentes (registrados): $totalUsuariosFiltrados');
       print('   - Tamizajes respondidos: ${tamizajesRespondidos.length}');
-      print('   - Respuestas por tamizaje: $respuestasPorTamizaje');
+      print('   - Respuestas por tamizaje (usuarios únicos): $respuestasPorTamizaje');
 
       return {
         'totalUsuarios': totalUsuariosFiltrados,

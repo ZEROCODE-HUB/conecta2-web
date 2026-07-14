@@ -1066,29 +1066,18 @@ class _RegisterContinueWidgetState extends State<RegisterContinueWidget> {
                                 return;
                               }
 
+                              // Fix: Avoid querying by email which fails due to Firestore delay.
+                              // Update all fields directly using user.uid in a single call.
                               await UsersRecord.collection
                                   .doc(user.uid)
-                                  .update(createUsersRecordData(
+                                  .set(createUsersRecordData(
                                     createdTime: getCurrentTimestamp,
+                                    email: _model.correoTextController.text,
+                                    displayName: _model.textController1.text,
+                                    phoneNumber: _model.textController2.text,
+                                    rol: _model.dropDownTipoPersonaValue,
+                                    status: 1,
                                   ));
-
-                              _model.email = await queryUsersRecordOnce(
-                                queryBuilder: (usersRecord) =>
-                                    usersRecord.where(
-                                  'email',
-                                  isEqualTo: _model.correoTextController.text,
-                                ),
-                                singleRecord: true,
-                              ).then((s) => s.firstOrNull);
-
-                              await _model.email!.reference
-                                  .update(createUsersRecordData(
-                                email: _model.correoTextController.text,
-                                displayName: _model.textController1.text,
-                                phoneNumber: _model.textController2.text,
-                                rol: _model.dropDownTipoPersonaValue,
-                                status: 1,
-                              ));
 
                               context.goNamedAuth(
                                   SuccessWidget.routeName, context.mounted);

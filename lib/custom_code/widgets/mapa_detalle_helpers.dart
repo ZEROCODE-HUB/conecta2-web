@@ -297,7 +297,7 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                                                       .spaceBetween,
                                               children: [
                                                 Text(
-                                                  '$respuestas respuestas',
+                                                  '$respuestas ${respuestas == 1 ? 'estudiante' : 'estudiantes'}',
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.bold,

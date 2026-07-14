@@ -13,8 +13,8 @@ import '../../../../../dashboard/web/usuarios/shared/user_form_fields.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'crear_usuario_model.dart';
 export 'crear_usuario_model.dart';
@@ -30,6 +30,36 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
   late CrearUsuarioModel _model;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  List<String> _colegiosNombres = [];
+  bool _isLoadingColegios = true;
+
+  Future<void> _loadColegios() async {
+    try {
+      final colegios = await queryColegiosRecordOnce();
+      final nombres = colegios
+          .map((c) => c.nombre)
+          .where((n) => n.isNotEmpty)
+          .toSet()
+          .toList();
+      nombres.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+      if (mounted) {
+        setState(() {
+          _colegiosNombres = nombres;
+          _isLoadingColegios = false;
+          _model.colegioDropDownController ??=
+              FormFieldController<String>(null);
+        });
+      }
+    } catch (e) {
+      print('Error cargando colegios: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingColegios = false;
+        });
+      }
+    }
+  }
+
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
@@ -40,6 +70,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => CrearUsuarioModel());
+    _loadColegios();
 
     _model.textController1 ??= TextEditingController();
     _model.textFieldFocusNode1 ??= FocusNode();
@@ -554,7 +585,8 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
               children: [
                 buildFieldLabel(context, 'Género'),
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                   child: buildStyledDropDown(
                     context: context,
                     controller: _model.dropDownGeneroValueController ??=
@@ -588,8 +620,13 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
               controller: _model.textFieldfechaNacimientoTextController,
               focusNode: _model.textFieldfechaNacimientoFocusNode,
               useErrorColor: false,
+              keyboardType: TextInputType.datetime,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+              ],
               validator: _model.textFieldfechaNacimientoTextControllerValidator
                   .asValidator(context),
+              maxLength: 10,
             ),
           ),
           Expanded(child: const SizedBox()),
@@ -605,13 +642,52 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
         mainAxisSize: MainAxisSize.max,
         children: [
           Expanded(
-            child: LabeledTextField(
-              label: 'Colegio',
-              controller: _model.textFieldcolegioTextController,
-              focusNode: _model.textFieldcolegioFocusNode,
-              useErrorColor: false,
-              validator: _model.textFieldcolegioTextControllerValidator
-                  .asValidator(context),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildFieldLabel(context, 'Colegio *'),
+                Padding(
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                  child: _isLoadingColegios
+                      ? Container(
+                          height: 47.0,
+                          decoration: BoxDecoration(
+                            color: kFormFieldFillColor,
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: const SizedBox(
+                            width: 20.0,
+                            height: 20.0,
+                            child: CircularProgressIndicator(strokeWidth: 2.0),
+                          ),
+                        )
+                      : buildSearchableDropDown(
+                          context: context,
+                          controller: _model.colegioDropDownController ??=
+                              FormFieldController<String>(
+                            _colegiosNombres.contains(
+                                    _model.textFieldcolegioTextController.text)
+                                ? _model.textFieldcolegioTextController.text
+                                : null,
+                          ),
+                          options: _colegiosNombres,
+                          onChanged: (val) {
+                            safeSetState(() {
+                              _model.textFieldcolegioTextController.text =
+                                  val ?? '';
+                            });
+                          },
+                          hintText: 'Seleccionar colegio',
+                          searchHintText: 'Buscar colegio',
+                          width: double.infinity,
+                          height: 47.0,
+                        ),
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -777,6 +853,29 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                 style: TextStyle(fontWeight: FontWeight.bold)),
             content: const Text(
                 'Por favor, asegúrate de seleccionar el "Tipo de usuario", e ingresar los "Nombres y Apellidos" y el "Documento de identidad" para registrar al usuario.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(alertDialogContext),
+                child: const Text('Entendido'),
+              ),
+            ],
+          ),
+        ),
+      );
+      safeSetState(() {});
+      return;
+    }
+
+    if (_model.tipoValue == 'Adolescente' &&
+        _model.textFieldcolegioTextController.text.trim().isEmpty) {
+      await showDialog(
+        context: context,
+        builder: (alertDialogContext) => WebViewAware(
+          child: AlertDialog(
+            title: const Text('Institución requerida',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: const Text(
+                'Por favor, selecciona una institución de la lista.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(alertDialogContext),
