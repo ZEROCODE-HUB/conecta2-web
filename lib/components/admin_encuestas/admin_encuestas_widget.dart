@@ -118,7 +118,9 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
         child: VistaPreviaCopyWidget(encuestaID: previewRef),
       );
     } else if (selectUser == 'Editar Encuesta') {
-      if (_model.documentID != null && _model.doc != null && widget.tipo != null) {
+      if (_model.documentID != null &&
+          _model.doc != null &&
+          widget.tipo != null) {
         return wrapWithModel(
           model: _model.editarencuesta2Model,
           updateCallback: _onStateChanged,
@@ -159,8 +161,7 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
             color: FlutterFlowTheme.of(context).primaryBackground,
           ),
           child: Padding(
-            padding:
-                const EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 50.0, 0.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 50.0, 0.0),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -277,8 +278,7 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
         color: Color(0xFF265294),
       ),
       options: FFButtonOptions(
-        padding:
-            const EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
         iconPadding: EdgeInsetsDirectional.zero,
         color: FlutterFlowTheme.of(context).secondary,
         textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -324,14 +324,18 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
             const SizedBox(width: 10),
             Flexible(
               child: AuthUserStreamWidget(
-                builder: (context) => Text(
-                  currentUserDisplayName,
-                  overflow: TextOverflow.ellipsis,
-                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                        font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.w600,
-                      ),
+                builder: (context) => Padding(
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 28.0, 0.0),
+                  child: Text(
+                    currentUserDisplayName,
+                    overflow: TextOverflow.ellipsis,
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
                 ),
               ),
             ),

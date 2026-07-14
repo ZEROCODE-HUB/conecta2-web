@@ -150,13 +150,17 @@ class UsuariosTitleBar extends StatelessWidget {
                         ),
                       ),
                       AuthUserStreamWidget(
-                        builder: (context) => Text(
-                          currentUserDisplayName,
-                          style: theme.bodyMedium.override(
-                            font:
-                                GoogleFonts.inter(fontWeight: FontWeight.w600),
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.w600,
+                        builder: (context) => Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              0.0, 0.0, 28.0, 0.0),
+                          child: Text(
+                            currentUserDisplayName,
+                            style: theme.bodyMedium.override(
+                              font: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600),
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
@@ -368,8 +372,8 @@ class UsuariosFilters extends StatelessWidget {
                   borderColor: theme.alternate,
                   borderWidth: 2.0,
                   borderRadius: 8.0,
-                  margin:
-                      const EdgeInsetsDirectional.fromSTEB(16.0, 4.0, 16.0, 4.0),
+                  margin: const EdgeInsetsDirectional.fromSTEB(
+                      16.0, 4.0, 16.0, 4.0),
                   hidesUnderline: true,
                   isOverButton: false,
                   isSearchable: false,

@@ -51,7 +51,8 @@ class _AdminEstadsticas2WidgetState extends State<AdminEstadsticas2Widget> {
   }
 
   void _refreshStats() {
-    final isProfesional = valueOrDefault(currentUserDocument?.rol, '') == 'Profesional';
+    final isProfesional =
+        valueOrDefault(currentUserDocument?.rol, '') == 'Profesional';
     _statsFuture = loadStats(
       _tipoSeleccionado,
       colegio: _model.filtroColegio.isEmpty ? null : _model.filtroColegio,
@@ -287,7 +288,6 @@ class _AdminEstadsticas2WidgetState extends State<AdminEstadsticas2Widget> {
       },
     );
   }
-
 }
 
 class _Header extends StatelessWidget {
@@ -342,15 +342,19 @@ class _Header extends StatelessWidget {
                         ),
                       ),
                       AuthUserStreamWidget(
-                        builder: (context) => Text(
-                          currentUserDisplayName,
-                          style: bodyMedium.override(
-                            font: GoogleFonts.inter(
+                        builder: (context) => Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              0.0, 0.0, 28.0, 0.0),
+                          child: Text(
+                            currentUserDisplayName,
+                            style: bodyMedium.override(
+                              font: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                                fontStyle: bodyMedium.fontStyle,
+                              ),
+                              letterSpacing: 0.0,
                               fontWeight: FontWeight.w600,
-                              fontStyle: bodyMedium.fontStyle,
                             ),
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),

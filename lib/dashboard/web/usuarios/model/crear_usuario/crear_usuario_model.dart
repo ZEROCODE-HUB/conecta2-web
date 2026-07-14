@@ -58,6 +58,10 @@ class CrearUsuarioModel extends FlutterFlowModel<CrearUsuarioWidget> {
   TextEditingController? textFieldcolegioTextController;
   String? Function(BuildContext, String?)? textFieldcolegioTextControllerValidator;
   FormFieldController<String>? colegioDropDownController;
+  FormFieldController<String>? epsDropDownController;
+  FormFieldController<String>? municipioDropDownController;
+  FormFieldController<String>? barrioDropDownController;
+  FormFieldController<String>? gradoDropDownController;
 
   FocusNode? textFieldepsFocusNode;
   TextEditingController? textFieldepsTextController;

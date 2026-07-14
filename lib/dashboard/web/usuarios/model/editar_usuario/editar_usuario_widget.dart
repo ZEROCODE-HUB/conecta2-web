@@ -6,6 +6,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/upload_data.dart';
+import '/backend/schema/shared/listas_fijas.dart';
 import '../../../../../dashboard/web/usuarios/shared/user_form_fields.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
@@ -17,6 +18,18 @@ import 'package:intl/intl.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'editar_usuario_model.dart';
 export 'editar_usuario_model.dart';
+
+const List<String> kListaMunicipios = [
+  'Cartagena',
+  'Bucaramanga',
+  'Montería',
+  'Cúcuta',
+  'Barrancabermeja',
+];
+
+const List<String> kListaGrados = [
+  '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'
+];
 
 class EditarUsuarioWidget extends StatefulWidget {
   const EditarUsuarioWidget({
@@ -39,6 +52,43 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
   List<String> _colegiosNombres = [];
   bool _isLoadingColegios = true;
   String? _unregisteredColegio;
+
+  List<String> _barriosNombres = [];
+  bool _isLoadingBarrios = true;
+
+  Future<void> _loadBarrios() async {
+    try {
+      final barrios = await queryBarriosRecordOnce();
+      final nombres = barrios
+          .map((b) => b.nombre)
+          .where((n) => n.isNotEmpty)
+          .toSet()
+          .toList();
+      nombres.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+      if (mounted) {
+        setState(() {
+          _barriosNombres = nombres;
+          _isLoadingBarrios = false;
+          
+          final existingBarrio = widget.userdoc?.barrio ?? '';
+          if (_barriosNombres.contains(existingBarrio)) {
+            _model.barrioDropDownController =
+                FormFieldController<String>(existingBarrio);
+          } else {
+            _model.barrioDropDownController =
+                FormFieldController<String>(null);
+          }
+        });
+      }
+    } catch (e) {
+      print('Error cargando barrios: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingBarrios = false;
+        });
+      }
+    }
+  }
 
   Future<void> _loadColegios() async {
     try {
@@ -90,6 +140,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     super.initState();
     _model = createModel(context, () => EditarUsuarioModel());
     _loadColegios();
+    _loadBarrios();
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -122,6 +173,21 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
               widget.userdoc!.profesionales.nombre;
           _model.dropDownProfesionalValue =
               widget.userdoc!.profesionales.nombre;
+
+          final existingEps = widget.userdoc?.eps ?? '';
+          _model.epsDropDownController = FormFieldController<String>(
+            kListaEPS.contains(existingEps) ? existingEps : null,
+          );
+
+          final existingMunicipio = widget.userdoc?.municipio ?? '';
+          _model.municipioDropDownController = FormFieldController<String>(
+            kListaMunicipios.contains(existingMunicipio) ? existingMunicipio : null,
+          );
+
+          final existingGrado = widget.userdoc?.grado ?? '';
+          _model.gradoDropDownController = FormFieldController<String>(
+            kListaGrados.contains(existingGrado) ? existingGrado : null,
+          );
         });
       }
     });
@@ -875,13 +941,35 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
             ),
           ),
           Expanded(
-            child: LabeledTextField(
-              label: 'EPS',
-              controller: _model.textFieldepsTextController,
-              focusNode: _model.textFieldepsFocusNode,
-              useErrorColor: false,
-              validator: _model.textFieldepsTextControllerValidator
-                  .asValidator(context),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildFieldLabel(context, 'EPS'),
+                Padding(
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                  child: buildSearchableDropDown(
+                    context: context,
+                    controller: _model.epsDropDownController ??=
+                        FormFieldController<String>(
+                      kListaEPS.contains(_model.textFieldepsTextController?.text)
+                          ? _model.textFieldepsTextController?.text
+                          : null,
+                    ),
+                    options: kListaEPS,
+                    onChanged: (val) {
+                      safeSetState(() {
+                        _model.textFieldepsTextController?.text = val ?? '';
+                      });
+                    },
+                    hintText: 'Seleccionar EPS',
+                    searchHintText: 'Buscar EPS',
+                    width: double.infinity,
+                    height: 47.0,
+                  ),
+                ),
+              ],
             ),
           ),
         ].divide(const SizedBox(width: 25.0)),
@@ -897,25 +985,82 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
         mainAxisSize: MainAxisSize.max,
         children: [
           Expanded(
-            child: LabeledTextField(
-              label: 'Municipio',
-              controller: _model.textFieldmunicipioTextController ??=
-                  TextEditingController(text: rowUsersRecord.municipio),
-              focusNode: _model.textFieldmunicipioFocusNode,
-              useErrorColor: false,
-              validator: _model.textFieldmunicipioTextControllerValidator
-                  .asValidator(context),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildFieldLabel(context, 'Municipio'),
+                Padding(
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                  child: buildSearchableDropDown(
+                    context: context,
+                    controller: _model.municipioDropDownController ??=
+                        FormFieldController<String>(
+                      kListaMunicipios.contains(_model.textFieldmunicipioTextController?.text)
+                          ? _model.textFieldmunicipioTextController?.text
+                          : null,
+                    ),
+                    options: kListaMunicipios,
+                    onChanged: (val) {
+                      safeSetState(() {
+                        _model.textFieldmunicipioTextController?.text = val ?? '';
+                      });
+                    },
+                    hintText: 'Seleccionar municipio',
+                    searchHintText: 'Buscar municipio',
+                    width: double.infinity,
+                    height: 47.0,
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
-            child: LabeledTextField(
-              label: 'Barrio',
-              controller: _model.textFieldbarrioTextController ??=
-                  TextEditingController(text: rowUsersRecord.barrio),
-              focusNode: _model.textFieldbarrioFocusNode,
-              useErrorColor: false,
-              validator: _model.textFieldbarrioTextControllerValidator
-                  .asValidator(context),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildFieldLabel(context, 'Barrio'),
+                Padding(
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                  child: _isLoadingBarrios
+                      ? Container(
+                          height: 47.0,
+                          decoration: BoxDecoration(
+                            color: kFormFieldFillColor,
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: const SizedBox(
+                            width: 20.0,
+                            height: 20.0,
+                            child: CircularProgressIndicator(strokeWidth: 2.0),
+                          ),
+                        )
+                      : buildSearchableDropDown(
+                          context: context,
+                          controller: _model.barrioDropDownController ??=
+                              FormFieldController<String>(
+                            _barriosNombres.contains(_model.textFieldbarrioTextController?.text)
+                                ? _model.textFieldbarrioTextController?.text
+                                : null,
+                          ),
+                          options: _barriosNombres,
+                          onChanged: (val) {
+                            safeSetState(() {
+                              _model.textFieldbarrioTextController?.text = val ?? '';
+                            });
+                          },
+                          hintText: 'Seleccionar barrio',
+                          searchHintText: 'Buscar barrio',
+                          width: double.infinity,
+                          height: 47.0,
+                        ),
+                ),
+              ],
             ),
           ),
         ].divide(const SizedBox(width: 25.0)),
@@ -930,14 +1075,35 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
         mainAxisSize: MainAxisSize.max,
         children: [
           Expanded(
-            child: LabeledTextField(
-              label: 'Grado Escolar',
-              controller: _model.textFieldgradoTextController ??=
-                  TextEditingController(text: rowUsersRecord.grado),
-              focusNode: _model.textFieldgradoFocusNode,
-              useErrorColor: false,
-              validator: _model.textFieldgradoTextControllerValidator
-                  .asValidator(context),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildFieldLabel(context, 'Grado Escolar'),
+                Padding(
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                  child: buildSearchableDropDown(
+                    context: context,
+                    controller: _model.gradoDropDownController ??=
+                        FormFieldController<String>(
+                      kListaGrados.contains(_model.textFieldgradoTextController?.text)
+                          ? _model.textFieldgradoTextController?.text
+                          : null,
+                    ),
+                    options: kListaGrados,
+                    onChanged: (val) {
+                      safeSetState(() {
+                        _model.textFieldgradoTextController?.text = val ?? '';
+                      });
+                    },
+                    hintText: 'Seleccionar grado',
+                    searchHintText: 'Buscar grado',
+                    width: double.infinity,
+                    height: 47.0,
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(child: const SizedBox()),
