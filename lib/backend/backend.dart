@@ -1135,20 +1135,9 @@ Future maybeCreateUser(User user) async {
     return;
   }
 
-  final userData = createUsersRecordData(
-    email: user.email ??
-        FirebaseAuth.instance.currentUser?.email ??
-        user.providerData.firstOrNull?.email,
-    displayName:
-        user.displayName ?? FirebaseAuth.instance.currentUser?.displayName,
-    photoUrl: user.photoURL,
-    uid: user.uid,
-    phoneNumber: user.phoneNumber,
-    createdTime: getCurrentTimestamp,
-  );
-
-  await userRecord.set(userData);
-  currentUserDocument = UsersRecord.getDocumentFromData(userData, userRecord);
+  // Fix: To prevent "half registrations" with missing data (like 'rol'), we do not create
+  // the document here automatically during account creation. 
+  // The document will be created explicitly in the registration flow with all necessary fields.
 }
 
 Future updateUserDocument({String? email}) async {

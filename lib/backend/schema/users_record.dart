@@ -212,6 +212,13 @@ Map<String, dynamic> createUsersRecordData({
   String? eps,
   String? grado,
 }) {
+  if (displayName != null && displayName.trim().isEmpty) {
+    throw Exception('El nombre de usuario no puede estar vacío');
+  }
+  if (rol != null && rol.trim().isEmpty) {
+    throw Exception('El tipo de usuario no puede estar vacío');
+  }
+
   final firestoreData = mapToFirestore(
     <String, dynamic>{
       'email': email,

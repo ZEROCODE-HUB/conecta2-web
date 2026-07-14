@@ -152,6 +152,42 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
     _model.repeatepasswordTextController ??= TextEditingController();
     _model.repeatepasswordFocusNode ??= FocusNode();
 
+    _model.textFieldfechaNacimientoTextControllerValidator = (context, val) {
+      if (val == null || val.isEmpty) {
+        return null;
+      }
+      final parts = val.split('/');
+      if (parts.length != 3) {
+        return 'Formato inválido (DD/MM/YYYY)';
+      }
+      final day = int.tryParse(parts[0]);
+      final month = int.tryParse(parts[1]);
+      final year = int.tryParse(parts[2]);
+      if (day == null || month == null || year == null) {
+        return 'Formato inválido (DD/MM/YYYY)';
+      }
+      if (month < 1 || month > 12) {
+        return 'Mes inválido (1-12)';
+      }
+      if (day < 1 || day > 31) {
+        return 'Día inválido (1-31)';
+      }
+      final daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      if (day > daysInMonth[month - 1]) {
+        return 'Día inválido para el mes';
+      }
+      if (month == 2 && day == 29) {
+        final isLeap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+        if (!isLeap) {
+          return 'No es año bisiesto';
+        }
+      }
+      if (year < 1900 || year > DateTime.now().year) {
+        return 'Año inválido';
+      }
+      return null;
+    };
+
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
@@ -665,7 +701,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
               useErrorColor: false,
               keyboardType: TextInputType.datetime,
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+                DateInputFormatter(),
               ],
               validator: _model.textFieldfechaNacimientoTextControllerValidator
                   .asValidator(context),
@@ -987,6 +1023,9 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
   }
 
   Future<void> _onCreatePressed() async {
+    if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
+      return;
+    }
     if (_model.tipoValue == null ||
         _model.tipoValue!.isEmpty ||
         _model.textController1.text.trim().isEmpty ||
@@ -1143,6 +1182,43 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
           duration: Duration(milliseconds: 0),
         ),
       },
+    );
+  }
+}
+
+class DateInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (text.length > 8) return oldValue;
+
+    // Validar día mientras se escribe
+    if (text.length >= 2) {
+      final day = int.tryParse(text.substring(0, 2));
+      if (day != null && (day < 1 || day > 31)) {
+        return oldValue;
+      }
+    }
+    // Validar mes mientras se escribe
+    if (text.length >= 4) {
+      final month = int.tryParse(text.substring(2, 4));
+      if (month != null && (month < 1 || month > 12)) {
+        return oldValue;
+      }
+    }
+
+    String formatted = '';
+    for (int i = 0; i < text.length; i++) {
+      if (i == 2 || i == 4) formatted += '/';
+      formatted += text[i];
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

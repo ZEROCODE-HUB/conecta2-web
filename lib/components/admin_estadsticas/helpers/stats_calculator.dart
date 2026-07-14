@@ -239,6 +239,22 @@ Future<StatsAggregates> loadStats(
   final nivelesEje = tipo.niveles;
 
   try {
+    // Obtener referencias de encuestas publicadas para filtrar
+    final encuestasSnap = await FirebaseFirestore.instance
+        .collection('Encuestas')
+        .where('tipo', isEqualTo: 'Tamizajes')
+        .where('Publicado', isEqualTo: true)
+        .get()
+        .timeout(const Duration(seconds: 10));
+
+    final publishedRefs = encuestasSnap.docs.where((d) {
+      final t = (d.data()['titulo'] ?? '').toString();
+      if (tituloEncuesta != null && tituloEncuesta.isNotEmpty) {
+        return t == tituloEncuesta;
+      }
+      return _matchesTipo(tipo, t);
+    }).map((d) => d.reference).toSet();
+
     Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs;
 
     if (profesionalRef != null) {
@@ -293,8 +309,11 @@ Future<StatsAggregates> loadStats(
       allDocs = snap.docs;
     }
 
-    final filteredDocs = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+    final filteredDocsMap = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
     for (final doc in allDocs) {
+      final parentRef = doc.reference.parent.parent;
+      if (parentRef == null || !publishedRefs.contains(parentRef)) continue;
+
       final data = doc.data();
       final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
       if (titulo.isEmpty) continue;
@@ -303,15 +322,30 @@ Future<StatsAggregates> loadStats(
           tituloEncuesta.isNotEmpty &&
           titulo != tituloEncuesta) continue;
       if ((data['invalidado'] as bool?) == true) continue;
+      
+      final fecha = _fechaFromDoc(data);
       if (rango != null) {
-        final fecha = _fechaFromDoc(data);
         if (fecha == null) continue;
         if (fecha.isBefore(rango.start)) continue;
         final endInclusive = rango.end.add(const Duration(days: 1));
         if (!fecha.isBefore(endInclusive)) continue;
       }
-      filteredDocs.add(doc);
+
+      final userRef = data['User_respuesta'];
+      if (userRef is DocumentReference) {
+        final existing = filteredDocsMap[userRef.path];
+        if (existing != null) {
+          final existingFecha = _fechaFromDoc(existing.data());
+          if (fecha != null && existingFecha != null && fecha.isAfter(existingFecha)) {
+            filteredDocsMap[userRef.path] = doc;
+          }
+        } else {
+          filteredDocsMap[userRef.path] = doc;
+        }
+      }
     }
+
+    final filteredDocs = filteredDocsMap.values.toList();
 
     final uniqueUserRefs = filteredDocs
         .map((doc) => doc.data()['User_respuesta'])

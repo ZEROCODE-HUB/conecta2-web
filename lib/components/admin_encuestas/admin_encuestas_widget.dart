@@ -189,36 +189,30 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
   Widget _buildTopBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 16.0,
+        runSpacing: 16.0,
         children: [
-          Flexible(
-            child: Text(
-              valueOrDefault<String>(widget.tipo, 'Encuestas'),
-              overflow: TextOverflow.ellipsis,
-              style: FlutterFlowTheme.of(context).titleLarge.override(
-                    font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                    letterSpacing: 0.0,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
+          Text(
+            valueOrDefault<String>(widget.tipo, 'Encuestas'),
+            style: FlutterFlowTheme.of(context).titleLarge.override(
+                  font: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                  letterSpacing: 0.0,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
-          const SizedBox(width: 16),
-          Flexible(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildCrearNuevoButton(context),
-                const SizedBox(width: 25),
-                if (widget.tipo == 'Tamizajes') ...[
-                  _buildListadoTamizajesButton(context),
-                  const SizedBox(width: 25),
-                ],
-                _buildUserBadge(context),
-              ],
-            ),
+          Wrap(
+            spacing: 16.0,
+            runSpacing: 16.0,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _buildCrearNuevoButton(context),
+              if (widget.tipo == 'Tamizajes')
+                _buildListadoTamizajesButton(context),
+              _buildUserBadge(context),
+            ],
           ),
         ],
       ),

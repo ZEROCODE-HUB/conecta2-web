@@ -534,6 +534,13 @@ extension CCRight on _CrearcontenidoWidgetState {
                                                               imagePortada: _model
                                                                   .imgportada,
                                                             ));
+                                                            // Limpiar los campos del formulario
+                                                            _model.tituloTextController?.clear();
+                                                            _model.imgperfil = null;
+                                                            _model.imgportada = null;
+                                                            _model.dropDownValueController1?.reset();
+                                                            FFAppState().HTML = '';
+                                                            
                                                             FFAppState()
                                                                 .selectUser = '';
                                                             safeSetState(() {});

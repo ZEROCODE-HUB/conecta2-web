@@ -121,6 +121,14 @@ class _ResultadosTamiV2WidgetState extends State<ResultadosTamiV2Widget> {
                     queryBuilder: (q) => q,
                   ),
                   builder: (context, snap) {
+                    if (snap.hasError) {
+                      return Center(
+                        child: Text(
+                          'Error al obtener resultados: ${snap.error}',
+                          style: GoogleFonts.inter(color: Colors.red),
+                        ),
+                      );
+                    }
                     if (!snap.hasData) {
                       return const Center(
                         child: CircularProgressIndicator(
@@ -324,8 +332,12 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                         future: UsersRecord.getDocumentOnce(
                             r.userRespuesta!),
                         builder: (context, snap) {
-                          final name =
-                              snap.data?.displayName ?? 'Cargando...';
+                          final name = snap.hasError
+                              ? 'Error al cargar'
+                              : (snap.data?.displayName ??
+                                  (snap.connectionState == ConnectionState.done
+                                      ? 'Usuario desconocido'
+                                      : 'Cargando...'));
                           final genero = (snap.data?.genero ?? '').trim();
                           final edad = _edadFromBirth(snap.data?.fechaNacimiento);
                           final inicial = name.isNotEmpty

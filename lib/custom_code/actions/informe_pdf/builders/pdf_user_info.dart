@@ -169,7 +169,7 @@ pw.Widget buildPatientHeaderBlock(Map<String, dynamic> datos) {
             ),
             pw.SizedBox(height: 2),
             pw.Text(
-              'EPS: $eps  \u2022  GÉNERO: $genero',
+              'EPS: $eps  •  GÉNERO: $genero',
               style: pw.TextStyle(
                 fontSize: 8.5,
                 color: PdfColors.black,

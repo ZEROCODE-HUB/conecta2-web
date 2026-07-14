@@ -104,20 +104,27 @@ class _MapaInstitucionesEducativasState
   Future<Set<String>> _obtenerColegiosConTamizaje() async {
     Set<String> colegiosConTamizaje = {};
     try {
-      print('📋 Buscando todos los tamizajes para filtrar mapa...');
+      print('📋 Buscando colegios con tamizajes (filtrado por rol)...');
+      
+      // Obtener rol del usuario actual
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserUid).get();
+      final userRol = userDoc.data()?['rol'] as String?;
+
       final tamizajesSnapshot = await FirebaseFirestore.instance
           .collection('Encuestas')
-          .where('tipo', isEqualTo: 'Tamizajes')
           .where('Publicado', isEqualTo: true)
           .get();
 
       Set<String> userPaths = {};
       for (var doc in tamizajesSnapshot.docs) {
         final data = doc.data();
-        final userRefList = data['user_Ref'] as List<dynamic>? ?? [];
-        for (var userRef in userRefList) {
-          if (userRef is DocumentReference) {
-            userPaths.add(userRef.path);
+        final tipo = data['tipo']?.toString().toLowerCase() ?? '';
+        if (tipo.contains('tamizaje')) {
+          final userRefList = data['user_Ref'] as List<dynamic>? ?? [];
+          for (var userRef in userRefList) {
+            if (userRef is DocumentReference) {
+              userPaths.add(userRef.path);
+            }
           }
         }
       }
@@ -126,14 +133,23 @@ class _MapaInstitucionesEducativasState
 
       if (userPaths.isEmpty) return {};
 
-      final usersSnapshot = await FirebaseFirestore.instance.collection('users').get();
+      Query usuariosQuery = FirebaseFirestore.instance.collection('users');
+      if (userRol == 'Profesional') {
+        usuariosQuery = usuariosQuery.where('Profesionales.Ref', isEqualTo: userDoc.reference);
+      } else {
+        usuariosQuery = usuariosQuery.where('rol', isEqualTo: 'Adolescente');
+      }
+
+      final usersSnapshot = await usuariosQuery.get();
       
       for (var doc in usersSnapshot.docs) {
         if (userPaths.contains(doc.reference.path)) {
-          final data = doc.data();
-          final colegio = data['colegio']?.toString().trim().toLowerCase();
-          if (colegio != null && colegio.isNotEmpty) {
-            colegiosConTamizaje.add(colegio);
+          final data = doc.data() as Map<String, dynamic>?;
+          if (data != null) {
+            final colegio = data['colegio']?.toString().trim().toLowerCase();
+            if (colegio != null && colegio.isNotEmpty) {
+              colegiosConTamizaje.add(colegio);
+            }
           }
         }
       }
@@ -452,10 +468,13 @@ class _MapaInstitucionesEducativasState
         // 1. Obtener títulos válidos (para filtrar respuestas a cuestionarios generales)
         final tamizajesSnap = await FirebaseFirestore.instance
             .collection('Encuestas')
-            .where('tipo', isEqualTo: 'Tamizajes')
             .get();
             
-        validTamizajeTitles = tamizajesSnap.docs.map((doc) {
+        validTamizajeTitles = tamizajesSnap.docs.where((doc) {
+          final data = doc.data();
+          final tipo = data['tipo']?.toString().toLowerCase() ?? '';
+          return tipo.contains('tamizaje');
+        }).map((doc) {
           final data = doc.data();
           return (data['titulo'] ?? data['Titulo'] ?? '').toString().trim().toLowerCase();
         }).where((t) => t.isNotEmpty).toSet();
@@ -487,7 +506,8 @@ class _MapaInstitucionesEducativasState
         // Ignorar encuestas/cuestionarios que no son 'Tamizajes'
         if (!validTamizajeTitles.contains(tituloRaw.toLowerCase())) continue;
 
-        final titulo = tituloRaw;
+        // Normalizar el título a mayúsculas para evitar duplicados por case
+        final titulo = tituloRaw.toUpperCase();
 
         final userRef = data['User_respuesta'] as DocumentReference?;
         if (userRef == null) continue;

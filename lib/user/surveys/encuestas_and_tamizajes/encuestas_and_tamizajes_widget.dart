@@ -255,7 +255,7 @@ class _EncuestasAndTamizajesWidgetState
                                       hoverColor: Colors.transparent,
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
-                                        _model.exist2 =
+                                        List<RespuestasRecord> pastResponses =
                                             await queryRespuestasRecordOnce(
                                           parent: surveyLists1EncuestasRecord
                                               .reference,
@@ -264,9 +264,47 @@ class _EncuestasAndTamizajesWidgetState
                                             'User_respuesta',
                                             isEqualTo: currentUserReference,
                                           ),
-                                          singleRecord: true,
-                                        ).then((s) => s.firstOrNull);
-                                        if (_model.exist2?.reference == null) {
+                                          singleRecord: false,
+                                        );
+
+                                        pastResponses.sort((a, b) =>
+                                            (b.fecha ?? DateTime(1970))
+                                                .compareTo(
+                                                    a.fecha ?? DateTime(1970)));
+                                        _model.exist2 =
+                                            pastResponses.firstOrNull;
+
+                                        bool canTakeSurvey =
+                                            _model.exist2?.reference == null;
+
+                                        if (!canTakeSurvey) {
+                                          if (surveyLists1EncuestasRecord
+                                                      .tipo ==
+                                                  'Tamizajes' &&
+                                              currentUserDocument?.rol ==
+                                                  'Adolescente') {
+                                            final now = DateTime.now();
+                                            final responseDate =
+                                                _model.exist2?.fecha;
+                                            if (responseDate != null &&
+                                                responseDate.year == now.year &&
+                                                responseDate.month ==
+                                                    now.month) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                    content: Text(
+                                                        'Ya respondiste este tamizaje.')),
+                                              );
+                                              return;
+                                            } else {
+                                              // Different month, they can take it again
+                                              canTakeSurvey = true;
+                                            }
+                                          }
+                                        }
+
+                                        if (canTakeSurvey) {
                                           FFAppState().RespuestaEnc = [];
                                           safeSetState(() {});
                                           _model.maxRetries = null;

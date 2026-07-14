@@ -29,7 +29,7 @@ class UsuariosTitleBar extends StatelessWidget {
     final theme = FlutterFlowTheme.of(context);
 
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 25.0, 0.0),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

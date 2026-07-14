@@ -298,7 +298,7 @@ class _Header extends StatelessWidget {
     final titleLarge = FlutterFlowTheme.of(context).titleLarge;
     final bodyMedium = FlutterFlowTheme.of(context).bodyMedium;
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0, 40, 0, 0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 40, 25.0, 0),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

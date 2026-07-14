@@ -200,6 +200,14 @@ class _ResultadosTamiWidgetState extends State<ResultadosTamiWidget> {
                             q.orderBy('Fecha', descending: true),
                       ),
                       builder: (context, respuestasSnapshot) {
+                        if (respuestasSnapshot.hasError) {
+                          return Center(
+                            child: Text(
+                              'Error al obtener resultados: ${respuestasSnapshot.error}',
+                              style: GoogleFonts.inter(color: Colors.red),
+                            ),
+                          );
+                        }
                         if (!respuestasSnapshot.hasData) {
                           return Center(
                             child: CircularProgressIndicator(
@@ -403,8 +411,13 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                               future: UsersRecord.getDocumentOnce(
                                   widget.respuesta.userRespuesta!),
                               builder: (context, userSnap) {
-                                final name =
-                                    userSnap.data?.displayName ?? 'Cargando...';
+                                final name = userSnap.hasError
+                                    ? 'Usuario desconocido'
+                                    : (userSnap.data?.displayName ??
+                                        (userSnap.connectionState ==
+                                                ConnectionState.done
+                                            ? 'Usuario desconocido'
+                                            : 'Cargando...'));
                                 return Text(
                                   name,
                                   style: GoogleFonts.inter(
