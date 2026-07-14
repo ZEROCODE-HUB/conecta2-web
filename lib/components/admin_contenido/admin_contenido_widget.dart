@@ -70,9 +70,6 @@ class _AdminContenido2WidgetState extends State<AdminContenido2Widget> {
   }
 
   Future<void> _crearContenido() async {
-    FFAppState().selectUser = 'CrearContenido';
-    safeSetState(() {});
-
     final ref = ContenidoRecord.collection.doc();
     final data = createContenidoRecordData(
       titulo: 'Vacío',
@@ -80,10 +77,14 @@ class _AdminContenido2WidgetState extends State<AdminContenido2Widget> {
       publicado: false,
       userRef: currentUserReference,
     );
-    await ref.set(data);
+    
     _model.contenidoID = ContenidoRecord.getDocumentFromData(data, ref);
-    _model.documentID = _model.contenidoID?.reference;
+    _model.documentID = ref;
+    
+    FFAppState().selectUser = 'CrearContenido';
     safeSetState(() {});
+
+    await ref.set(data);
   }
 
   @override

@@ -12,6 +12,7 @@ extension CCHeader on _CrearcontenidoWidgetState {
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
+                                    await widget.contenidoID!.delete();
                                     FFAppState().selectUser = '';
                                     safeSetState(() {});
                                   },

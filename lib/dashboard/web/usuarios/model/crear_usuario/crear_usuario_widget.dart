@@ -1192,17 +1192,29 @@ class DateInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final text = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    String text = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
     if (text.length > 8) return oldValue;
 
-    // Validar día mientras se escribe
+    // Auto-pad day if first digit > 3
+    if (text.length == 1) {
+      if (int.parse(text) > 3) {
+        text = '0$text';
+      }
+    }
+    
+    // Auto-pad month if first digit of month > 1
+    if (text.length == 3) {
+      if (int.parse(text[2]) > 1) {
+        text = '${text.substring(0, 2)}0${text[2]}';
+      }
+    }
+
     if (text.length >= 2) {
       final day = int.tryParse(text.substring(0, 2));
       if (day != null && (day < 1 || day > 31)) {
         return oldValue;
       }
     }
-    // Validar mes mientras se escribe
     if (text.length >= 4) {
       final month = int.tryParse(text.substring(2, 4));
       if (month != null && (month < 1 || month > 12)) {
