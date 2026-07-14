@@ -43,6 +43,27 @@ List<DataRow> buildDataRows({
               ),
             ),
           );
+        } else if (valor == 'Sí' || valor == 'No') {
+          final color = valor == 'Sí'
+              ? const Color(0xFFFFEBEE) // Rojo claro
+              : const Color(0xFFF2FBFF); // Gris claro
+          cellContent = Container(
+            color: color,
+            padding: const EdgeInsets.all(8),
+            child: Center(
+              child: Text(
+                valor,
+                style: TextStyle(
+                  fontSize: 11,
+                  color:
+                      valor == 'Sí' ? const Color(0xFFB42318) : Colors.black87,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          );
         }
 
         celdas.add(DataCell(cellContent));

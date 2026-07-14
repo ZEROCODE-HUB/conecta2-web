@@ -52,9 +52,7 @@ String evaluarNivelRiesgo(
   for (var alerta in alertas) {
     if (alerta is! Map<String, dynamic>) continue;
 
-    final sustanciaAlerta = alerta['sustancia'] as String?;
-    if (sustanciaAlerta == null) continue;
-
+    final sustanciaAlerta = alerta['sustancia'] as String? ?? '';
     final sustanciaAlertaNormalizada =
         quitarTildes(sustanciaAlerta.toLowerCase());
 
@@ -62,7 +60,8 @@ String evaluarNivelRiesgo(
     final min = (alerta['min'] as num?)?.toDouble() ?? 0.0;
     final max = (alerta['max'] as num?)?.toDouble() ?? 0.0;
 
-    if (sustanciaAlertaNormalizada == sustanciaNormalizada) {
+    if (sustanciaAlertaNormalizada == sustanciaNormalizada ||
+        sustanciaAlertaNormalizada.trim().isEmpty) {
       alertasCoincidentes.add({
         'nivel': nivel ?? 'Sin alarma',
         'min': min,
@@ -181,7 +180,7 @@ Map<String, dynamic> procesarRespuestasTamizaje(
     if (item is! Map<String, dynamic>) continue;
 
     final tipo = item['Tipo'] as String?;
-    if (tipo != 'Tamizaje') continue;
+    if (tipo == null || !tipo.toLowerCase().contains('tamizaje')) continue;
 
     final pregunta = item['Pregunta'] as String? ?? '';
     final respuestaTamizaje =

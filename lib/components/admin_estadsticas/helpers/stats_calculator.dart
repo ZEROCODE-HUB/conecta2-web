@@ -59,9 +59,9 @@ extension TamizajeTipoX on TamizajeTipo {
       case TamizajeTipo.beck:
         return const ['Mínima', 'Leve', 'Moderada', 'Grave'];
       case TamizajeTipo.crq:
-        return const ['Sin alerta', 'Moderada', 'Severo'];
+        return const ['Sin alerta', 'Subescala 1', 'Subescala 2'];
       case TamizajeTipo.srq:
-        return const ['Sin alerta', 'Moderada', 'Severo'];
+        return const ['Sin alerta', 'Subescala 1', 'Subescala 2'];
       case TamizajeTipo.sustancias:
         return const ['Sin alerta', 'Moderada', 'Severo'];
       case TamizajeTipo.todas:
@@ -146,6 +146,7 @@ class StatsAggregates {
   final Map<String, Map<String, int>> porGenero; // genero -> nivel -> count
   final Map<String, Map<String, int>> porEdad; // rango -> nivel -> count
   final Map<String, int> distribucion; // nivel -> count
+  final String categoria;
 
   StatsAggregates({
     required this.tipo,
@@ -154,6 +155,7 @@ class StatsAggregates {
     required this.porGenero,
     required this.porEdad,
     required this.distribucion,
+    required this.categoria,
   });
 
   static StatsAggregates empty(TamizajeTipo tipo) => StatsAggregates(
@@ -163,6 +165,7 @@ class StatsAggregates {
         porGenero: const {},
         porEdad: const {},
         distribucion: const {},
+        categoria: categoriaForTipo(tipo) ?? '',
       );
 }
 
@@ -245,7 +248,9 @@ Future<StatsAggregates> loadStats(
           .get()
           .timeout(const Duration(seconds: 15));
 
-      final patients = patientsSnap.docs.where((d) => d.data()['rol'] == 'Adolescente').toList();
+      final patients = patientsSnap.docs
+          .where((d) => d.data()['rol'] == 'Adolescente')
+          .toList();
       if (patients.isEmpty) {
         return StatsAggregates.empty(tipo);
       }
@@ -262,7 +267,9 @@ Future<StatsAggregates> loadStats(
       for (var i = 0; i < patientRefs.length; i += chunkSize) {
         chunks.add(patientRefs.sublist(
           i,
-          i + chunkSize > patientRefs.length ? patientRefs.length : i + chunkSize,
+          i + chunkSize > patientRefs.length
+              ? patientRefs.length
+              : i + chunkSize,
         ));
       }
 
@@ -292,7 +299,9 @@ Future<StatsAggregates> loadStats(
       final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
       if (titulo.isEmpty) continue;
       if (!_matchesTipo(tipo, titulo)) continue;
-      if (tituloEncuesta != null && tituloEncuesta.isNotEmpty && titulo != tituloEncuesta) continue;
+      if (tituloEncuesta != null &&
+          tituloEncuesta.isNotEmpty &&
+          titulo != tituloEncuesta) continue;
       if ((data['invalidado'] as bool?) == true) continue;
       if (rango != null) {
         final fecha = _fechaFromDoc(data);
@@ -320,8 +329,6 @@ Future<StatsAggregates> loadStats(
       final userData = await _fetchUser(userRef, userCache);
       if (userData == null) continue;
 
-
-
       if (colegio != null && colegio.isNotEmpty) {
         final uc = (userData['colegio'] ?? '').toString();
         if (uc != colegio) continue;
@@ -346,6 +353,9 @@ Future<StatsAggregates> loadStats(
         titulo,
         items,
         puntajeTotal: data['puntajeTotal'] as num?,
+        alertasEspeciales: (data['alertasEspeciales'] as List?)
+            ?.map((e) => e.toString())
+            .toList(),
       );
       final bucket = mapNivelToBucket(nivel, nivelesEje);
       if (nivelAlerta != null &&
@@ -439,6 +449,7 @@ StatsAggregates _aggregate(
     porGenero: porGenero,
     porEdad: porEdad,
     distribucion: distribucion,
+    categoria: categoriaForTipo(tipo) ?? '',
   );
 }
 
@@ -458,13 +469,15 @@ class StatsColors {
     if (n.contains('severo') ||
         n.contains('severa') ||
         n.contains('alto') ||
-        n.contains('alta')) {
+        n.contains('alta') ||
+        n.contains('subescala 2')) {
       return rojo;
     }
     if (n.contains('moderada') ||
         n.contains('moderado') ||
         n.contains('media') ||
-        n.contains('leve')) {
+        n.contains('leve') ||
+        n.contains('subescala 1')) {
       return amarillo;
     }
     // Rosemberg (autoestima): "Elevada" es resultado favorable; "Baja" es

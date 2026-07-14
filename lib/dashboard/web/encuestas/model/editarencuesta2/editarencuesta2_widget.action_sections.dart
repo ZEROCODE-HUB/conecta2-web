@@ -69,7 +69,11 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Alertas — $categoria',
+              categoria == "SRQ"
+                  ? "Puntuación psicométrica y subescalas"
+                  : categoria == "CRQ"
+                      ? "Escala de valoración"
+                      : "Alertas — $categoria",
               style: tema.bodyMedium.override(
                 font: GoogleFonts.inter(
                   fontWeight: FontWeight.w600,
@@ -99,8 +103,8 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
             const SizedBox(height: 12.0),
             for (int i = 0; i < niveles.length; i++)
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    0.0, 8.0, 0.0, 8.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 8.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -131,8 +135,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                           Text('Min', style: tema.bodyMedium),
                           TextFieldAlertaWidget(
                             key: Key('nivelAlertaMin_${i}_${niveles.length}'),
-                            parameter1:
-                                FFAppState().listaAlertasEnvio[i].min,
+                            parameter1: FFAppState().listaAlertasEnvio[i].min,
                             accion: (nuevo) async {
                               FFAppState().updateListaAlertasEnvioAtIndex(
                                 i,
@@ -154,8 +157,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                           Text('Max', style: tema.bodyMedium),
                           TextFieldAlertaWidget(
                             key: Key('nivelAlertaMax_${i}_${niveles.length}'),
-                            parameter1:
-                                FFAppState().listaAlertasEnvio[i].max,
+                            parameter1: FFAppState().listaAlertasEnvio[i].max,
                             accion: (nuevo) async {
                               FFAppState().updateListaAlertasEnvioAtIndex(
                                 i,
@@ -170,7 +172,9 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                   ],
                 ),
               ),
-            if (categoria == 'CRQ / SRQ' || categoria == 'CRQ' || categoria == 'SRQ') ...[
+            if (categoria == 'CRQ / SRQ' ||
+                categoria == 'CRQ' ||
+                categoria == 'SRQ') ...[
               const SizedBox(height: 8.0),
               Container(
                 padding: const EdgeInsets.all(10.0),
@@ -221,892 +225,607 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
   /// Legacy per-substance alerts panel (Consumo de SPA).
   Widget _buildTamizajesAlertsPanelSustancias(BuildContext context) {
     return Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      30.0, 20.0, 0.0, 0.0),
-                                              child: Container(
-                                                width:
-                                                    MediaQuery.sizeOf(context)
-                                                            .width *
-                                                        0.2,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius: 50.0,
-                                                      color: Color(0x26000000),
-                                                      offset: Offset(
-                                                        20.0,
-                                                        20.0,
-                                                      ),
-                                                    )
-                                                  ],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Align(
-                                                      alignment:
-                                                          AlignmentDirectional(
-                                                              -1.0, 0.0),
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    16.0,
-                                                                    20.0,
-                                                                    0.0,
-                                                                    0.0),
-                                                        child: Text(
-                                                          'Alertas',
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                fontSize: 16.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  4.0,
-                                                                  8.0,
-                                                                  0.0,
-                                                                  8.0),
-                                                      child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        children: [
-                                                          Text(
-                                                            'Sustancia: ',
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                          FlutterFlowDropDown<
-                                                              String>(
-                                                            controller: _model
-                                                                    .dropDownSustancia2ValueController ??=
-                                                                FormFieldController<
-                                                                        String>(
-                                                                    null),
-                                                            options: [
-                                                              'Tabaco',
-                                                              'Bebidas alcohólicas',
-                                                              'Cannabis',
-                                                              'Anfetaminas',
-                                                              'Inhalantes',
-                                                              'Tranquilizantes',
-                                                              'Alucinógenos',
-                                                              'Opiáceos',
-                                                              'Otros',
-                                                              'Cocaina'
-                                                            ],
-                                                            onChanged: (val) =>
-                                                                safeSetState(() =>
-                                                                    _model.dropDownSustancia2Value =
-                                                                        val),
-                                                            width: 200.0,
-                                                            height: 40.0,
-                                                            textStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .inter(
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                      fontWeight: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontStyle,
-                                                                    ),
-                                                            hintText:
-                                                                'Seleccione',
-                                                            icon: Icon(
-                                                              Icons
-                                                                  .keyboard_arrow_down_rounded,
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .secondaryText,
-                                                              size: 24.0,
-                                                            ),
-                                                            fillColor: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryBackground,
-                                                            elevation: 2.0,
-                                                            borderColor: Colors
-                                                                .transparent,
-                                                            borderWidth: 0.0,
-                                                            borderRadius: 8.0,
-                                                            margin:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        12.0,
-                                                                        0.0,
-                                                                        12.0,
-                                                                        0.0),
-                                                            hidesUnderline:
-                                                                true,
-                                                            isOverButton: false,
-                                                            isSearchable: false,
-                                                            isMultiSelect:
-                                                                false,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Builder(
-                                                      builder: (context) {
-                                                        final listaAlertasSustancias =
-                                                            FFAppState()
-                                                                .listaAlertasEnvio
-                                                                .toList();
+      padding: EdgeInsetsDirectional.fromSTEB(30.0, 20.0, 0.0, 0.0),
+      child: Container(
+        width: MediaQuery.sizeOf(context).width * 0.2,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 50.0,
+              color: Color(0x26000000),
+              offset: Offset(
+                20.0,
+                20.0,
+              ),
+            )
+          ],
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Align(
+              alignment: AlignmentDirectional(-1.0, 0.0),
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(16.0, 20.0, 0.0, 0.0),
+                child: Text(
+                  'Alertas',
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontStyle:
+                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                        fontSize: 16.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w600,
+                        fontStyle:
+                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(4.0, 8.0, 0.0, 8.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Text(
+                    'Sustancia: ',
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                          letterSpacing: 0.0,
+                          fontWeight: FlutterFlowTheme.of(context)
+                              .bodyMedium
+                              .fontWeight,
+                          fontStyle:
+                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                  ),
+                  FlutterFlowDropDown<String>(
+                    controller: _model.dropDownSustancia2ValueController ??=
+                        FormFieldController<String>(null),
+                    options: [
+                      'Tabaco',
+                      'Bebidas alcohólicas',
+                      'Cannabis',
+                      'Anfetaminas',
+                      'Inhalantes',
+                      'Tranquilizantes',
+                      'Alucinógenos',
+                      'Opiáceos',
+                      'Otros',
+                      'Cocaina'
+                    ],
+                    onChanged: (val) => safeSetState(
+                        () => _model.dropDownSustancia2Value = val),
+                    width: 200.0,
+                    height: 40.0,
+                    textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                          letterSpacing: 0.0,
+                          fontWeight: FlutterFlowTheme.of(context)
+                              .bodyMedium
+                              .fontWeight,
+                          fontStyle:
+                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                    hintText: 'Seleccione',
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: FlutterFlowTheme.of(context).secondaryText,
+                      size: 24.0,
+                    ),
+                    fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                    elevation: 2.0,
+                    borderColor: Colors.transparent,
+                    borderWidth: 0.0,
+                    borderRadius: 8.0,
+                    margin:
+                        EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+                    hidesUnderline: true,
+                    isOverButton: false,
+                    isSearchable: false,
+                    isMultiSelect: false,
+                  ),
+                ],
+              ),
+            ),
+            Builder(
+              builder: (context) {
+                final listaAlertasSustancias =
+                    FFAppState().listaAlertasEnvio.toList();
 
-                                                        return Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          children: List.generate(
-                                                              listaAlertasSustancias
-                                                                  .length,
-                                                              (listaAlertasSustanciasIndex) {
-                                                            final listaAlertasSustanciasItem =
-                                                                listaAlertasSustancias[
-                                                                    listaAlertasSustanciasIndex];
-                                                            return Visibility(
-                                                              visible: listaAlertasSustanciasItem
-                                                                      .sustancia ==
-                                                                  _model
-                                                                      .dropDownSustancia2Value,
-                                                              child: Padding(
-                                                                padding: EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        8.0,
-                                                                        20.0,
-                                                                        8.0,
-                                                                        16.0),
-                                                                child: Row(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .min,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    Expanded(
-                                                                      child:
-                                                                          Column(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.min,
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          Text(
-                                                                            listaAlertasSustanciasItem.nivel,
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  font: GoogleFonts.inter(
-                                                                                    fontWeight: FontWeight.w500,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                                  fontSize: 18.0,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.w500,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child:
-                                                                          Column(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.min,
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          Text(
-                                                                            'Min',
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  font: GoogleFonts.inter(
-                                                                                    fontWeight: FontWeight.w500,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                                  fontSize: 18.0,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.w500,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                          TextFieldAlertaWidget(
-                                                                            key:
-                                                                                Key('Keyzdv_${listaAlertasSustanciasIndex}_of_${listaAlertasSustancias.length}'),
-                                                                            parameter1:
-                                                                                listaAlertasSustanciasItem.min,
-                                                                            accion:
-                                                                                (nuevoTexto) async {
-                                                                              FFAppState().updateListaAlertasEnvioAtIndex(
-                                                                                listaAlertasSustanciasIndex,
-                                                                                (e) => e..min = nuevoTexto,
-                                                                              );
-                                                                              safeSetState(() {});
-                                                                            },
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child:
-                                                                          Column(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.min,
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          Text(
-                                                                            'Max',
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  font: GoogleFonts.inter(
-                                                                                    fontWeight: FontWeight.w500,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                                  fontSize: 18.0,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.w500,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                          TextFieldAlertaWidget(
-                                                                            key:
-                                                                                Key('Keyny2_${listaAlertasSustanciasIndex}_of_${listaAlertasSustancias.length}'),
-                                                                            parameter1:
-                                                                                listaAlertasSustanciasItem.max,
-                                                                            accion:
-                                                                                (nuevoTexto) async {
-                                                                              FFAppState().updateListaAlertasEnvioAtIndex(
-                                                                                listaAlertasSustanciasIndex,
-                                                                                (e) => e..max = nuevoTexto,
-                                                                              );
-                                                                              safeSetState(() {});
-                                                                            },
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                  ].divide(SizedBox(
-                                                                      width:
-                                                                          8.0)),
-                                                                ),
-                                                              ),
-                                                            );
-                                                          }),
-                                                        );
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
+                return Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: List.generate(listaAlertasSustancias.length,
+                      (listaAlertasSustanciasIndex) {
+                    final listaAlertasSustanciasItem =
+                        listaAlertasSustancias[listaAlertasSustanciasIndex];
+                    return Visibility(
+                      visible: listaAlertasSustanciasItem.sustancia ==
+                          _model.dropDownSustancia2Value,
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(
+                            8.0, 20.0, 8.0, 16.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    listaAlertasSustanciasItem.nivel,
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          font: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                          ),
+                                          fontSize: 18.0,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.w500,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Min',
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          font: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                          ),
+                                          fontSize: 18.0,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.w500,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                  ),
+                                  TextFieldAlertaWidget(
+                                    key: Key(
+                                        'Keyzdv_${listaAlertasSustanciasIndex}_of_${listaAlertasSustancias.length}'),
+                                    parameter1: listaAlertasSustanciasItem.min,
+                                    accion: (nuevoTexto) async {
+                                      FFAppState()
+                                          .updateListaAlertasEnvioAtIndex(
+                                        listaAlertasSustanciasIndex,
+                                        (e) => e..min = nuevoTexto,
+                                      );
+                                      safeSetState(() {});
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Max',
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          font: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                          ),
+                                          fontSize: 18.0,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.w500,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                  ),
+                                  TextFieldAlertaWidget(
+                                    key: Key(
+                                        'Keyny2_${listaAlertasSustanciasIndex}_of_${listaAlertasSustancias.length}'),
+                                    parameter1: listaAlertasSustanciasItem.max,
+                                    accion: (nuevoTexto) async {
+                                      FFAppState()
+                                          .updateListaAlertasEnvioAtIndex(
+                                        listaAlertasSustanciasIndex,
+                                        (e) => e..max = nuevoTexto,
+                                      );
+                                      safeSetState(() {});
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ].divide(SizedBox(width: 8.0)),
+                        ),
+                      ),
+                    );
+                  }),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   List<Widget> _buildActionButtons(BuildContext context) {
     return [
-                                                          Padding(
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0.0,
-                                                                        40.0,
-                                                                        0.0,
-                                                                        0.0),
-                                                            child:
-                                                                FFButtonWidget(
-                                                              onPressed:
-                                                                  () async {
-                                                                final okTitulo =
-                                                                    await _validarTituloUnico();
-                                                                if (!okTitulo) {
-                                                                  return;
-                                                                }
-                                                                await widget
-                                                                    .encuestaID!
-                                                                    .update({
-                                                                  ..._payloadEncuestaRecord(
-                                                                    publicado:
-                                                                        true,
-                                                                    titulo: _model
-                                                                        .textController1
-                                                                        .text,
-                                                                    descripcion:
-                                                                        _model
-                                                                            .descTextController
-                                                                            .text,
-                                                                  ),
-                                                                  ...mapToFirestore(
-                                                                    {
-                                                                      'alertas':
-                                                                          getAlertaListFirestoreData(
-                                                                        FFAppState()
-                                                                            .listaAlertasEnvio,
-                                                                      ),
-                                                                      'alertasEspeciales': _model.alertasEspeciales.map((a) => getAlertaEspecialFirestoreData(a, true)).toList(),
-                                                                    },
-                                                                  ),
-                                                                });
-                                                                FFAppState()
-                                                                        .selectUser =
-                                                                    'VistaPrevia';
-                                                                FFAppState()
-                                                                        .createEncuesta =
-                                                                    false;
-                                                                _model
-                                                                    .updatePage(
-                                                                        () {});
-                                                              },
-                                                              text:
-                                                                  'Vista Previa',
-                                                              options:
-                                                                  FFButtonOptions(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    1.0,
-                                                                height: 54.0,
-                                                                padding: EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        24.0,
-                                                                        0.0,
-                                                                        24.0,
-                                                                        0.0),
-                                                                iconPadding:
-                                                                    EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .secondaryBackground,
-                                                                textStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .inter(
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .titleSmall
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .titleSmall
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      color: Color(
-                                                                          0xFF265294),
-                                                                      fontSize:
-                                                                          18.0,
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                      fontWeight: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontStyle,
-                                                                    ),
-                                                                elevation: 3.0,
-                                                                borderSide:
-                                                                    BorderSide(
-                                                                  color: Color(
-                                                                      0xFFF6BD33),
-                                                                  width: 1.0,
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            40.0),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0.0,
-                                                                        20.0,
-                                                                        0.0,
-                                                                        0.0),
-                                                            child:
-                                                                FFButtonWidget(
-                                                              onPressed:
-                                                                  () async {
-                                                                final okTitulo =
-                                                                    await _validarTituloUnico();
-                                                                if (!okTitulo) {
-                                                                  return;
-                                                                }
-                                                                await widget
-                                                                    .encuestaID!
-                                                                    .update({
-                                                                  ..._payloadEncuestaRecord(
-                                                                    publicado:
-                                                                        true,
-                                                                    titulo: _model
-                                                                        .textController1
-                                                                        .text,
-                                                                    descripcion:
-                                                                        _model
-                                                                            .descTextController
-                                                                            .text,
-                                                                  ),
-                                                                  ...mapToFirestore(
-                                                                    {
-                                                                      'alertas':
-                                                                          getAlertaListFirestoreData(
-                                                                        FFAppState()
-                                                                            .listaAlertasEnvio,
-                                                                      ),
-                                                                      'alertasEspeciales': _model.alertasEspeciales.map((a) => getAlertaEspecialFirestoreData(a, true)).toList(),
-                                                                    },
-                                                                  ),
-                                                                });
-                                                                FFAppState()
-                                                                    .selectUser = '';
-                                                                safeSetState(
-                                                                    () {});
-                                                              },
-                                                              text:
-                                                                  'Guardar como borrador',
-                                                              options:
-                                                                  FFButtonOptions(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    1.0,
-                                                                height: 54.0,
-                                                                padding: EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        24.0,
-                                                                        0.0,
-                                                                        24.0,
-                                                                        0.0),
-                                                                iconPadding:
-                                                                    EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .secondaryBackground,
-                                                                textStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .inter(
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .titleSmall
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .titleSmall
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      color: Color(
-                                                                          0xFF265294),
-                                                                      fontSize:
-                                                                          18.0,
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                      fontWeight: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontStyle,
-                                                                    ),
-                                                                elevation: 3.0,
-                                                                borderSide:
-                                                                    BorderSide(
-                                                                  color: Color(
-                                                                      0xFFF6BD33),
-                                                                  width: 1.0,
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            40.0),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Builder(
-                                                            builder:
-                                                                (context) =>
-                                                                    Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          20.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                              child:
-                                                                  FFButtonWidget(
-                                                                onPressed:
-                                                                    () async {
-                                                                  final okTitulo =
-                                                                      await _validarTituloUnico();
-                                                                  if (!okTitulo) {
-                                                                    return;
-                                                                  }
-                                                                  FFAppState()
-                                                                      .selectUser = '';
-                                                                  safeSetState(
-                                                                      () {
-                                                                    widget.encuestaID!.update({
-                                                                        ..._payloadEncuestaRecord(
-                                                                            publicado: true,
-                                                                            titulo: _model.textController1.text,
-                                                                            descripcion: _model.descTextController.text,
-                                                                        ),
-                                                                        ...mapToFirestore({
-                                                                            'Preguntas': _model.preguntas.map((p) => getPreguntasEncuestaFirestoreData(p, true)).toList(),
-                                                                            'Roles': _model.roleValue,
-                                                                            'alertas': getAlertaListFirestoreData(FFAppState().listaAlertasEnvio),
-                                                                            'alertasEspeciales': _model.alertasEspeciales.map((a) => getAlertaEspecialFirestoreData(a, true)).toList(),
-                                                                        }),
-                                                                    });
-                                                                  });
+      Padding(
+        padding: EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
+        child: FFButtonWidget(
+          onPressed: () async {
+            final okTitulo = await _validarTituloUnico();
+            if (!okTitulo) {
+              return;
+            }
+            await widget.encuestaID!.update({
+              ..._payloadEncuestaRecord(
+                publicado: true,
+                titulo: _model.textController1.text,
+                descripcion: _model.descTextController.text,
+              ),
+              ...mapToFirestore(
+                {
+                  'alertas': getAlertaListFirestoreData(
+                    FFAppState().listaAlertasEnvio,
+                  ),
+                  'alertasEspeciales': _model.alertasEspeciales
+                      .map((a) => getAlertaEspecialFirestoreData(a, true))
+                      .toList(),
+                },
+              ),
+            });
+            FFAppState().selectUser = 'VistaPrevia';
+            FFAppState().createEncuesta = false;
+            _model.updatePage(() {});
+          },
+          text: 'Vista Previa',
+          options: FFButtonOptions(
+            width: MediaQuery.sizeOf(context).width * 1.0,
+            height: 54.0,
+            padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+            iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+            color: FlutterFlowTheme.of(context).secondaryBackground,
+            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                  font: GoogleFonts.inter(
+                    fontWeight:
+                        FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                    fontStyle:
+                        FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                  ),
+                  color: Color(0xFF265294),
+                  fontSize: 18.0,
+                  letterSpacing: 0.0,
+                  fontWeight:
+                      FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                  fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                ),
+            elevation: 3.0,
+            borderSide: BorderSide(
+              color: Color(0xFFF6BD33),
+              width: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(40.0),
+          ),
+        ),
+      ),
+      Padding(
+        padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+        child: FFButtonWidget(
+          onPressed: () async {
+            final okTitulo = await _validarTituloUnico();
+            if (!okTitulo) {
+              return;
+            }
+            await widget.encuestaID!.update({
+              ..._payloadEncuestaRecord(
+                publicado: true,
+                titulo: _model.textController1.text,
+                descripcion: _model.descTextController.text,
+              ),
+              ...mapToFirestore(
+                {
+                  'alertas': getAlertaListFirestoreData(
+                    FFAppState().listaAlertasEnvio,
+                  ),
+                  'alertasEspeciales': _model.alertasEspeciales
+                      .map((a) => getAlertaEspecialFirestoreData(a, true))
+                      .toList(),
+                },
+              ),
+            });
+            FFAppState().selectUser = '';
+            safeSetState(() {});
+          },
+          text: 'Guardar como borrador',
+          options: FFButtonOptions(
+            width: MediaQuery.sizeOf(context).width * 1.0,
+            height: 54.0,
+            padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+            iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+            color: FlutterFlowTheme.of(context).secondaryBackground,
+            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                  font: GoogleFonts.inter(
+                    fontWeight:
+                        FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                    fontStyle:
+                        FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                  ),
+                  color: Color(0xFF265294),
+                  fontSize: 18.0,
+                  letterSpacing: 0.0,
+                  fontWeight:
+                      FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                  fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                ),
+            elevation: 3.0,
+            borderSide: BorderSide(
+              color: Color(0xFFF6BD33),
+              width: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(40.0),
+          ),
+        ),
+      ),
+      Builder(
+        builder: (context) => Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+          child: FFButtonWidget(
+            onPressed: () async {
+              final okTitulo = await _validarTituloUnico();
+              if (!okTitulo) {
+                return;
+              }
+              FFAppState().selectUser = '';
+              safeSetState(() {
+                widget.encuestaID!.update({
+                  ..._payloadEncuestaRecord(
+                    publicado: true,
+                    titulo: _model.textController1.text,
+                    descripcion: _model.descTextController.text,
+                  ),
+                  ...mapToFirestore({
+                    'Preguntas': _model.preguntas
+                        .map((p) => getPreguntasEncuestaFirestoreData(p, true))
+                        .toList(),
+                    'Roles': _model.roleValue,
+                    'alertas': getAlertaListFirestoreData(
+                        FFAppState().listaAlertasEnvio),
+                    'alertasEspeciales': _model.alertasEspeciales
+                        .map((a) => getAlertaEspecialFirestoreData(a, true))
+                        .toList(),
+                  }),
+                });
+              });
 
-                                                                  await showDialog(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (dialogContext) {
-                                                                      return Dialog(
-                                                                        elevation:
-                                                                            0,
-                                                                        insetPadding:
-                                                                            EdgeInsets.zero,
-                                                                        backgroundColor:
-                                                                            Colors.transparent,
-                                                                        alignment:
-                                                                            AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
-                                                                        child:
-                                                                            WebViewAware(
-                                                                          child:
-                                                                              SuccesspopupWidget(),
-                                                                        ),
-                                                                      );
-                                                                    },
-                                                                  );
-                                                                },
-                                                                text:
-                                                                    'Publicar encuesta',
-                                                                options:
-                                                                    FFButtonOptions(
-                                                                  width: MediaQuery.sizeOf(
-                                                                              context)
-                                                                          .width *
-                                                                      1.0,
-                                                                  height: 54.0,
-                                                                  padding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          24.0,
-                                                                          0.0,
-                                                                          24.0,
-                                                                          0.0),
-                                                                  iconPadding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                                  color: Color(
-                                                                      0xFFF6BD33),
-                                                                  textStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .inter(
-                                                                          fontWeight: FlutterFlowTheme.of(context)
-                                                                              .titleSmall
-                                                                              .fontWeight,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                                              .titleSmall
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        color: Color(
-                                                                            0xFF265294),
-                                                                        fontSize:
-                                                                            18.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .titleSmall
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .titleSmall
-                                                                            .fontStyle,
-                                                                      ),
-                                                                  elevation:
-                                                                      3.0,
-                                                                  borderSide:
-                                                                      BorderSide(
-                                                                    color: Color(
-                                                                        0xFFF6BD33),
-                                                                    width: 1.0,
-                                                                  ),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              40.0),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
+              await showDialog(
+                context: context,
+                builder: (dialogContext) {
+                  return Dialog(
+                    elevation: 0,
+                    insetPadding: EdgeInsets.zero,
+                    backgroundColor: Colors.transparent,
+                    alignment: AlignmentDirectional(0.0, 0.0)
+                        .resolve(Directionality.of(context)),
+                    child: WebViewAware(
+                      child: SuccesspopupWidget(),
+                    ),
+                  );
+                },
+              );
+            },
+            text: 'Publicar encuesta',
+            options: FFButtonOptions(
+              width: MediaQuery.sizeOf(context).width * 1.0,
+              height: 54.0,
+              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+              color: Color(0xFFF6BD33),
+              textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                    font: GoogleFonts.inter(
+                      fontWeight:
+                          FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                      fontStyle:
+                          FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                    ),
+                    color: Color(0xFF265294),
+                    fontSize: 18.0,
+                    letterSpacing: 0.0,
+                    fontWeight:
+                        FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                    fontStyle:
+                        FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                  ),
+              elevation: 3.0,
+              borderSide: BorderSide(
+                color: Color(0xFFF6BD33),
+                width: 1.0,
+              ),
+              borderRadius: BorderRadius.circular(40.0),
+            ),
+          ),
+        ),
+      ),
     ];
   }
 
   Widget _buildAgregarPreguntasButton(BuildContext context) {
     return Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(20.0, 0.0, 20.0,
-                                                          40.0),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
-                                                    children: [
-                                                      FFButtonWidget(
-                                                        onPressed: () async {
-                                                          bool isCRQ = _model.tipoValue == 'Tamizaje CRQ / SRQ' || _model.tipoValue == 'Tamizaje CRQ' || _model.tipoValue == 'Tamizaje SRQ';
-                                                          int? finalNumPregunta;
-                                                          if (isCRQ) {
-                                                            int? numPregunta = int.tryParse(_model.crqNumeroPreguntaTextController?.text ?? '');
-                                                            if (numPregunta == null || numPregunta <= 0) {
-                                                              int maxNum = 0;
-                                                              for (var p in _model.preguntas) {
-                                                                if (p.numeroPregunta > maxNum) maxNum = p.numeroPregunta;
-                                                              }
-                                                              numPregunta = maxNum + 1;
-                                                            }
-                                                            if (_model.preguntas.any((p) => p.numeroPregunta == numPregunta)) {
-                                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                                SnackBar(content: Text('El número de pregunta $numPregunta ya existe. Debe ser único.')),
-                                                              );
-                                                              return;
-                                                            }
-                                                            finalNumPregunta = numPregunta;
-                                                          }
+      padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 40.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FFButtonWidget(
+            onPressed: () async {
+              bool isCRQ = _model.tipoValue == 'Tamizaje CRQ / SRQ' ||
+                  _model.tipoValue == 'Tamizaje CRQ' ||
+                  _model.tipoValue == 'Tamizaje SRQ';
+              int? finalNumPregunta;
+              if (isCRQ) {
+                int? numPregunta = int.tryParse(
+                    _model.crqNumeroPreguntaTextController?.text ?? '');
+                if (numPregunta == null || numPregunta <= 0) {
+                  int maxNum = 0;
+                  for (var p in _model.preguntas) {
+                    if (p.numeroPregunta > maxNum) maxNum = p.numeroPregunta;
+                  }
+                  numPregunta = maxNum + 1;
+                }
+                if (_model.preguntas
+                    .any((p) => p.numeroPregunta == numPregunta)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'El número de pregunta $numPregunta ya existe. Debe ser único.')),
+                  );
+                  return;
+                }
+                finalNumPregunta = numPregunta;
+              }
 
-                                                          List<AtributosStruct> finalRespuestaTamizaje = List.from(_model.listaTamizaje);
-                                                          if (isCRQ) {
-                                                            finalRespuestaTamizaje = [
-                                                              createAtributosStruct(
-                                                                etiqueta: 'Sí',
-                                                                valor: int.tryParse(_model.crqSiScoreTextController?.text ?? '') ?? 0,
-                                                                clearUnsetFields: false,
-                                                              ),
-                                                              createAtributosStruct(
-                                                                etiqueta: 'No',
-                                                                valor: int.tryParse(_model.crqNoScoreTextController?.text ?? '') ?? 0,
-                                                                clearUnsetFields: false,
-                                                              ),
-                                                            ];
-                                                          }
+              List<AtributosStruct> finalRespuestaTamizaje =
+                  List.from(_model.listaTamizaje);
+              if (isCRQ) {
+                finalRespuestaTamizaje = [
+                  createAtributosStruct(
+                    etiqueta: 'Sí',
+                    valor: int.tryParse(
+                            _model.crqSiScoreTextController?.text ?? '') ??
+                        0,
+                    clearUnsetFields: false,
+                  ),
+                  createAtributosStruct(
+                    etiqueta: 'No',
+                    valor: int.tryParse(
+                            _model.crqNoScoreTextController?.text ?? '') ??
+                        0,
+                    clearUnsetFields: false,
+                  ),
+                ];
+              }
 
-                                                          final nuevaPregunta = createPreguntasEncuestaStruct(
-                                                            pregunta: _model.preguntaTextController?.text,
-                                                            tipo: _model.tipoValue,
-                                                            respuestaLarga: _model.abiertaTextController?.text,
-                                                            respuestaSUnicaCorrecta: _model.sunicarespValue,
-                                                            sustancia: _model.dropDownSustanciaValue,
-                                                            ocultarRespuesta: _model.ocultarRespuestaValue,
-                                                            nPregunta: _model.checkboxNPValue1 == true ? 1 : 0,
-                                                            numeroPregunta: isCRQ ? (finalNumPregunta ?? 0) : 0,
-                                                            variable: isCRQ ? 'CRQ' : '',
-                                                            fieldValues: {
-                                                              'RespuestaSelection': _model.respuestaSelection,
-                                                              'RespuestasSeleccionUnica': _model.seleccionunica,
-                                                              'RespuestaCondicionante': getValorCondicionanteListFirestoreData(_model.listaCondicionante),
-                                                              'RespuestaTamizaje': getAtributosListFirestoreData(finalRespuestaTamizaje),
-                                                            },
-                                                            clearUnsetFields: false,
-                                                          );
-                                                          nuevaPregunta.respuestaTamizaje = finalRespuestaTamizaje;
+              final nuevaPregunta = createPreguntasEncuestaStruct(
+                pregunta: _model.preguntaTextController?.text,
+                tipo: _model.tipoValue,
+                respuestaLarga: _model.abiertaTextController?.text,
+                respuestaSUnicaCorrecta: _model.sunicarespValue,
+                sustancia: _model.dropDownSustanciaValue,
+                ocultarRespuesta: _model.ocultarRespuestaValue,
+                nPregunta: _model.checkboxNPValue1 == true ? 1 : 0,
+                numeroPregunta: isCRQ ? (finalNumPregunta ?? 0) : 0,
+                variable: isCRQ ? 'CRQ' : '',
+                fieldValues: {
+                  'RespuestaSelection': _model.respuestaSelection,
+                  'RespuestasSeleccionUnica': _model.seleccionunica,
+                  'RespuestaCondicionante':
+                      getValorCondicionanteListFirestoreData(
+                          _model.listaCondicionante),
+                  'RespuestaTamizaje':
+                      getAtributosListFirestoreData(finalRespuestaTamizaje),
+                },
+                clearUnsetFields: false,
+              );
+              nuevaPregunta.respuestaTamizaje = finalRespuestaTamizaje;
 
-                                                          safeSetState(() {
-                                                            _model.addToPreguntas(nuevaPregunta);
-                                                          });
-                                                          _model.respuestaSelection =
-                                                              [];
-                                                          _model.seleccionunicarespuesta =
-                                                              null;
-                                                          _model.seleccionunica =
-                                                              [];
-                                                          safeSetState(() {});
-                                                          safeSetState(() {
-                                                            _model
-                                                                .dropDownSustanciaValueController
-                                                                ?.value = '-';
-                                                            _model.dropDownSustanciaValue =
-                                                                '-';
-                                                          });
-                                                          safeSetState(() {
-                                                            _model.ocultarRespuestaValue =
-                                                                false;
-                                                            _model.checkboxNPValue1 =
-                                                                false;
-                                                          });
-                                                          safeSetState(() {
-                                                            _model
-                                                                .preguntaTextController
-                                                                ?.clear();
-                                                            _model
-                                                                .abiertaTextController
-                                                                ?.clear();
-                                                          });
-                                                        },
-                                                        text:
-                                                            'Agregar preguntas',
-                                                        options:
-                                                            FFButtonOptions(
-                                                          height: 40.0,
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      24.0,
-                                                                      0.0,
-                                                                      24.0,
-                                                                      0.0),
-                                                          iconPadding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      0.0,
-                                                                      0.0,
-                                                                      0.0,
-                                                                      0.0),
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .secondaryBackground,
-                                                          textStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .override(
-                                                                    font: GoogleFonts
-                                                                        .inter(
-                                                                      fontWeight: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontStyle,
-                                                                    ),
-                                                                    color: Color(
-                                                                        0xFF265294),
-                                                                    fontSize:
-                                                                        18.0,
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .titleSmall
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .titleSmall
-                                                                        .fontStyle,
-                                                                  ),
-                                                          elevation: 3.0,
-                                                          borderSide:
-                                                              BorderSide(
-                                                            color: Color(
-                                                                0xFFF6BD33),
-                                                            width: 1.0,
-                                                          ),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      40.0),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
+              safeSetState(() {
+                _model.addToPreguntas(nuevaPregunta);
+              });
+              _model.respuestaSelection = [];
+              _model.seleccionunicarespuesta = null;
+              _model.seleccionunica = [];
+              safeSetState(() {});
+              safeSetState(() {
+                _model.dropDownSustanciaValueController?.value = '-';
+                _model.dropDownSustanciaValue = '-';
+              });
+              safeSetState(() {
+                _model.ocultarRespuestaValue = false;
+                _model.checkboxNPValue1 = false;
+              });
+              safeSetState(() {
+                _model.preguntaTextController?.clear();
+                _model.abiertaTextController?.clear();
+              });
+            },
+            text: 'Agregar preguntas',
+            options: FFButtonOptions(
+              height: 40.0,
+              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+              color: FlutterFlowTheme.of(context).secondaryBackground,
+              textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                    font: GoogleFonts.inter(
+                      fontWeight:
+                          FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                      fontStyle:
+                          FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                    ),
+                    color: Color(0xFF265294),
+                    fontSize: 18.0,
+                    letterSpacing: 0.0,
+                    fontWeight:
+                        FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                    fontStyle:
+                        FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                  ),
+              elevation: 3.0,
+              borderSide: BorderSide(
+                color: Color(0xFFF6BD33),
+                width: 1.0,
+              ),
+              borderRadius: BorderRadius.circular(40.0),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildTamizajesAlertsEspecialesPanel(BuildContext context) {
@@ -1133,7 +852,8 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 15.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 15.0),
                 child: Text(
                   'Alertas Especiales CRQ/SRQ',
                   style: tema.bodyMedium.override(
@@ -1201,7 +921,8 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                 ),
               ),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                 child: FlutterFlowDropDown<String>(
                   controller: _model.alertaEspecialCondicionValueController ??=
                       FormFieldController<String>(null),
@@ -1237,7 +958,8 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                   borderColor: Colors.transparent,
                   borderWidth: 0.0,
                   borderRadius: 8.0,
-                  margin: const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+                  margin: const EdgeInsetsDirectional.fromSTEB(
+                      12.0, 0.0, 12.0, 0.0),
                   hidesUnderline: true,
                   isOverButton: false,
                   isSearchable: false,
@@ -1246,11 +968,13 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
               ),
               if (_model.alertaEspecialCondicionValue == 'Puntaje igual a')
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                   child: TextFormField(
                     controller: _model.alertaEspecialPuntajeTextController ??=
                         TextEditingController(),
-                    focusNode: _model.alertaEspecialPuntajeFocusNode ??= FocusNode(),
+                    focusNode: _model.alertaEspecialPuntajeFocusNode ??=
+                        FocusNode(),
                     autofocus: false,
                     keyboardType: TextInputType.number,
                     obscureText: false,
@@ -1304,11 +1028,13 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                   ),
                 ),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                 child: TextFormField(
                   controller: _model.alertaEspecialPreguntasTextController ??=
                       TextEditingController(),
-                  focusNode: _model.alertaEspecialPreguntasFocusNode ??= FocusNode(),
+                  focusNode: _model.alertaEspecialPreguntasFocusNode ??=
+                      FocusNode(),
                   autofocus: false,
                   obscureText: false,
                   decoration: InputDecoration(
@@ -1361,15 +1087,19 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                 ),
               ),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
                 child: Align(
                   alignment: AlignmentDirectional.centerEnd,
                   child: FFButtonWidget(
                     onPressed: () async {
-                      if (_model.alertaEspecialNombreTextController?.text.isNotEmpty == true &&
+                      if (_model.alertaEspecialNombreTextController?.text
+                                  .isNotEmpty ==
+                              true &&
                           _model.alertaEspecialCondicionValue != null) {
-                        final preguntasRaw =
-                            _model.alertaEspecialPreguntasTextController?.text ?? '';
+                        final preguntasRaw = _model
+                                .alertaEspecialPreguntasTextController?.text ??
+                            '';
                         final List<int> preguntasParsed = preguntasRaw
                             .split(',')
                             .map((s) => int.tryParse(s.trim()))
@@ -1377,16 +1107,22 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                             .cast<int>()
                             .toList();
                         final nuevaAlerta = createAlertaEspecialStruct(
-                          nombre: _model.alertaEspecialNombreTextController?.text ?? '',
+                          nombre:
+                              _model.alertaEspecialNombreTextController?.text ??
+                                  '',
                           condicion: _model.alertaEspecialCondicionValue ?? '',
-                          puntaje:
-                              int.tryParse(_model.alertaEspecialPuntajeTextController?.text ?? '') ?? 0,
+                          puntaje: int.tryParse(_model
+                                      .alertaEspecialPuntajeTextController
+                                      ?.text ??
+                                  '') ??
+                              0,
                           clearUnsetFields: false,
                         );
                         nuevaAlerta.preguntas = preguntasParsed;
                         _model.addToAlertasEspeciales(nuevaAlerta);
                         _model.alertaEspecialNombreTextController?.clear();
-                        _model.alertaEspecialCondicionValueController?.value = null;
+                        _model.alertaEspecialCondicionValueController?.value =
+                            null;
                         _model.alertaEspecialCondicionValue = null;
                         _model.alertaEspecialPuntajeTextController?.clear();
                         _model.alertaEspecialPreguntasTextController?.clear();
@@ -1396,7 +1132,8 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                     text: 'Agregar alerta especial',
                     options: FFButtonOptions(
                       height: 34.0,
-                      padding: const EdgeInsetsDirectional.fromSTEB(14.0, 0.0, 14.0, 0.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          14.0, 0.0, 14.0, 0.0),
                       color: const Color(0xFF265294),
                       textStyle: GoogleFonts.inter(
                         color: Colors.white,
@@ -1410,7 +1147,8 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
               ),
               if (_model.alertasEspeciales.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1458,7 +1196,8 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                                               : ''),
                                       style: tema.bodyMedium.override(
                                         font: GoogleFonts.inter(
-                                          fontWeight: tema.bodyMedium.fontWeight,
+                                          fontWeight:
+                                              tema.bodyMedium.fontWeight,
                                           fontStyle: tema.bodyMedium.fontStyle,
                                         ),
                                       ),
@@ -1473,7 +1212,8 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                                   size: 20.0,
                                 ),
                                 onPressed: () {
-                                  _model.removeAtIndexFromAlertasEspeciales(idx);
+                                  _model
+                                      .removeAtIndexFromAlertasEspeciales(idx);
                                   safeSetState(() {});
                                 },
                               ),
@@ -1490,5 +1230,4 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
       ),
     );
   }
-
 }

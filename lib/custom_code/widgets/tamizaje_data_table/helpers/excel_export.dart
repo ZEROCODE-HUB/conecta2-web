@@ -134,6 +134,10 @@ Future<void> exportarTamizajeAExcel({
           if (clave.endsWith('_RIESGO')) {
             final nivelRiesgo = value.toString();
             cell.cellStyle = riesgoStyles[nivelRiesgo] ?? estiloNormal;
+          } else if (value.toString() == 'Sí') {
+            cell.cellStyle = estiloAlto;
+          } else if (value.toString() == 'No') {
+            cell.cellStyle = estiloSinAlarma;
           } else {
             cell.cellStyle = estiloNormal;
           }

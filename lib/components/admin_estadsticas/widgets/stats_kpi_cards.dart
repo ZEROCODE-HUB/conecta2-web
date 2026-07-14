@@ -15,6 +15,9 @@ class StatsKpiCards extends StatelessWidget {
     final severos = _countsByCriticality(_criticoNiveles);
     final moderados = _countsByCriticality(_moderadoNiveles);
     final sanos = total - severos - moderados;
+    final isSRQ = stats.categoria == 'SRQ';
+    final isCRQ = stats.categoria == 'CRQ';
+    final isSubescala = isSRQ || isCRQ;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -26,14 +29,14 @@ class StatsKpiCards extends StatelessWidget {
             icon: Icons.people_outline,
           ),
           _KpiCard(
-            label: 'Alertas severas',
+            label: isSubescala ? 'Subescala 2' : 'Alertas severas',
             value: _percentLabel(severos, total),
             color: const Color(StatsColors.rojo),
             icon: Icons.warning_amber_rounded,
             subtitle: '$severos casos',
           ),
           _KpiCard(
-            label: 'Alertas moderadas',
+            label: isSubescala ? 'Subescala 1' : 'Alertas moderadas',
             value: _percentLabel(moderados, total),
             color: const Color(StatsColors.amarillo),
             icon: Icons.info_outline,
@@ -76,6 +79,7 @@ class StatsKpiCards extends StatelessWidget {
     'severo',
     'severa',
     'baja',
+    'subescala 2',
   };
 
   static const _moderadoNiveles = <String>{
@@ -83,6 +87,7 @@ class StatsKpiCards extends StatelessWidget {
     'moderado',
     'leve',
     'media',
+    'subescala 1',
   };
 
   String _percentLabel(int count, int total) {

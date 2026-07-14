@@ -190,13 +190,41 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
         dynamicOrdenColumnas.add(col);
       }
 
-      for (var v in variables) {
-        final labelValor = v.toUpperCase();
-        final labelRiesgo = '${v.toUpperCase()} RIESGO';
-        final claveValor = getSubstanceKey(v, 'VALOR');
-        final claveRiesgo = getSubstanceKey(v, 'RIESGO');
-        dynamicOrdenColumnas.add({'label': labelValor, 'clave': claveValor});
-        dynamicOrdenColumnas.add({'label': labelRiesgo, 'clave': claveRiesgo});
+      final bool esSrqOrCrq = categoria == 'CRQ' ||
+          categoria == 'SRQ' ||
+          categoria == 'CRQ / SRQ' ||
+          titulo.toUpperCase().contains('CRQ') ||
+          titulo.toUpperCase().contains('SRQ');
+
+      final List<String> alertasEspecialesNombres = [];
+      if (esSrqOrCrq) {
+        alertasEspecialesNombres.add('Ideación suicida');
+        final alertasConfig = tamizajeData['alertasEspeciales'] as List? ?? [];
+        for (var a in alertasConfig) {
+          if (a is Map) {
+            final nombre = a['nombre'] as String? ?? '';
+            if (nombre.isNotEmpty && !nombre.toLowerCase().contains('suicida')) {
+              alertasEspecialesNombres.add(nombre);
+            }
+          }
+        }
+      }
+
+      if (esSrqOrCrq) {
+        for (var alertName in alertasEspecialesNombres) {
+          final label = alertName.toUpperCase();
+          final clave = sanitizeKey(alertName);
+          dynamicOrdenColumnas.add({'label': label, 'clave': clave});
+        }
+      } else {
+        for (var v in variables) {
+          final labelValor = v.toUpperCase();
+          final labelRiesgo = '${v.toUpperCase()} RIESGO';
+          final claveValor = getSubstanceKey(v, 'VALOR');
+          final claveRiesgo = getSubstanceKey(v, 'RIESGO');
+          dynamicOrdenColumnas.add({'label': labelValor, 'clave': claveValor});
+          dynamicOrdenColumnas.add({'label': labelRiesgo, 'clave': claveRiesgo});
+        }
       }
 
       _ordenColumnas = dynamicOrdenColumnas;
@@ -252,6 +280,22 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
               respuestasProcesadas.length + 1,
               variables,
             );
+
+            if (esSrqOrCrq) {
+              final disparadas = respuestaData['alertasEspeciales'] as List? ?? [];
+              final dispLower = disparadas.map((d) => d.toString().toLowerCase()).toList();
+
+              for (var alertName in alertasEspecialesNombres) {
+                final clave = sanitizeKey(alertName);
+                bool matches = false;
+                if (alertName.toLowerCase() == 'ideación suicida') {
+                  matches = dispLower.any((d) => d.contains('ideacion') || d.contains('suicida'));
+                } else {
+                  matches = dispLower.contains(alertName.toLowerCase());
+                }
+                registro[clave] = matches ? 'Sí' : 'No';
+              }
+            }
 
             respuestasProcesadas.add(registro);
           }

@@ -145,13 +145,14 @@ String classifyNivel(
   List<Map<String, dynamic>> items, {
   num? puntajeTotal,
   UmbralesConfig? umbrales,
+  List<String>? alertasEspeciales,
 }) {
   final key = tipoKeyFromTitulo(titulo);
   int total = 0;
   // Incluye puntaje 0 (válido en CDI/Beck); antes `> 0` forzaba total=0 y
   // devolvía siempre el tramo más bajo aunque el doc tuviera umbrales.
   if (puntajeTotal != null) {
-    total = puntajeTotal!.round();
+    total = puntajeTotal.round();
   } else {
     for (final m in items) {
       total += numericValue(m);
@@ -207,9 +208,11 @@ String classifyNivel(
       return 'Mínima';
     case 'crq':
     case 'srq':
+      if (alertasEspeciales == null || alertasEspeciales.isEmpty) {
+        return 'Sin alerta';
+      }
       if (total >= 11) return 'Severo';
-      if (total >= 4) return 'Moderada';
-      return 'Sin alerta';
+      return 'Moderada';
     case 'sustancias':
       if (total >= 27) return 'Severo';
       if (total >= 4) return 'Moderada';
