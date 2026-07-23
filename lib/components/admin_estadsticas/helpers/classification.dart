@@ -69,7 +69,7 @@ String tipoKeyFromTitulo(String titulo) {
       t.contains('rosenberg') ||
       t.contains('autoestima')) return 'autoestima';
   if (t.contains('ansiedad')) return 'ansiedad';
-  if (t.contains('crq')) return 'crq';
+  if (t.contains('rqc')) return 'rqc';
   if (t.contains('srq')) return 'srq';
   if (t.contains('beck') || t.contains('bdi')) return 'bdi';
   if (t.contains('sustancia') || t.contains('assist') || t.contains('consumo'))
@@ -206,7 +206,7 @@ String classifyNivel(
       if (total >= 20) return 'Moderada';
       if (total >= 14) return 'Leve';
       return 'Mínima';
-    case 'crq':
+    case 'rqc':
     case 'srq':
       if (alertasEspeciales == null || alertasEspeciales.isEmpty) {
         return 'Sin alerta';

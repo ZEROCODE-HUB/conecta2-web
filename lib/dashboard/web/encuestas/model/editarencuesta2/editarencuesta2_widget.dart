@@ -88,7 +88,10 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
       _model.roleValue = List.from(doc.roles);
       _model.roleValueController =
           FormFieldController<List<String>>(_model.roleValue);
-      _model.categoriaValue = doc.categoria;
+      String normalizedCategoria = doc.categoria;
+      if (normalizedCategoria == 'CRQ') normalizedCategoria = 'RQC';
+      if (normalizedCategoria == 'CRQ / SRQ') normalizedCategoria = 'RQC / SRQ';
+      _model.categoriaValue = normalizedCategoria;
       _model.categoriaValueController =
           FormFieldController<String>(_model.categoriaValue);
       _model.alertasEspeciales =
@@ -532,6 +535,10 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
                                                     'CRQ / SRQ' ||
                                                 _model.categoriaValue ==
                                                     'CRQ' ||
+                                                _model.categoriaValue ==
+                                                    'RQC / SRQ' ||
+                                                _model.categoriaValue ==
+                                                    'RQC' ||
                                                 _model.categoriaValue == 'SRQ')
                                               _buildTamizajesAlertsEspecialesPanel(
                                                   context),

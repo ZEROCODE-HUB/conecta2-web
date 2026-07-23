@@ -140,7 +140,8 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
       final tamizajeData = tamizajeDoc.data();
       final tamizajeId = tamizajeDoc.id;
 
-      final preguntasEncuesta = tamizajeData['Preguntas'] as List<dynamic>? ?? [];
+      final preguntasEncuesta =
+          tamizajeData['Preguntas'] as List<dynamic>? ?? [];
       final Set<String> variables = {};
       for (var preg in preguntasEncuesta) {
         if (preg is Map<String, dynamic>) {
@@ -193,8 +194,11 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
       final bool esSrqOrCrq = categoria == 'CRQ' ||
           categoria == 'SRQ' ||
           categoria == 'CRQ / SRQ' ||
+          categoria == 'RQC' ||
+          categoria == 'RQC / SRQ' ||
           titulo.toUpperCase().contains('CRQ') ||
-          titulo.toUpperCase().contains('SRQ');
+          titulo.toUpperCase().contains('SRQ') ||
+          titulo.toUpperCase().contains('RQC');
 
       final List<String> alertasEspecialesNombres = [];
       if (esSrqOrCrq) {
@@ -203,7 +207,8 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
         for (var a in alertasConfig) {
           if (a is Map) {
             final nombre = a['nombre'] as String? ?? '';
-            if (nombre.isNotEmpty && !nombre.toLowerCase().contains('suicida')) {
+            if (nombre.isNotEmpty &&
+                !nombre.toLowerCase().contains('suicida')) {
               alertasEspecialesNombres.add(nombre);
             }
           }
@@ -223,7 +228,8 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
           final claveValor = getSubstanceKey(v, 'VALOR');
           final claveRiesgo = getSubstanceKey(v, 'RIESGO');
           dynamicOrdenColumnas.add({'label': labelValor, 'clave': claveValor});
-          dynamicOrdenColumnas.add({'label': labelRiesgo, 'clave': claveRiesgo});
+          dynamicOrdenColumnas
+              .add({'label': labelRiesgo, 'clave': claveRiesgo});
         }
       }
 
@@ -235,7 +241,8 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
       }
       _columnasVisibles = dynamicColumnasVisibles;
 
-      final isProfesional = valueOrDefault(currentUserDocument?.rol, '') == 'Profesional';
+      final isProfesional =
+          valueOrDefault(currentUserDocument?.rol, '') == 'Profesional';
       final profesionalRef = isProfesional ? currentUserReference : null;
 
       Set<DocumentReference>? patientRefs;
@@ -272,7 +279,8 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
 
             final resultados =
                 procesarRespuestasTamizaje(tamizajeData, respuestaData);
-            final resultadosCompletos = completarSustanciasFaltantes(resultados, variables);
+            final resultadosCompletos =
+                completarSustanciasFaltantes(resultados, variables);
             final registro = crearRegistroExcel(
               userData,
               resultadosCompletos,
@@ -282,14 +290,17 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
             );
 
             if (esSrqOrCrq) {
-              final disparadas = respuestaData['alertasEspeciales'] as List? ?? [];
-              final dispLower = disparadas.map((d) => d.toString().toLowerCase()).toList();
+              final disparadas =
+                  respuestaData['alertasEspeciales'] as List? ?? [];
+              final dispLower =
+                  disparadas.map((d) => d.toString().toLowerCase()).toList();
 
               for (var alertName in alertasEspecialesNombres) {
                 final clave = sanitizeKey(alertName);
                 bool matches = false;
                 if (alertName.toLowerCase() == 'ideación suicida') {
-                  matches = dispLower.any((d) => d.contains('ideacion') || d.contains('suicida'));
+                  matches = dispLower.any(
+                      (d) => d.contains('ideacion') || d.contains('suicida'));
                 } else {
                   matches = dispLower.contains(alertName.toLowerCase());
                 }
@@ -657,7 +668,8 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
                         child: DataTable(
-                          columns: buildDataColumns(_ordenColumnas, _columnasVisibles),
+                          columns: buildDataColumns(
+                              _ordenColumnas, _columnasVisibles),
                           rows: buildDataRows(
                             datos: datosMostrados,
                             ordenColumnas: _ordenColumnas,

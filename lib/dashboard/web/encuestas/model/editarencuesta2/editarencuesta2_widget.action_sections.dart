@@ -15,7 +15,11 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
     // in AlertasEspecialesConfig used by the modular editor). For the legacy
     // editor we render the substance-style panel so the user can still edit
     // min/max per level as a fallback.
-    if (categoria == 'CRQ / SRQ' || categoria == 'CRQ' || categoria == 'SRQ') {
+    if (categoria == 'CRQ / SRQ' ||
+        categoria == 'RQC / SRQ' ||
+        categoria == 'RQC' ||
+        categoria == 'SRQ' ||
+        categoria == 'CRQ') {
       return _buildTamizajesAlertsPanelNiveles(context, categoria);
     }
     // Default: keep legacy Sustancias panel to stay backwards compatible.
@@ -71,7 +75,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
             Text(
               categoria == "SRQ"
                   ? "Puntuación psicométrica y subescalas"
-                  : categoria == "CRQ"
+                  : categoria == "CRQ" || categoria == "RQC"
                       ? "Escala de valoración"
                       : "Alertas — $categoria",
               style: tema.bodyMedium.override(
@@ -173,8 +177,10 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                 ),
               ),
             if (categoria == 'CRQ / SRQ' ||
+                categoria == 'RQC / SRQ' ||
                 categoria == 'CRQ' ||
-                categoria == 'SRQ') ...[
+                categoria == 'SRQ' ||
+                categoria == 'RQC') ...[
               const SizedBox(height: 8.0),
               Container(
                 padding: const EdgeInsets.all(10.0),
@@ -189,7 +195,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                     const SizedBox(width: 8.0),
                     Expanded(
                       child: Text(
-                        'Las alertas especiales CRQ/SRQ (Todas Sí, Al menos una Sí, etc.) '
+                        'Las alertas especiales RQC/SRQ (Todas Sí, Al menos una Sí, etc.) '
                         'se configuran desde el editor modular.',
                         style: tema.bodyMedium.override(
                           font: GoogleFonts.inter(
@@ -704,9 +710,11 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
         children: [
           FFButtonWidget(
             onPressed: () async {
-              bool isCRQ = _model.tipoValue == 'Tamizaje CRQ / SRQ' ||
-                  _model.tipoValue == 'Tamizaje CRQ' ||
-                  _model.tipoValue == 'Tamizaje SRQ';
+              bool isCRQ = _model.tipoValue == 'Tamizaje CRQ' ||
+                  _model.tipoValue == 'Tamizaje RQC' ||
+                  _model.tipoValue == 'Tamizaje SRQ' ||
+                  _model.tipoValue == 'Tamizaje CRQ / SRQ' ||
+                  _model.tipoValue == 'Tamizaje RQC / SRQ';
               int? finalNumPregunta;
               if (isCRQ) {
                 int? numPregunta = int.tryParse(
@@ -855,7 +863,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                 padding:
                     const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 15.0),
                 child: Text(
-                  'Alertas Especiales CRQ/SRQ',
+                  'Alertas Especiales RQC/SRQ',
                   style: tema.bodyMedium.override(
                     font: GoogleFonts.inter(
                       fontWeight: FontWeight.w600,

@@ -420,7 +420,10 @@ class _EncuestaPreguntasTWidgetState extends State<EncuestaPreguntasTWidget> {
               (widget.pregunta?.tipo == 'Tamizajes Depresion Beck') ||
               (widget.pregunta?.tipo == 'Tamizaje CRQ / SRQ') ||
               (widget.pregunta?.tipo == 'Tamizaje CRQ') ||
-              (widget.pregunta?.tipo == 'Tamizaje SRQ'))
+              (widget.pregunta?.tipo == 'Tamizaje RQC / SRQ') ||
+              (widget.pregunta?.tipo == 'Tamizaje RQC') ||
+              (widget.pregunta?.tipo == 'Tamizaje SRQ') ||
+              (widget.pregunta?.tipo == 'Tamizaje RQC'))
             Column(
               mainAxisSize: MainAxisSize.max,
               children: [
@@ -433,7 +436,10 @@ class _EncuestaPreguntasTWidgetState extends State<EncuestaPreguntasTWidget> {
                         child: Text(
                           (widget.pregunta?.tipo == 'Tamizaje CRQ / SRQ' ||
                                   widget.pregunta?.tipo == 'Tamizaje CRQ' ||
-                                  widget.pregunta?.tipo == 'Tamizaje SRQ')
+                                  widget.pregunta?.tipo == 'Tamizaje RQC / SRQ' ||
+                                  widget.pregunta?.tipo == 'Tamizaje RQC' ||
+                                  widget.pregunta?.tipo == 'Tamizaje SRQ' ||
+                                  widget.pregunta?.tipo == 'Tamizaje RQC')
                               ? '${widget.pregunta?.numeroPregunta}. ${widget.pregunta?.pregunta ?? 'Pregunta'}'
                               : valueOrDefault<String>(
                                   widget.pregunta?.pregunta,

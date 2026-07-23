@@ -903,9 +903,19 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                     (preguntasindeexItem.tipo ==
                                                         'Tamizajes Depresion Beck') ||
                                                     (preguntasindeexItem.tipo ==
-                                                        'Tamizaje CRQ / SRQ') ||
+                                                        'Tamizaje RQC / SRQ') ||
+                                                    (preguntasindeexItem.tipo ==
+                                                        'Tamizaje RQC') ||
                                                     (preguntasindeexItem.tipo ==
                                                         'Tamizaje CRQ') ||
+                                                    (preguntasindeexItem.tipo ==
+                                                        'Tamizaje RQC') ||
+                                                    (preguntasindeexItem.tipo ==
+                                                        'Tamizaje SRQ') ||
+                                                    (preguntasindeexItem.tipo ==
+                                                        'Tamizaje RQC / SRQ') ||
+                                                    (preguntasindeexItem.tipo ==
+                                                        'Tamizaje CRQ / SRQ') ||
                                                     (preguntasindeexItem.tipo ==
                                                         'Tamizaje SRQ'))
                                                   Column(
@@ -932,6 +942,8 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                                 children: [
                                                                   Text(
                                                                     (preguntasindeexItem.tipo == 'Tamizaje CRQ / SRQ' ||
+                                                                            preguntasindeexItem.tipo == 'Tamizaje RQC / SRQ' ||
+                                                                            preguntasindeexItem.tipo == 'Tamizaje RQC' ||
                                                                             preguntasindeexItem.tipo ==
                                                                                 'Tamizaje CRQ' ||
                                                                             preguntasindeexItem.tipo ==
@@ -1212,7 +1224,7 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                                             ),
                                                                             action:
                                                                                 () async {
-                                                                              if (preguntasindeexItem.tipo == 'Tamizaje CRQ / SRQ' || preguntasindeexItem.tipo == 'Tamizaje CRQ' || preguntasindeexItem.tipo == 'Tamizaje SRQ') {
+                                                                              if (preguntasindeexItem.tipo == 'Tamizaje CRQ / SRQ' || preguntasindeexItem.tipo == 'Tamizaje CRQ' || preguntasindeexItem.tipo == 'Tamizaje SRQ' || preguntasindeexItem.tipo == 'Tamizaje RQC') {
                                                                                 FFAppState().updateRespuestaEncAtIndex(
                                                                                   preguntasindeexIndex,
                                                                                   (e) => e..respuesta = FFAppState().updateText,
@@ -1346,14 +1358,16 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                       .isNotEmpty;
                                             } else if (tipo ==
                                                     'Tamizaje autoestima' ||
-                                                tipo ==
-                                                    'Tamizaje ansiedad' ||
+                                                tipo == 'Tamizaje ansiedad' ||
                                                 tipo == 'Tamizaje CDI' ||
                                                 tipo ==
                                                     'Tamizajes Depresion Beck' ||
                                                 tipo == 'Tamizaje CRQ / SRQ' ||
+                                                tipo == 'Tamizaje RQC / SRQ' ||
+                                                tipo == 'Tamizaje RQC' ||
                                                 tipo == 'Tamizaje CRQ' ||
-                                                tipo == 'Tamizaje SRQ') {
+                                                tipo == 'Tamizaje SRQ' ||
+                                                tipo == 'Tamizaje RQC') {
                                               respondida = r
                                                   .respuestaTamizaje.isNotEmpty;
                                             } else {
@@ -1397,8 +1411,10 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                               .first.valor
                                                           : 0),
                                                 ),
-                                            alertasEspeciales: evaluarAlertasEspeciales(
-                                              columnEncuestasRecord.alertasEspeciales,
+                                            alertasEspeciales:
+                                                evaluarAlertasEspeciales(
+                                              columnEncuestasRecord
+                                                  .alertasEspeciales,
                                               FFAppState().RespuestaEnc,
                                             ),
                                           ),

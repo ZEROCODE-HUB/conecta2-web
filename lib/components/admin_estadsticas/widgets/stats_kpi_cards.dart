@@ -16,8 +16,8 @@ class StatsKpiCards extends StatelessWidget {
     final moderados = _countsByCriticality(_moderadoNiveles);
     final sanos = total - severos - moderados;
     final isSRQ = stats.categoria == 'SRQ';
-    final isCRQ = stats.categoria == 'CRQ';
-    final isSubescala = isSRQ || isCRQ;
+    final isRQC = stats.categoria == 'RQC';
+    final isSubescala = isSRQ || isRQC;
 
     return LayoutBuilder(
       builder: (context, constraints) {

@@ -40,20 +40,26 @@ class NuevaPreguntaWidget extends StatelessWidget {
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             font: GoogleFonts.inter(
                               fontWeight: FontWeight.w500,
-                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              fontStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontStyle,
                             ),
                             fontSize: 18.0,
                             letterSpacing: 0.0,
                             fontWeight: FontWeight.w500,
-                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
                           ),
                     ),
                     Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                       child: Container(
                         width: MediaQuery.sizeOf(context).width * 1.0,
                         decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).secondaryBackground,
+                          color:
+                              FlutterFlowTheme.of(context).secondaryBackground,
                           borderRadius: BorderRadius.circular(20.0),
                           border: Border.all(
                             color: Color(0xFF6E98D7),
@@ -86,7 +92,8 @@ class NuevaPreguntaWidget extends StatelessWidget {
                       SnackBar(
                         content: Text(
                           'Por favor ingrese el título de la pregunta.',
-                          style: TextStyle(color: FlutterFlowTheme.of(context).primaryText),
+                          style: TextStyle(
+                              color: FlutterFlowTheme.of(context).primaryText),
                         ),
                         duration: Duration(milliseconds: 4000),
                         backgroundColor: FlutterFlowTheme.of(context).error,
@@ -106,7 +113,9 @@ class NuevaPreguntaWidget extends StatelessWidget {
                         SnackBar(
                           content: Text(
                             'Por favor seleccione una sustancia.',
-                            style: TextStyle(color: FlutterFlowTheme.of(context).primaryText),
+                            style: TextStyle(
+                                color:
+                                    FlutterFlowTheme.of(context).primaryText),
                           ),
                           duration: Duration(milliseconds: 4000),
                           backgroundColor: FlutterFlowTheme.of(context).error,
@@ -114,22 +123,29 @@ class NuevaPreguntaWidget extends StatelessWidget {
                       );
                       return;
                     }
-                  } else if (model.tipoValue == 'Tamizaje CRQ / SRQ' || model.tipoValue == 'Tamizaje CRQ' || model.tipoValue == 'Tamizaje SRQ') {
-                    int? numPregunta = int.tryParse(model.crqNumeroPreguntaTextController?.text ?? '');
+                  } else if (model.tipoValue == 'Tamizaje RQC / SRQ' ||
+                      model.tipoValue == 'Tamizaje RQC' ||
+                      model.tipoValue == 'Tamizaje SRQ') {
+                    int? numPregunta = int.tryParse(
+                        model.crqNumeroPreguntaTextController?.text ?? '');
                     if (numPregunta == null || numPregunta <= 0) {
                       int maxNum = 0;
                       for (var p in model.preguntasBuffer) {
-                        if (p.numeroPregunta > maxNum) maxNum = p.numeroPregunta;
+                        if (p.numeroPregunta > maxNum)
+                          maxNum = p.numeroPregunta;
                       }
                       numPregunta = maxNum + 1;
                     }
 
-                    if (model.preguntasBuffer.any((p) => p.numeroPregunta == numPregunta)) {
+                    if (model.preguntasBuffer
+                        .any((p) => p.numeroPregunta == numPregunta)) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
                             'El número de pregunta $numPregunta ya existe. Debe ser único.',
-                            style: TextStyle(color: FlutterFlowTheme.of(context).primaryText),
+                            style: TextStyle(
+                                color:
+                                    FlutterFlowTheme.of(context).primaryText),
                           ),
                           duration: Duration(milliseconds: 4000),
                           backgroundColor: FlutterFlowTheme.of(context).error,
@@ -138,12 +154,14 @@ class NuevaPreguntaWidget extends StatelessWidget {
                       return;
                     }
                     finalNumPregunta = numPregunta;
-                  } else if (model.tipoValue == 'Selección' && model.seleccionunica.isEmpty) {
+                  } else if (model.tipoValue == 'Selección' &&
+                      model.seleccionunica.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
                           'Por favor agregue al menos una opción.',
-                          style: TextStyle(color: FlutterFlowTheme.of(context).primaryText),
+                          style: TextStyle(
+                              color: FlutterFlowTheme.of(context).primaryText),
                         ),
                         duration: Duration(milliseconds: 4000),
                         backgroundColor: FlutterFlowTheme.of(context).error,
@@ -164,9 +182,11 @@ class NuevaPreguntaWidget extends StatelessWidget {
                   // de los getters del struct.
                   final esCDIoBeck = model.tipoValue == 'Tamizaje CDI' ||
                       model.tipoValue == 'Tamizajes Depresion Beck';
-                  final esCRQ = model.tipoValue == 'Tamizaje CRQ / SRQ' ||
-                      model.tipoValue == 'Tamizaje CRQ' ||
-                      model.tipoValue == 'Tamizaje SRQ';
+                  final esCRQ = model.tipoValue == 'Tamizaje CRQ' ||
+                      model.tipoValue == 'Tamizaje RQC' ||
+                      model.tipoValue == 'Tamizaje SRQ' ||
+                      model.tipoValue == 'Tamizaje CRQ / SRQ' ||
+                      model.tipoValue == 'Tamizaje RQC / SRQ';
                   final respuestaTamizaje = esCDIoBeck
                       ? model.respuestaCDI.toList()
                       : esCRQ
@@ -174,15 +194,13 @@ class NuevaPreguntaWidget extends StatelessWidget {
                               AtributosStruct(
                                   etiqueta: 'Sí',
                                   valor: int.tryParse(model
-                                              .crqSiScoreTextController
-                                              ?.text ??
+                                              .crqSiScoreTextController?.text ??
                                           '') ??
                                       1),
                               AtributosStruct(
                                   etiqueta: 'No',
                                   valor: int.tryParse(model
-                                              .crqNoScoreTextController
-                                              ?.text ??
+                                              .crqNoScoreTextController?.text ??
                                           '') ??
                                       0),
                             ]
@@ -245,18 +263,24 @@ class NuevaPreguntaWidget extends StatelessWidget {
                 options: FFButtonOptions(
                   height: 40.0,
                   padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
-                  iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  iconPadding:
+                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   color: FlutterFlowTheme.of(context).secondaryBackground,
                   textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                         font: GoogleFonts.inter(
-                          fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
-                          fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                          fontWeight: FlutterFlowTheme.of(context)
+                              .titleSmall
+                              .fontWeight,
+                          fontStyle:
+                              FlutterFlowTheme.of(context).titleSmall.fontStyle,
                         ),
                         color: Color(0xFF265294),
                         fontSize: 18.0,
                         letterSpacing: 0.0,
-                        fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
-                        fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                        fontWeight:
+                            FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                        fontStyle:
+                            FlutterFlowTheme.of(context).titleSmall.fontStyle,
                       ),
                   elevation: 3.0,
                   borderSide: BorderSide(
@@ -298,7 +322,8 @@ class NuevaPreguntaWidget extends StatelessWidget {
                           ),
                     ),
                     Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
                       child: TextFormField(
                         controller: model.preguntaTextController1,
                         focusNode: model.preguntaFocusNode1,
@@ -306,11 +331,12 @@ class NuevaPreguntaWidget extends StatelessWidget {
                         obscureText: false,
                         decoration: InputDecoration(
                           hintText: 'Ingresa la pregunta...',
-                          hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
-                                fontFamily: 'Inter',
-                                fontSize: 14.0,
-                                letterSpacing: 0.0,
-                              ),
+                          hintStyle:
+                              FlutterFlowTheme.of(context).labelMedium.override(
+                                    fontFamily: 'Inter',
+                                    fontSize: 14.0,
+                                    letterSpacing: 0.0,
+                                  ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 14.0, vertical: 14.0),
                           enabledBorder: OutlineInputBorder(
@@ -349,7 +375,8 @@ class NuevaPreguntaWidget extends StatelessWidget {
                               fontSize: 14.0,
                               letterSpacing: 0.0,
                             ),
-                        validator: model.preguntaTextController1Validator.asValidator(context),
+                        validator: model.preguntaTextController1Validator
+                            .asValidator(context),
                       ),
                     ),
                   ],
@@ -369,7 +396,8 @@ class NuevaPreguntaWidget extends StatelessWidget {
                           ),
                     ),
                     Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
                       child: Builder(builder: (context) {
                         const todosLosTipos = [
                           'abiertas',
@@ -385,45 +413,52 @@ class NuevaPreguntaWidget extends StatelessWidget {
                           'Tamizaje CRQ',
                           'Tamizaje SRQ',
                           'Tamizaje CRQ / SRQ',
+                          'Tamizaje RQC',
+                          'Tamizaje RQC / SRQ',
                           'Tamizaje ansiedad',
                           'Descriptiva'
                         ];
-                        final opciones = tiposPermitidos(model.categoria, todosLosTipos);
+                        final opciones =
+                            tiposPermitidos(model.categoria, todosLosTipos);
                         // Si el tipo seleccionado ya no es valido para la categoria actual, limpiarlo.
-                        if (model.tipoValue != null && !opciones.contains(model.tipoValue)) {
+                        if (model.tipoValue != null &&
+                            !opciones.contains(model.tipoValue)) {
                           model.tipoValue = null;
                           model.tipoValueController?.value = null;
                         }
                         return FlutterFlowDropDown<String>(
-                        controller: model.tipoValueController ??= FormFieldController<String>(null),
-                        options: opciones,
-                        onChanged: (val) {
-                          model.tipoValue = val;
-                          onUpdate();
-                        },
-                        width: double.infinity,
-                        height: 56.0,
-                        textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                              fontFamily: 'Inter',
-                              letterSpacing: 0.0,
-                            ),
-                        hintText: 'Seleccione un tipo...',
-                        icon: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: Color(0xFF265294),
-                          size: 35.0,
-                        ),
-                        fillColor: Colors.white,
-                        elevation: 2.0,
-                        borderColor: FlutterFlowTheme.of(context).alternate,
-                        borderWidth: 2.0,
-                        borderRadius: 8.0,
-                        margin: EdgeInsetsDirectional.fromSTEB(16.0, 4.0, 16.0, 4.0),
-                        hidesUnderline: true,
-                        isOverButton: false,
-                        isSearchable: false,
-                        isMultiSelect: false,
-                      );
+                          controller: model.tipoValueController ??=
+                              FormFieldController<String>(null),
+                          options: opciones,
+                          onChanged: (val) {
+                            model.tipoValue = val;
+                            onUpdate();
+                          },
+                          width: double.infinity,
+                          height: 56.0,
+                          textStyle:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    fontFamily: 'Inter',
+                                    letterSpacing: 0.0,
+                                  ),
+                          hintText: 'Seleccione un tipo...',
+                          icon: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: Color(0xFF265294),
+                            size: 35.0,
+                          ),
+                          fillColor: Colors.white,
+                          elevation: 2.0,
+                          borderColor: FlutterFlowTheme.of(context).alternate,
+                          borderWidth: 2.0,
+                          borderRadius: 8.0,
+                          margin: EdgeInsetsDirectional.fromSTEB(
+                              16.0, 4.0, 16.0, 4.0),
+                          hidesUnderline: true,
+                          isOverButton: false,
+                          isSearchable: false,
+                          isMultiSelect: false,
+                        );
                       }),
                     ),
                   ],
@@ -463,12 +498,14 @@ class NuevaPreguntaWidget extends StatelessWidget {
                         data: ThemeData(
                           checkboxTheme: CheckboxThemeData(
                             visualDensity: VisualDensity.compact,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4.0),
                             ),
                           ),
-                          unselectedWidgetColor: FlutterFlowTheme.of(context).secondaryText,
+                          unselectedWidgetColor:
+                              FlutterFlowTheme.of(context).secondaryText,
                         ),
                         child: Checkbox(
                           value: model.checkboxNPValue1 ??= false,

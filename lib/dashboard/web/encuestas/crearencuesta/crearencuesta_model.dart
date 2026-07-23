@@ -73,7 +73,9 @@ class CrearencuestaModel extends FlutterFlowModel<CrearencuestaWidget> {
     'Verdadero o falso',
     'Tamizaje CRQ',
     'Tamizaje SRQ',
-    'Tamizaje CRQ / SRQ'
+    'Tamizaje RQC',
+    'Tamizaje CRQ / SRQ',
+    'Tamizaje RQC / SRQ'
   ];
   void addToTipospreguntas(String item) => tipospreguntas.add(item);
   void removeFromTipospreguntas(String item) => tipospreguntas.remove(item);
@@ -250,23 +252,31 @@ class CrearencuestaModel extends FlutterFlowModel<CrearencuestaWidget> {
   // Lista de opciones CDI/Beck con ideacion suicida
   List<AtributosStruct> respuestaCDI = [];
   void addToRespuestaCDI(AtributosStruct item) => respuestaCDI.add(item);
-  void removeFromRespuestaCDI(AtributosStruct item) => respuestaCDI.remove(item);
+  void removeFromRespuestaCDI(AtributosStruct item) =>
+      respuestaCDI.remove(item);
   void removeAtIndexFromRespuestaCDI(int index) => respuestaCDI.removeAt(index);
-  void insertAtIndexInRespuestaCDI(int index, AtributosStruct item) => respuestaCDI.insert(index, item);
-  void updateRespuestaCDIAtIndex(int index, Function(AtributosStruct) updateFn) =>
+  void insertAtIndexInRespuestaCDI(int index, AtributosStruct item) =>
+      respuestaCDI.insert(index, item);
+  void updateRespuestaCDIAtIndex(
+          int index, Function(AtributosStruct) updateFn) =>
       respuestaCDI[index] = updateFn(respuestaCDI[index]);
 
   // Lista de alertas especiales CRQ/SRQ
   List<AlertaEspecialStruct> alertasEspeciales = [];
-  void addToAlertasEspeciales(AlertaEspecialStruct item) => alertasEspeciales.add(item);
-  void removeFromAlertasEspeciales(AlertaEspecialStruct item) => alertasEspeciales.remove(item);
-  void removeAtIndexFromAlertasEspeciales(int index) => alertasEspeciales.removeAt(index);
+  void addToAlertasEspeciales(AlertaEspecialStruct item) =>
+      alertasEspeciales.add(item);
+  void removeFromAlertasEspeciales(AlertaEspecialStruct item) =>
+      alertasEspeciales.remove(item);
+  void removeAtIndexFromAlertasEspeciales(int index) =>
+      alertasEspeciales.removeAt(index);
 
   // Buffer local de preguntas en modo creación. Se persiste a Firestore al
   // presionar Vista Previa / Guardar borrador / Publicar.
   List<PreguntasEncuestaStruct> preguntasBuffer = [];
-  void addToPreguntasBuffer(PreguntasEncuestaStruct item) => preguntasBuffer.add(item);
-  void removeAtIndexFromPreguntasBuffer(int index) => preguntasBuffer.removeAt(index);
+  void addToPreguntasBuffer(PreguntasEncuestaStruct item) =>
+      preguntasBuffer.add(item);
+  void removeAtIndexFromPreguntasBuffer(int index) =>
+      preguntasBuffer.removeAt(index);
 
   // Referencia al doc ya persistido. Null mientras el usuario no haya
   // presionado ningún botón de acción (creación pura en memoria).
@@ -314,6 +324,23 @@ class CrearencuestaModel extends FlutterFlowModel<CrearencuestaWidget> {
           AlertaStruct(nivel: 'Grave', min: 29, max: 999),
         ];
         break;
+      case 'CRQ / SRQ':
+      case 'RQC / SRQ':
+        nivelesAlerta = [
+          AlertaStruct(nivel: 'Sin alerta', min: 0, max: 0),
+          AlertaStruct(nivel: 'Moderada', min: 1, max: 2),
+          AlertaStruct(nivel: 'Severo', min: 3, max: 999),
+        ];
+        break;
+      case 'RQC':
+      case 'CRQ':
+      case 'SRQ':
+        nivelesAlerta = [
+          AlertaStruct(nivel: 'Sin alerta', min: 0, max: 0),
+          AlertaStruct(nivel: 'Subescala 1', min: 1, max: 2),
+          AlertaStruct(nivel: 'Subescala 2', min: 3, max: 999),
+        ];
+        break;
       default:
         nivelesAlerta = [];
     }
@@ -335,7 +362,8 @@ class CrearencuestaModel extends FlutterFlowModel<CrearencuestaWidget> {
   // CRQ numero pregunta
   FocusNode? crqNumeroPreguntaFocusNode;
   TextEditingController? crqNumeroPreguntaTextController;
-  String? Function(BuildContext, String?)? crqNumeroPreguntaTextControllerValidator;
+  String? Function(BuildContext, String?)?
+      crqNumeroPreguntaTextControllerValidator;
   // CRQ SI score
   FocusNode? crqSiScoreFocusNode;
   TextEditingController? crqSiScoreTextController;
@@ -347,26 +375,31 @@ class CrearencuestaModel extends FlutterFlowModel<CrearencuestaWidget> {
   // Alerta especial nombre
   FocusNode? alertaEspecialNombreFocusNode;
   TextEditingController? alertaEspecialNombreTextController;
-  String? Function(BuildContext, String?)? alertaEspecialNombreTextControllerValidator;
+  String? Function(BuildContext, String?)?
+      alertaEspecialNombreTextControllerValidator;
   // Alerta especial condicion
   String? alertaEspecialCondicionValue;
   FormFieldController<String>? alertaEspecialCondicionValueController;
   // Alerta especial preguntas
   FocusNode? alertaEspecialPreguntasFocusNode;
   TextEditingController? alertaEspecialPreguntasTextController;
-  String? Function(BuildContext, String?)? alertaEspecialPreguntasTextControllerValidator;
+  String? Function(BuildContext, String?)?
+      alertaEspecialPreguntasTextControllerValidator;
   // Alerta especial puntaje
   FocusNode? alertaEspecialPuntajeFocusNode;
   TextEditingController? alertaEspecialPuntajeTextController;
-  String? Function(BuildContext, String?)? alertaEspecialPuntajeTextControllerValidator;
+  String? Function(BuildContext, String?)?
+      alertaEspecialPuntajeTextControllerValidator;
   // Autoestima etiqueta
   FocusNode? autoestimaEtiquetaFocusNode;
   TextEditingController? autoestimaEtiquetaTextController;
-  String? Function(BuildContext, String?)? autoestimaEtiquetaTextControllerValidator;
+  String? Function(BuildContext, String?)?
+      autoestimaEtiquetaTextControllerValidator;
   // Autoestima valor
   FocusNode? autoestimaValorFocusNode;
   TextEditingController? autoestimaValorTextController;
-  String? Function(BuildContext, String?)? autoestimaValorTextControllerValidator;
+  String? Function(BuildContext, String?)?
+      autoestimaValorTextControllerValidator;
 
   @override
   void initState(BuildContext context) {

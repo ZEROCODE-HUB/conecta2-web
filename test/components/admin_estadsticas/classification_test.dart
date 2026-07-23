@@ -20,9 +20,9 @@ void main() {
       expect(tipoKeyFromTitulo('BDI-II'), 'bdi');
     });
 
-    test('identifies SRQ / CRQ family', () {
+    test('identifies SRQ / RQC family', () {
       expect(tipoKeyFromTitulo('SRQ-20'), 'srq');
-      expect(tipoKeyFromTitulo('CRQ Niños'), 'srq');
+      expect(tipoKeyFromTitulo('RQC Niños'), 'srq');
     });
 
     test('identifies sustancias / ASSIST', () {
@@ -112,10 +112,10 @@ void main() {
 
   group('classifyNivel (clinical thresholds)', () {
     test('autoestima (Rosenberg): cutpoints 30 / 26', () {
-      expect(classifyNivel('Autoestima', const [], puntajeTotal: 31),
-          'Elevada');
-      expect(classifyNivel('Autoestima', const [], puntajeTotal: 30),
-          'Elevada');
+      expect(
+          classifyNivel('Autoestima', const [], puntajeTotal: 31), 'Elevada');
+      expect(
+          classifyNivel('Autoestima', const [], puntajeTotal: 30), 'Elevada');
       expect(classifyNivel('Autoestima', const [], puntajeTotal: 29), 'Media');
       expect(classifyNivel('Autoestima', const [], puntajeTotal: 26), 'Media');
       expect(classifyNivel('Autoestima', const [], puntajeTotal: 25), 'Baja');
@@ -143,7 +143,7 @@ void main() {
       expect(classifyNivel('Beck', const [], puntajeTotal: 13), 'Mínima');
     });
 
-    test('SRQ/CRQ: cutpoints 11 / 4', () {
+    test('SRQ/RQC: cutpoints 11 / 4', () {
       expect(classifyNivel('SRQ-20', const [], puntajeTotal: 12), 'Severo');
       expect(classifyNivel('SRQ', const [], puntajeTotal: 11), 'Severo');
       expect(classifyNivel('SRQ', const [], puntajeTotal: 10), 'Moderada');
@@ -155,8 +155,8 @@ void main() {
       expect(classifyNivel('ASSIST', const [], puntajeTotal: 30), 'Severo');
       expect(classifyNivel('Consumo de sustancias', const [], puntajeTotal: 10),
           'Moderada');
-      expect(classifyNivel('Sustancias', const [], puntajeTotal: 2),
-          'Sin alerta');
+      expect(
+          classifyNivel('Sustancias', const [], puntajeTotal: 2), 'Sin alerta');
     });
 
     test('default / otros: 20/10/4 thresholds', () {
@@ -229,7 +229,9 @@ void main() {
       const autoestimaBuckets = ['Baja', 'Media', 'Elevada'];
       // When mapping a moderate-ish label ('Leve') into autoestima buckets,
       // it should pick a middle-of-the-list fallback.
-      expect(autoestimaBuckets.contains(mapNivelToBucket('Leve', autoestimaBuckets)),
+      expect(
+          autoestimaBuckets
+              .contains(mapNivelToBucket('Leve', autoestimaBuckets)),
           isTrue);
     });
   });

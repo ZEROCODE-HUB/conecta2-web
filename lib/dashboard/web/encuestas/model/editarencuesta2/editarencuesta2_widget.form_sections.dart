@@ -602,13 +602,16 @@ extension _Editarencuesta2WidgetBuildSections1 on _Editarencuesta2WidgetState {
                                                       'Tamizajes Depresion Beck',
                                                     if (widget.tipo ==
                                                         'Tamizajes')
-                                                      'Tamizaje CRQ',
+                                                      'Tamizaje RQC',
                                                     if (widget.tipo ==
                                                         'Tamizajes')
                                                       'Tamizaje SRQ',
                                                     if (widget.tipo ==
                                                         'Tamizajes')
                                                       'Tamizaje CRQ / SRQ',
+                                                    if (widget.tipo ==
+                                                        'Tamizajes')
+                                                      'Tamizaje RQC / SRQ',
                                                     if (widget.tipo ==
                                                         'Tamizajes')
                                                       'Condicionante',
@@ -925,8 +928,8 @@ extension _Editarencuesta2WidgetBuildSections1 on _Editarencuesta2WidgetState {
       'Escala autoestima',
       'CDI',
       'Depresión Beck',
-      'CRQ / SRQ',
-      'CRQ',
+      'RQC / SRQ',
+      'RQC',
       'SRQ',
       'Escala ansiedad',
     ];
@@ -970,7 +973,11 @@ extension _Editarencuesta2WidgetBuildSections1 on _Editarencuesta2WidgetState {
                     child: Text(
                       categoriaActual.isEmpty
                           ? 'Sin categoría'
-                          : categoriaActual,
+                          : categoriaActual == "CRQ"
+                              ? "RQC"
+                              : categoriaActual == "SRQ"
+                                  ? "SRQ"
+                                  : categoriaActual,
                       style: tema.bodyMedium.override(
                         font: GoogleFonts.inter(
                           fontWeight: FontWeight.w600,

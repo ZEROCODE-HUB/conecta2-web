@@ -88,7 +88,13 @@ class SidebarAccionesWidget extends StatelessWidget {
     // categoría. Sustancias usa FFAppState().listaAlertasEnvio; Autoestima y
     // CDI usan los 3 campos bajo/moderado/alto; Beck usa el array `alertas`.
     final cat = _model.categoriaValue;
-    if (cat == 'Escala autoestima' || cat == 'CDI') {
+    if (cat == 'Escala autoestima' ||
+        cat == 'CDI' ||
+        cat == 'RQC' ||
+        cat == 'SRQ' ||
+        cat == 'CRQ' ||
+        cat == 'RQC / SRQ' ||
+        cat == 'CRQ / SRQ') {
       if (_model.nivelesAlerta.length < 3) {
         _model.seedNivelesAlerta(cat);
       }
@@ -110,7 +116,14 @@ class SidebarAccionesWidget extends StatelessWidget {
       alertasFS = _model.nivelesAlerta
           .map((a) => getAlertaFirestoreData(a, true))
           .toList();
-    } else if (cat == 'Depresión Beck' && _model.nivelesAlerta.isNotEmpty) {
+    } else if ((cat == 'Depresión Beck' ||
+            cat == 'Escala ansiedad' ||
+            cat == 'RQC' ||
+            cat == 'SRQ' ||
+            cat == 'CRQ' ||
+            cat == 'RQC / SRQ' ||
+            cat == 'CRQ / SRQ') &&
+        _model.nivelesAlerta.isNotEmpty) {
       alertasFS = _model.nivelesAlerta
           .map((a) => getAlertaFirestoreData(a, true))
           .toList();
@@ -751,6 +764,7 @@ class SidebarAccionesWidget extends StatelessWidget {
         builder: (context) {
           if (_model.categoriaValue != 'CRQ / SRQ' &&
               _model.categoriaValue != 'CRQ' &&
+              _model.categoriaValue != 'RQC' &&
               _model.categoriaValue != 'SRQ') {
             return SizedBox.shrink();
           }
@@ -779,7 +793,7 @@ class SidebarAccionesWidget extends StatelessWidget {
                       padding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 15.0),
                       child: Text(
-                        'Alertas Especiales CRQ/SRQ',
+                        'Alertas Especiales RQC/SRQ',
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               font: GoogleFonts.inter(
                                   fontWeight: FontWeight.w600,
@@ -1223,6 +1237,11 @@ class SidebarAccionesWidget extends StatelessWidget {
       'CDI',
       'Depresión Beck',
       'Escala ansiedad',
+      'RQC',
+      'SRQ',
+      'CRQ',
+      'RQC / SRQ',
+      'CRQ / SRQ',
     ];
     if (!categoriasConNiveles.contains(cat) || _model.nivelesAlerta.isEmpty) {
       return const SizedBox.shrink();
@@ -1235,7 +1254,11 @@ class SidebarAccionesWidget extends StatelessWidget {
             ? 'Niveles de depresión (CDI)'
             : cat == 'Escala ansiedad'
                 ? 'Niveles de ansiedad'
-                : 'Niveles de depresión (Beck)';
+                : cat == 'Depresión Beck'
+                    ? 'Niveles de depresión (Beck)'
+                    : cat == 'SRQ'
+                        ? 'Puntuación psicométrica y subescalas'
+                        : 'Escala de valoración';
 
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 0.0, 0.0),

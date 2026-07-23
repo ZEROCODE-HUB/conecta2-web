@@ -43,6 +43,7 @@ class AlertasEspecialesConfig extends StatelessWidget {
         final encuesta = snapshot.data!;
         if (encuesta.categoria != 'CRQ / SRQ' &&
             encuesta.categoria != 'CRQ' &&
+            encuesta.categoria != 'RQC' &&
             encuesta.categoria != 'SRQ') {
           return const SizedBox.shrink();
         }
@@ -70,7 +71,7 @@ class AlertasEspecialesConfig extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.fromSTEB(
                     0.0, 12.0, 0.0, 15.0),
                 child: Text(
-                  'Alertas Especiales CRQ/SRQ',
+                  'Alertas Especiales RQC/SRQ',
                   style: tema.bodyMedium.override(
                     font: GoogleFonts.inter(fontWeight: FontWeight.w600),
                     fontSize: 16.0,

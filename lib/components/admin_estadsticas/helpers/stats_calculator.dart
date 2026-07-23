@@ -20,7 +20,7 @@ enum TamizajeTipo {
   ansiedad,
   cdi,
   beck,
-  crq,
+  rqc,
   srq,
   sustancias,
 }
@@ -38,8 +38,8 @@ extension TamizajeTipoX on TamizajeTipo {
         return 'CDI';
       case TamizajeTipo.beck:
         return 'Beck';
-      case TamizajeTipo.crq:
-        return 'CRQ';
+      case TamizajeTipo.rqc:
+        return 'RQC';
       case TamizajeTipo.srq:
         return 'SRQ';
       case TamizajeTipo.sustancias:
@@ -58,7 +58,7 @@ extension TamizajeTipoX on TamizajeTipo {
         return const ['Sin sintomatología', 'Leve', 'Severo'];
       case TamizajeTipo.beck:
         return const ['Mínima', 'Leve', 'Moderada', 'Grave'];
-      case TamizajeTipo.crq:
+      case TamizajeTipo.rqc:
         return const ['Sin alerta', 'Subescala 1', 'Subescala 2'];
       case TamizajeTipo.srq:
         return const ['Sin alerta', 'Subescala 1', 'Subescala 2'];
@@ -73,8 +73,8 @@ extension TamizajeTipoX on TamizajeTipo {
 bool _matchesTipo(TamizajeTipo tipo, String titulo) {
   if (tipo == TamizajeTipo.todas) return true;
   final key = tipoKeyFromTitulo(titulo);
-  final isLegacy = titulo.toLowerCase().contains('crq / srq') ||
-      titulo.toLowerCase().contains('crq/srq');
+  final isLegacy = titulo.toLowerCase().contains('rqc / srq') ||
+      titulo.toLowerCase().contains('rqc/srq');
   switch (tipo) {
     case TamizajeTipo.autoestima:
       return key == 'autoestima';
@@ -84,8 +84,8 @@ bool _matchesTipo(TamizajeTipo tipo, String titulo) {
       return key == 'cdi';
     case TamizajeTipo.beck:
       return key == 'bdi';
-    case TamizajeTipo.crq:
-      return key == 'crq' || isLegacy;
+    case TamizajeTipo.rqc:
+      return key == 'rqc' || isLegacy;
     case TamizajeTipo.srq:
       return key == 'srq' || isLegacy;
     case TamizajeTipo.sustancias:
@@ -106,14 +106,14 @@ TamizajeTipo _resolveTipoForTitulo(String titulo) {
       return TamizajeTipo.cdi;
     case 'bdi':
       return TamizajeTipo.beck;
-    case 'crq':
-      return TamizajeTipo.crq;
+    case 'rqc':
+      return TamizajeTipo.rqc;
     case 'srq':
       return TamizajeTipo.srq;
     case 'sustancias':
       return TamizajeTipo.sustancias;
     default:
-      if (titulo.toLowerCase().contains('crq') &&
+      if (titulo.toLowerCase().contains('rqc') &&
           titulo.toLowerCase().contains('srq')) {
         return TamizajeTipo.srq;
       }
@@ -181,8 +181,8 @@ String? categoriaForTipo(TamizajeTipo tipo) {
       return 'CDI';
     case TamizajeTipo.beck:
       return 'Depresión Beck';
-    case TamizajeTipo.crq:
-      return 'CRQ';
+    case TamizajeTipo.rqc:
+      return 'RQC';
     case TamizajeTipo.srq:
       return 'SRQ';
     case TamizajeTipo.sustancias:
@@ -247,13 +247,16 @@ Future<StatsAggregates> loadStats(
         .get()
         .timeout(const Duration(seconds: 10));
 
-    final publishedRefs = encuestasSnap.docs.where((d) {
-      final t = (d.data()['titulo'] ?? '').toString();
-      if (tituloEncuesta != null && tituloEncuesta.isNotEmpty) {
-        return t == tituloEncuesta;
-      }
-      return _matchesTipo(tipo, t);
-    }).map((d) => d.reference).toSet();
+    final publishedRefs = encuestasSnap.docs
+        .where((d) {
+          final t = (d.data()['titulo'] ?? '').toString();
+          if (tituloEncuesta != null && tituloEncuesta.isNotEmpty) {
+            return t == tituloEncuesta;
+          }
+          return _matchesTipo(tipo, t);
+        })
+        .map((d) => d.reference)
+        .toSet();
 
     Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs;
 
@@ -309,7 +312,8 @@ Future<StatsAggregates> loadStats(
       allDocs = snap.docs;
     }
 
-    final filteredDocsMap = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
+    final filteredDocsMap =
+        <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
     for (final doc in allDocs) {
       final parentRef = doc.reference.parent.parent;
       if (parentRef == null || !publishedRefs.contains(parentRef)) continue;
@@ -322,7 +326,7 @@ Future<StatsAggregates> loadStats(
           tituloEncuesta.isNotEmpty &&
           titulo != tituloEncuesta) continue;
       if ((data['invalidado'] as bool?) == true) continue;
-      
+
       final fecha = _fechaFromDoc(data);
       if (rango != null) {
         if (fecha == null) continue;
@@ -336,7 +340,9 @@ Future<StatsAggregates> loadStats(
         final existing = filteredDocsMap[userRef.path];
         if (existing != null) {
           final existingFecha = _fechaFromDoc(existing.data());
-          if (fecha != null && existingFecha != null && fecha.isAfter(existingFecha)) {
+          if (fecha != null &&
+              existingFecha != null &&
+              fecha.isAfter(existingFecha)) {
             filteredDocsMap[userRef.path] = doc;
           }
         } else {

@@ -22,8 +22,11 @@ Color colorForTipo(String tipo) {
     case 'Tamizaje CDI':
     case 'Tamizajes Depresion Beck':
       return const Color(0xFF3F51B5);
+    case 'Tamizaje RQC':
     case 'Tamizaje CRQ':
     case 'Tamizaje SRQ':
+    case 'Tamizaje CRQ / SRQ':
+    case 'Tamizaje RQC / SRQ':
       return const Color(0xFF4CAF50);
     case 'Selección única':
       return const Color(0xFFFF5722);
@@ -57,8 +60,12 @@ String labelForTipo(String tipo) {
       return 'CDI';
     case 'Tamizajes Depresion Beck':
       return 'Beck';
+    case 'Tamizaje RQC':
     case 'Tamizaje CRQ':
-      return 'CRQ';
+      return 'RQC';
+    case 'Tamizaje CRQ / SRQ':
+    case 'Tamizaje RQC / SRQ':
+      return 'RQC / SRQ';
     case 'Tamizaje SRQ':
       return 'SRQ';
     case 'Selección única':
@@ -336,6 +343,9 @@ class _PreguntaCardState extends State<PreguntaCard> {
       case 'Tamizaje CDI':
       case 'Tamizajes Depresion Beck':
         return _contentTamizajeCDI();
+      case 'Tamizaje RQC':
+      case 'Tamizaje RQC / SRQ':
+        return _contentTamizajeCRQ();
       case 'Tamizaje CRQ':
       case 'Tamizaje SRQ':
         return _contentTamizajeCRQ();
@@ -464,7 +474,8 @@ class _PreguntaCardState extends State<PreguntaCard> {
       return Text('Sin opciones definidas',
           style: TextStyle(color: Colors.grey.shade500, fontSize: 13.0));
     }
-    final Color color = widget.pregunta.tipo == 'Tamizaje autoestima' || widget.pregunta.tipo == 'Tamizaje ansiedad'
+    final Color color = widget.pregunta.tipo == 'Tamizaje autoestima' ||
+            widget.pregunta.tipo == 'Tamizaje ansiedad'
         ? const Color(0xFFE91E63)
         : const Color(0xFF009688);
     return Column(

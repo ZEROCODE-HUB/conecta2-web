@@ -589,9 +589,15 @@ class _EncuestasAdolescenteOpenWidgetState
                                                 (preguntasindeexItem.tipo ==
                                                     'Tamizaje CRQ / SRQ') ||
                                                 (preguntasindeexItem.tipo ==
+                                                    'Tamizaje RQC / SRQ') ||
+                                                (preguntasindeexItem.tipo ==
+                                                    'Tamizaje RQC') ||
+                                                (preguntasindeexItem.tipo ==
                                                     'Tamizaje CRQ') ||
                                                 (preguntasindeexItem.tipo ==
-                                                    'Tamizaje SRQ'))
+                                                    'Tamizaje SRQ') ||
+                                                (preguntasindeexItem.tipo ==
+                                                    'Tamizaje RQC'))
                                               Column(
                                                 mainAxisSize: MainAxisSize.max,
                                                 children: [
@@ -607,12 +613,10 @@ class _EncuestasAdolescenteOpenWidgetState
                                                         Flexible(
                                                           child: Text(
                                                             (preguntasindeexItem.tipo == 'Tamizaje CRQ / SRQ' ||
-                                                                    preguntasindeexItem
-                                                                            .tipo ==
-                                                                        'Tamizaje CRQ' ||
-                                                                    preguntasindeexItem
-                                                                            .tipo ==
-                                                                        'Tamizaje SRQ')
+                                                                    preguntasindeexItem.tipo == 'Tamizaje RQC / SRQ' ||
+                                                                    preguntasindeexItem.tipo == 'Tamizaje RQC' ||
+                                                                    preguntasindeexItem.tipo == 'Tamizaje CRQ' ||
+                                                                    preguntasindeexItem.tipo == 'Tamizaje SRQ')
                                                                 ? '${preguntasindeexItem.numeroPregunta}. ${preguntasindeexItem.pregunta}'
                                                                 : preguntasindeexItem
                                                                     .pregunta,
@@ -1091,14 +1095,15 @@ class _EncuestasAdolescenteOpenWidgetState
                                                       .isNotEmpty;
                                             } else if (tipo ==
                                                     'Tamizaje autoestima' ||
-                                                tipo ==
-                                                    'Tamizaje ansiedad' ||
+                                                tipo == 'Tamizaje ansiedad' ||
                                                 tipo == 'Tamizaje CDI' ||
                                                 tipo ==
                                                     'Tamizajes Depresion Beck' ||
                                                 tipo == 'Tamizaje CRQ / SRQ' ||
                                                 tipo == 'Tamizaje CRQ' ||
-                                                tipo == 'Tamizaje SRQ') {
+                                                tipo == 'Tamizaje SRQ' ||
+                                                tipo == 'Tamizaje RQC / SRQ' ||
+                                                tipo == 'Tamizaje RQC') {
                                               respondida = r
                                                   .respuestaTamizaje.isNotEmpty;
                                             } else {

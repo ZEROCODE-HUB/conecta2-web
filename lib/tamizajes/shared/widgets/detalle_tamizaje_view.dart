@@ -260,7 +260,10 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
       if (n.contains('severo'))
         return 'Ansiedad severa. Requiere atención clínica prioritaria.';
     }
-    if (categoria == 'CRQ / SRQ' || categoria == 'CRQ' || categoria == 'SRQ') {
+    if (categoria == 'CRQ / SRQ' ||
+        categoria == 'CRQ' ||
+        categoria == 'SRQ' ||
+        categoria == 'RQC') {
       if (n.contains('sin ')) return 'Sin alerta psicosocial.';
       if (n.contains('moderad')) return 'Alerta psicosocial moderada.';
       if (n.contains('severo')) return 'Alerta psicosocial alta.';

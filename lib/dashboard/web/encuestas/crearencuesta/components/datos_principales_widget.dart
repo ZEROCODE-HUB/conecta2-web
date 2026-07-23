@@ -212,7 +212,7 @@ class DatosPrincipalesWidget extends StatelessWidget {
                             'Escala ansiedad',
                             'CDI',
                             'Depresión Beck',
-                            'CRQ',
+                            'RQC',
                             'SRQ'
                           ],
                           onChanged: (val) async {
@@ -242,8 +242,10 @@ class DatosPrincipalesWidget extends StatelessWidget {
                               'Tamizaje CDI',
                               'Tamizajes Depresion Beck',
                               'Tamizaje CRQ',
+                              'Tamizaje RQC',
                               'Tamizaje SRQ',
                               'Tamizaje CRQ / SRQ',
+                              'Tamizaje RQC / SRQ',
                               'Descriptiva'
                             ];
                             final _permitidos =

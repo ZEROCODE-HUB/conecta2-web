@@ -75,7 +75,13 @@ class TamizajeService {
       if (filtroCategoria != 'Todas') {
         final titulo = r.titlo.toUpperCase();
         final cat = filtroCategoria.toUpperCase();
-        if (!titulo.contains(cat)) return false;
+        
+        // Match both 'RQC' and 'CRQ' when 'RQC' is selected to support legacy surveys
+        if (cat == 'RQC') {
+          if (!titulo.contains('RQC') && !titulo.contains('CRQ')) return false;
+        } else {
+          if (!titulo.contains(cat)) return false;
+        }
       }
       if (filtroEstado == 'Completados' && r.invalidado) return false;
       if (filtroEstado == 'Invalidados' && !r.invalidado) return false;

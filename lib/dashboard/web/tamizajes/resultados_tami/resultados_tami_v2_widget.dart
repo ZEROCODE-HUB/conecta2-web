@@ -150,8 +150,8 @@ class _ResultadosTamiV2WidgetState extends State<ResultadosTamiV2Widget> {
                       );
                     }
 
-                    final result = TamizajeService.paginar(
-                        respuestas, _paginaActual);
+                    final result =
+                        TamizajeService.paginar(respuestas, _paginaActual);
 
                     return Column(
                       children: [
@@ -164,8 +164,8 @@ class _ResultadosTamiV2WidgetState extends State<ResultadosTamiV2Widget> {
                               return _RespuestaCard(
                                 respuesta: r,
                                 encuesta: encuesta,
-                                onVerDetalle: () => setState(
-                                    () => _detalleRespuesta = r),
+                                onVerDetalle: () =>
+                                    setState(() => _detalleRespuesta = r),
                               );
                             },
                           ),
@@ -245,6 +245,7 @@ class _RespuestaCardState extends State<_RespuestaCard> {
       case 'CRQ / SRQ':
       case 'CRQ':
       case 'SRQ':
+      case 'RQC':
         titulo = 'srq';
         break;
     }
@@ -280,10 +281,10 @@ class _RespuestaCardState extends State<_RespuestaCard> {
     if (n.contains('severo') || n.contains('severa')) return kDanger;
     if (n.contains('baja')) return kDanger;
     if (n.contains('moderad')) return const Color(0xFFFF8A00);
-    if (n.contains('leve') || n.contains('media')) return const Color(0xFFE0A800);
-    if (n.contains('sin ') ||
-        n.contains('mínima') ||
-        n.contains('elevada')) return kSuccess;
+    if (n.contains('leve') || n.contains('media'))
+      return const Color(0xFFE0A800);
+    if (n.contains('sin ') || n.contains('mínima') || n.contains('elevada'))
+      return kSuccess;
     return kNavy;
   }
 
@@ -294,9 +295,8 @@ class _RespuestaCardState extends State<_RespuestaCard> {
     final tieneIdeacion = hasIdeacion(r.test);
     final nivel = _nivelDe(widget.encuesta, r);
     final nivelColor = _colorNivel(nivel);
-    final alertasEspeciales = r.alertasEspeciales
-        .where((a) => a.trim().isNotEmpty)
-        .toList();
+    final alertasEspeciales =
+        r.alertasEspeciales.where((a) => a.trim().isNotEmpty).toList();
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -329,8 +329,7 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                 flex: 3,
                 child: r.userRespuesta != null
                     ? FutureBuilder<UsersRecord>(
-                        future: UsersRecord.getDocumentOnce(
-                            r.userRespuesta!),
+                        future: UsersRecord.getDocumentOnce(r.userRespuesta!),
                         builder: (context, snap) {
                           final name = snap.hasError
                               ? 'Error al cargar'
@@ -339,10 +338,10 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                                       ? 'Usuario desconocido'
                                       : 'Cargando...'));
                           final genero = (snap.data?.genero ?? '').trim();
-                          final edad = _edadFromBirth(snap.data?.fechaNacimiento);
-                          final inicial = name.isNotEmpty
-                              ? name[0].toUpperCase()
-                              : '?';
+                          final edad =
+                              _edadFromBirth(snap.data?.fechaNacimiento);
+                          final inicial =
+                              name.isNotEmpty ? name[0].toUpperCase() : '?';
                           return Row(
                             children: [
                               Container(
@@ -365,8 +364,7 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       name,
@@ -400,14 +398,13 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                           );
                         },
                       )
-                    : Text('Paciente desconocido',
-                        style: theme.bodyMedium),
+                    : Text('Paciente desconocido', style: theme.bodyMedium),
               ),
 
               // Puntaje
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: kNavy.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(10),
@@ -433,8 +430,8 @@ class _RespuestaCardState extends State<_RespuestaCard> {
               // Nivel clínico
               if (nivel.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: nivelColor.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(10),
@@ -467,8 +464,8 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                 children: [
                   // Estado
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: r.invalidado
                           ? const Color(0xFFFFC4C4)
@@ -541,8 +538,7 @@ class _RespuestaCardState extends State<_RespuestaCard> {
                     height: 32,
                     child: ElevatedButton.icon(
                       onPressed: widget.onVerDetalle,
-                      icon:
-                          const Icon(Icons.visibility_outlined, size: 14),
+                      icon: const Icon(Icons.visibility_outlined, size: 14),
                       label: const Text('Ver detalle'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kNavy,

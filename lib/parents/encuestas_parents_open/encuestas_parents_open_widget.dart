@@ -629,7 +629,8 @@ class _EncuestasParentsOpenWidgetState
                                                     tipo ==
                                                         'Tamizaje CRQ / SRQ' ||
                                                     tipo == 'Tamizaje CRQ' ||
-                                                    tipo == 'Tamizaje SRQ') {
+                                                    tipo == 'Tamizaje SRQ' ||
+                                                    tipo == 'Tamizaje RQC') {
                                                   respondida = r
                                                       .respuestaTamizaje
                                                       .isNotEmpty;

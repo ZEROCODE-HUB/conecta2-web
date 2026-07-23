@@ -44,6 +44,11 @@ const Map<String, List<String>> kNivelesPorCategoria = {
     'Subescala 1',
     'Subescala 2',
   ],
+  'RQC': [
+    'Sin alerta',
+    'Subescala 1',
+    'Subescala 2',
+  ],
   'SRQ': [
     'Sin alerta',
     'Subescala 1',
