@@ -13,6 +13,22 @@ import 'classification.dart';
 // Re-export pure helpers so widgets can keep importing a single file.
 export 'classification.dart';
 
+const _criticoNiveles = {
+  'Grave',
+  'Severo',
+  'Alta',
+  'Subescala 2',
+};
+
+const _moderadoNiveles = {
+  'Moderado',
+  'Moderada',
+  'Media',
+  'Leve',
+  'Subescala 1',
+  'Baja', // Baja autoestima
+};
+
 /// Canonical tamizaje types handled by the statistics screen.
 enum TamizajeTipo {
   todas,
@@ -127,12 +143,16 @@ class ClassifiedResponse {
   final String genero; // Masculino | Femenino | Otro
   final int? edad;
   final TamizajeTipo tipo;
+  final String titulo;
+  final String userId;
 
   ClassifiedResponse({
     required this.nivel,
     required this.genero,
     required this.edad,
     required this.tipo,
+    required this.titulo,
+    required this.userId,
   });
 
   String get rangoEdad => rangoEdadFromEdad(edad);
@@ -142,29 +162,35 @@ class ClassifiedResponse {
 class StatsAggregates {
   final TamizajeTipo tipo;
   final int total;
+  final int usuariosEvaluados;
   final List<String> niveles;
   final Map<String, Map<String, int>> porGenero; // genero -> nivel -> count
   final Map<String, Map<String, int>> porEdad; // rango -> nivel -> count
   final Map<String, int> distribucion; // nivel -> count
+  final Map<String, int> porTamizaje; // titulo -> alert count
   final String categoria;
 
   StatsAggregates({
     required this.tipo,
     required this.total,
+    required this.usuariosEvaluados,
     required this.niveles,
     required this.porGenero,
     required this.porEdad,
     required this.distribucion,
+    required this.porTamizaje,
     required this.categoria,
   });
 
   static StatsAggregates empty(TamizajeTipo tipo) => StatsAggregates(
         tipo: tipo,
         total: 0,
+        usuariosEvaluados: 0,
         niveles: tipo.niveles,
         porGenero: const {},
         porEdad: const {},
         distribucion: const {},
+        porTamizaje: const {},
         categoria: categoriaForTipo(tipo) ?? '',
       );
 }
@@ -337,16 +363,20 @@ Future<StatsAggregates> loadStats(
 
       final userRef = data['User_respuesta'];
       if (userRef is DocumentReference) {
-        final existing = filteredDocsMap[userRef.path];
+        final groupKey = tipo == TamizajeTipo.todas
+            ? '${userRef.path}_$titulo'
+            : userRef.path;
+
+        final existing = filteredDocsMap[groupKey];
         if (existing != null) {
           final existingFecha = _fechaFromDoc(existing.data());
           if (fecha != null &&
               existingFecha != null &&
               fecha.isAfter(existingFecha)) {
-            filteredDocsMap[userRef.path] = doc;
+            filteredDocsMap[groupKey] = doc;
           }
         } else {
-          filteredDocsMap[userRef.path] = doc;
+          filteredDocsMap[groupKey] = doc;
         }
       }
     }
@@ -409,6 +439,8 @@ Future<StatsAggregates> loadStats(
         genero: normalizeGenero(userData['genero']?.toString()),
         edad: _edadFromUser(userData),
         tipo: _resolveTipoForTitulo(titulo),
+        titulo: titulo,
+        userId: userRef.path,
       ));
     }
   } catch (e) {
@@ -473,22 +505,40 @@ StatsAggregates _aggregate(
     for (final r in rangos) r: {for (final n in niveles) n: 0},
   };
   final distribucion = <String, int>{for (final n in niveles) n: 0};
+  final porTamizaje = <String, int>{};
+  final uniqueUsers = <String>{};
 
   for (final r in items) {
+    uniqueUsers.add(r.userId);
     final nivel = mapNivelToBucket(r.nivel, niveles);
     porGenero[r.genero]![nivel] = (porGenero[r.genero]![nivel] ?? 0) + 1;
     final rango = r.rangoEdad;
     porEdad[rango]![nivel] = (porEdad[rango]![nivel] ?? 0) + 1;
     distribucion[nivel] = (distribucion[nivel] ?? 0) + 1;
+
+    final n = r.nivel.toLowerCase();
+    final isAlert = _criticoNiveles.any((c) => n.contains(c.toLowerCase())) ||
+        _moderadoNiveles.any((m) => n.contains(m.toLowerCase()));
+    
+    if (tipo == TamizajeTipo.todas) {
+      if (!porTamizaje.containsKey(r.titulo)) {
+        porTamizaje[r.titulo] = 0;
+      }
+      if (isAlert) {
+        porTamizaje[r.titulo] = porTamizaje[r.titulo]! + 1;
+      }
+    }
   }
 
   return StatsAggregates(
     tipo: tipo,
     total: items.length,
+    usuariosEvaluados: uniqueUsers.length,
     niveles: niveles,
     porGenero: porGenero,
     porEdad: porEdad,
     distribucion: distribucion,
+    porTamizaje: porTamizaje,
     categoria: categoriaForTipo(tipo) ?? '',
   );
 }

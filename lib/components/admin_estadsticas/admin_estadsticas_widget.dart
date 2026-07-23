@@ -10,6 +10,7 @@ import 'helpers/stats_calculator.dart';
 import 'widgets/chart_distribucion_niveles.dart';
 import 'widgets/chart_por_edad.dart';
 import 'widgets/chart_por_genero.dart';
+import 'widgets/chart_por_tamizaje.dart';
 import 'widgets/rango_fechas_selector.dart';
 import 'widgets/selector_colegio.dart';
 import 'widgets/selector_encuesta.dart';
@@ -260,6 +261,10 @@ class _AdminEstadsticas2WidgetState extends State<AdminEstadsticas2Widget> {
                       ChartPorEdad(stats: stats),
                       const SizedBox(height: 16),
                       ChartDistribucionNiveles(stats: stats),
+                      if (_tipoSeleccionado == TamizajeTipo.todas) ...[
+                        const SizedBox(height: 16),
+                        ChartPorTamizaje(stats: stats),
+                      ],
                     ],
                   );
                 }
@@ -279,6 +284,10 @@ class _AdminEstadsticas2WidgetState extends State<AdminEstadsticas2Widget> {
                         Expanded(child: ChartDistribucionNiveles(stats: stats)),
                       ],
                     ),
+                    if (_tipoSeleccionado == TamizajeTipo.todas) ...[
+                      const SizedBox(height: 16),
+                      ChartPorTamizaje(stats: stats),
+                    ],
                   ],
                 );
               },

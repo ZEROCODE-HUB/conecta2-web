@@ -803,7 +803,7 @@ class _EditarContenidoWidgetState extends State<EditarContenidoWidget> {
                                                                             context)
                                                                     .width *
                                                                 1.0,
-                                                            height: 600.0,
+                                                            height: 800.0,
                                                             child: custom_widgets
                                                                 .MyHtmlEditorWidget(
                                                               width: MediaQuery
@@ -811,7 +811,7 @@ class _EditarContenidoWidgetState extends State<EditarContenidoWidget> {
                                                                               context)
                                                                       .width *
                                                                   1.0,
-                                                              height: 600.0,
+                                                              height: 800.0,
                                                               initialHtml:
                                                                   rowContenidoRecord
                                                                       .html,

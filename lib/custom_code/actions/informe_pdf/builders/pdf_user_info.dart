@@ -55,6 +55,10 @@ Future<Map<String, dynamic>?> obtenerDatosPacienteFirestoreSeguro(
       }
     } catch (_) {}
 
+    if (edad == 'N/A' && data['edad'] != null) {
+      edad = data['edad'].toString();
+    }
+
     String acudienteNombre = 'NO REGISTRADO';
     String acudienteTelefono = 'NO REGISTRADO';
     String acudienteCorreo = 'NO REGISTRADO';
@@ -169,7 +173,7 @@ pw.Widget buildPatientHeaderBlock(Map<String, dynamic> datos) {
             ),
             pw.SizedBox(height: 2),
             pw.Text(
-              'EPS: $eps  •  GÉNERO: $genero',
+              'EPS: $eps  |  GÉNERO: $genero',
               style: pw.TextStyle(
                 fontSize: 8.5,
                 color: PdfColors.black,

@@ -24,7 +24,7 @@ class StatsKpiCards extends StatelessWidget {
         final cards = [
           _KpiCard(
             label: 'Evaluados',
-            value: total.toString(),
+            value: stats.usuariosEvaluados.toString(),
             color: FlutterFlowTheme.of(context).accent2,
             icon: Icons.people_outline,
           ),

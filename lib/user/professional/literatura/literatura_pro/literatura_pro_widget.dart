@@ -107,7 +107,9 @@ class _LiteraturaProWidgetState extends State<LiteraturaProWidget> {
                                       ContenidoRecord>.separated(
                                     pagingController:
                                         _model.setListViewController(
-                                      ContenidoRecord.collection.where(
+                                      ContenidoRecord.collection
+                                          .where('Publicado', isEqualTo: true)
+                                          .where(
                                         'Roles',
                                         arrayContains: valueOrDefault(
                                             currentUserDocument?.rol, ''),

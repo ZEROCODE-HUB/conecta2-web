@@ -120,7 +120,9 @@ class _BookWidgetState extends State<BookWidget> {
                                       ContenidoRecord>.separated(
                                     pagingController:
                                         _model.setListViewController(
-                                      ContenidoRecord.collection.where(
+                                      ContenidoRecord.collection
+                                          .where('Publicado', isEqualTo: true)
+                                          .where(
                                         'Roles',
                                         arrayContains: valueOrDefault(
                                             currentUserDocument?.rol, ''),
