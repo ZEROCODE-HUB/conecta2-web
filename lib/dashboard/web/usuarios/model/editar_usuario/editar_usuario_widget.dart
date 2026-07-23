@@ -1015,6 +1015,11 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
 
   Widget _buildMunicipioBarrioRow(
       BuildContext context, UsersRecord rowUsersRecord) {
+    _model.textFieldmunicipioTextController ??=
+        TextEditingController(text: rowUsersRecord.municipio);
+    _model.textFieldbarrioTextController ??=
+        TextEditingController(text: rowUsersRecord.barrio);
+
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
       child: Row(
@@ -1105,6 +1110,9 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
   }
 
   Widget _buildGradoRow(BuildContext context, UsersRecord rowUsersRecord) {
+    _model.textFieldgradoTextController ??=
+        TextEditingController(text: rowUsersRecord.grado);
+
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
       child: Row(
@@ -1391,13 +1399,18 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
       identidad: _model.textFielddniTextController.text,
       edad: _model.textFieldedadTextController.text,
       genero: _model.dropDownGeneroValue,
-      fechaNacimiento:
-          DateTime.tryParse(_model.textFieldfechaNacimientoTextController.text),
-      colegio: _model.textFieldcolegioTextController.text,
-      eps: _model.textFieldepsTextController.text,
-      grado: _model.textFieldgradoTextController.text,
-      municipio: _model.textFieldmunicipioTextController.text,
-      barrio: _model.textFieldbarrioTextController.text,
+      fechaNacimiento: () {
+        try {
+          return DateFormat('dd/MM/yyyy').parseStrict(_model.textFieldfechaNacimientoTextController?.text ?? '');
+        } catch (_) {
+          return null;
+        }
+      }(),
+      colegio: _model.textFieldcolegioTextController?.text ?? '',
+      eps: _model.textFieldepsTextController?.text ?? '',
+      grado: _model.textFieldgradoTextController?.text ?? '',
+      municipio: _model.textFieldmunicipioTextController?.text ?? '',
+      barrio: _model.textFieldbarrioTextController?.text ?? '',
     ));
     FFAppState().selectUser = '';
     safeSetState(() {});
