@@ -303,6 +303,8 @@ Map<String, dynamic> crearRegistroExcel(
     edad = '$edadCalculada';
     fechaNacimientoFormateada =
         '${fechaNacimiento.day.toString().padLeft(2, '0')}/${fechaNacimiento.month.toString().padLeft(2, '0')}/${fechaNacimiento.year}';
+  } else if (userData['edad'] != null && userData['edad'].toString().trim().isNotEmpty) {
+    edad = userData['edad'].toString().trim();
   }
 
   String cursoVida = 'Adolescente';

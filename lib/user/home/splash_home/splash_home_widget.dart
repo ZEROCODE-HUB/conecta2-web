@@ -7,7 +7,6 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'splash_home_model.dart';
 export 'splash_home_model.dart';
 
@@ -24,6 +23,7 @@ class SplashHomeWidget extends StatefulWidget {
 class _SplashHomeWidgetState extends State<SplashHomeWidget> {
   late SplashHomeModel _model;
   StreamSubscription? _authSub;
+  Timer? _timeoutTimer;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -31,21 +31,68 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => SplashHomeModel());
+    _startAuthListener();
+    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+  }
 
-    _authSub = authenticatedUserStream.listen((userDoc) {
-      if (userDoc == null) {
-        // Si no estamos autenticados en Firebase Auth, enviamos al splash/login
-        if (FirebaseAuth.instance.currentUser == null) {
-          context.goNamed(SplashWidget.routeName);
-        }
-        return;
+  Future<void> _signOutAndRedirect() async {
+    _timeoutTimer?.cancel();
+    _authSub?.cancel();
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (_) {}
+    if (mounted) {
+      context.goNamed(SplashWidget.routeName);
+    }
+  }
+
+  void _startAuthListener() {
+    _authSub?.cancel();
+    _timeoutTimer?.cancel();
+
+    _timeoutTimer = Timer(const Duration(seconds: 10), () {
+      if (mounted) {
+        _signOutAndRedirect();
       }
-
-      _authSub?.cancel();
-      _redirectBasedOnRole(userDoc);
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      UsersRecord.getDocumentOnce(UsersRecord.collection.doc(currentUser.uid))
+          .then((userDoc) {
+        // El documento se cargó con éxito. No hacemos nada extra.
+      }).catchError((error) {
+        // En caso de fallar, simplemente enviamos al login.
+        _signOutAndRedirect();
+      });
+    }
+
+    _authSub = authenticatedUserStream.listen(
+      (userDoc) {
+        if (userDoc == null) {
+          // Si no estamos autenticados en Firebase Auth, enviamos al splash/login
+          if (FirebaseAuth.instance.currentUser == null) {
+            _timeoutTimer?.cancel();
+            if (mounted) {
+              context.goNamed(SplashWidget.routeName);
+            }
+          } else {
+            // Si estamos autenticados pero no hay documento (nulo),
+            // cerramos sesión y vamos al login.
+            _signOutAndRedirect();
+          }
+          return;
+        }
+
+        _timeoutTimer?.cancel();
+        _authSub?.cancel();
+        _redirectBasedOnRole(userDoc);
+      },
+      onError: (error) {
+        // En caso de cualquier error en el stream, cerramos sesión y redirigimos.
+        _signOutAndRedirect();
+      },
+    );
   }
 
   void _redirectBasedOnRole(UsersRecord userDoc) async {
@@ -127,6 +174,7 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
   @override
   void dispose() {
     _authSub?.cancel();
+    _timeoutTimer?.cancel();
     _model.dispose();
 
     super.dispose();
@@ -166,6 +214,15 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
                         width: 250.0,
                         height: 89.0,
                         fit: BoxFit.contain,
+                      ),
+                    ),
+                    const SizedBox(height: 24.0),
+                    const SizedBox(
+                      width: 24.0,
+                      height: 24.0,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 2.5,
                       ),
                     ),
                   ],
