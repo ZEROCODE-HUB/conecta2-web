@@ -155,14 +155,15 @@ class _ExcelPageWidgetState extends State<ExcelPageWidget> {
                   children: [
                     StreamBuilder<List<EncuestasRecord>>(
                       stream: queryEncuestasRecord(
-                        queryBuilder: (encuestasRecord) =>
-                            encuestasRecord.where(
-                          'tipo',
-                          isEqualTo: 'Tamizajes',
-                        ).where(
-                          'Publicado',
-                          isEqualTo: true,
-                        ),
+                        queryBuilder: (encuestasRecord) => encuestasRecord
+                            .where(
+                              'tipo',
+                              isEqualTo: 'Tamizajes',
+                            )
+                            .where(
+                              'Publicado',
+                              isEqualTo: true,
+                            ),
                       ),
                       builder: (context, snapshot) {
                         // Customize what your widget looks like when it's loading.
@@ -186,15 +187,19 @@ class _ExcelPageWidgetState extends State<ExcelPageWidget> {
                             .where((e) => e.titulo.trim().isNotEmpty)
                             .map((e) => e.titulo.trim())
                             .toList();
+                        optionsList.insert(0, 'Seleccione un tamizaje');
 
                         if (optionsList.isEmpty) {
                           return Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
                               'No hay tamizajes publicados',
-                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
                                     font: GoogleFonts.inter(),
-                                    color: FlutterFlowTheme.of(context).secondaryText,
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
                                   ),
                             ),
                           );
@@ -202,17 +207,20 @@ class _ExcelPageWidgetState extends State<ExcelPageWidget> {
 
                         if (_model.dropDownTamizajValue == null ||
                             _model.dropDownTamizajValue == 'Todos' ||
-                            !optionsList.contains(_model.dropDownTamizajValue)) {
-                          _model.dropDownTamizajValue = optionsList.first;
+                            !optionsList
+                                .contains(_model.dropDownTamizajValue)) {
+                          _model.dropDownTamizajValue =
+                              'Seleccione un tamizaje';
                           if (_model.dropDownTamizajValueController != null) {
-                            _model.dropDownTamizajValueController!.value = optionsList.first;
+                            _model.dropDownTamizajValueController!.value =
+                                'Seleccione un tamizaje';
                           }
                         }
 
                         return FlutterFlowDropDown<String>(
                           controller: _model.dropDownTamizajValueController ??=
                               FormFieldController<String>(
-                            _model.dropDownTamizajValue!,
+                            _model.dropDownTamizajValue,
                           ),
                           options: optionsList,
                           optionLabels: <String>[],
@@ -238,7 +246,7 @@ class _ExcelPageWidgetState extends State<ExcelPageWidget> {
                                         .bodyMedium
                                         .fontStyle,
                                   ),
-                          hintText: 'Seleccione tamizaje',
+                          hintText: 'Seleccione un tamizaje tamizaje',
                           icon: Icon(
                             Icons.keyboard_arrow_down_rounded,
                             color: FlutterFlowTheme.of(context).secondaryText,
