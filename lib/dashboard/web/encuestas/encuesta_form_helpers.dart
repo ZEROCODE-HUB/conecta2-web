@@ -12,20 +12,11 @@ const Map<String, List<String>> kTiposPorCategoria = {
   'Escala autoestima': ['Tamizaje autoestima', 'Descriptiva'],
   'CDI': ['Tamizaje CDI', 'Descriptiva'],
   'Depresión Beck': ['Tamizajes Depresion Beck', 'Descriptiva'],
-  'CRQ': [
-    'Tamizaje RQC',
-    'Tamizaje CRQ',
-    'Descriptiva'
-  ],
-  'RQC': [
-    'Tamizaje RQC',
-    'Tamizaje CRQ',
-    'Descriptiva'
-  ],
-  'SRQ': [
-    'Tamizaje SRQ',
-    'Descriptiva'
-  ],
+  'CRQ': ['Tamizaje CRQ', 'Descriptiva'],
+  'RQC': ['Tamizaje RQC', 'Descriptiva'],
+  'SRQ': ['Tamizaje SRQ', 'Descriptiva'],
+  'CRQ / SRQ': ['Tamizaje CRQ / SRQ', 'Descriptiva'],
+  'RQC / SRQ': ['Tamizaje RQC / SRQ', 'Descriptiva'],
   'Escala ansiedad': ['Tamizaje ansiedad', 'Descriptiva'],
 };
 

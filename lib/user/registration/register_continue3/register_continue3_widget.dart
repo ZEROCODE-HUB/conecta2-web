@@ -33,9 +33,18 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  late Future<List<UsersRecord>> _parentsFuture;
+
   @override
   void initState() {
     super.initState();
+    _parentsFuture = queryUsersRecordOnce(
+      queryBuilder: (usersRecord) =>
+          usersRecord.where('rol', isEqualTo: 'Acudiente'),
+    ).catchError((err) {
+      print('Error querying parents: $err');
+      return <UsersRecord>[];
+    });
     _model = createModel(context, () => RegisterContinue3Model());
 
     _model.textFieldNombreParentescoTextController ??= TextEditingController();
@@ -234,6 +243,7 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
                             context.goNamedAuth(
                                 SuccessWidget.routeName, context.mounted);
 
+                            FFAppState().detalleUsuarioTemp = RegistroUsuarioTempStruct();
                             FFAppState().description = '';
                             FFAppState().emocion = 0;
                             FFAppState().dateEmocion =

@@ -27,12 +27,28 @@ class Editarencuesta2Model extends FlutterFlowModel<Editarencuesta2Widget> {
   String? seleccionunicarespuesta;
 
   // Tamizaje autoestima / sustancias / base
-  List<AtributosStruct> listaTamizaje = [];
-  void addToListaTamizaje(AtributosStruct item) => listaTamizaje.add(item);
+  List<AtributosStruct> respuestaTamizaje = [];
+  List<AtributosStruct> get listaTamizaje => respuestaTamizaje;
+  set listaTamizaje(List<AtributosStruct> val) => respuestaTamizaje = val;
+
+  void addToRespuestaTamizaje(AtributosStruct item) => respuestaTamizaje.add(item);
+  void addToListaTamizaje(AtributosStruct item) => addToRespuestaTamizaje(item);
+
+  void removeFromRespuestaTamizaje(AtributosStruct item) =>
+      respuestaTamizaje.remove(item);
   void removeFromListaTamizaje(AtributosStruct item) =>
-      listaTamizaje.remove(item);
+      removeFromRespuestaTamizaje(item);
+
+  void removeAtIndexFromRespuestaTamizaje(int index) =>
+      respuestaTamizaje.removeAt(index);
   void removeAtIndexFromListaTamizaje(int index) =>
-      listaTamizaje.removeAt(index);
+      removeAtIndexFromRespuestaTamizaje(index);
+
+  void insertAtIndexInRespuestaTamizaje(int index, AtributosStruct item) =>
+      respuestaTamizaje.insert(index, item);
+  void updateRespuestaTamizajeAtIndex(
+          int index, Function(AtributosStruct) updateFn) =>
+      respuestaTamizaje[index] = updateFn(respuestaTamizaje[index]);
 
   // CDI / Beck
   List<AtributosStruct> respuestaCDI = [];
@@ -41,6 +57,11 @@ class Editarencuesta2Model extends FlutterFlowModel<Editarencuesta2Widget> {
       respuestaCDI.remove(item);
   void removeAtIndexFromRespuestaCDI(int index) =>
       respuestaCDI.removeAt(index);
+  void insertAtIndexInRespuestaCDI(int index, AtributosStruct item) =>
+      respuestaCDI.insert(index, item);
+  void updateRespuestaCDIAtIndex(
+          int index, Function(AtributosStruct) updateFn) =>
+      respuestaCDI[index] = updateFn(respuestaCDI[index]);
 
   List<AlertaStruct> listaAlertas = [];
   void addToListaAlertas(AlertaStruct item) => listaAlertas.add(item);
@@ -51,13 +72,33 @@ class Editarencuesta2Model extends FlutterFlowModel<Editarencuesta2Widget> {
   void addToAlertasEspeciales(AlertaEspecialStruct item) => alertasEspeciales.add(item);
   void removeFromAlertasEspeciales(AlertaEspecialStruct item) => alertasEspeciales.remove(item);
   void removeAtIndexFromAlertasEspeciales(int index) => alertasEspeciales.removeAt(index);
-  List<ValorCondicionanteStruct> listaCondicionante = [];
+
+  List<ValorCondicionanteStruct> respuestaCondicionante = [];
+  List<ValorCondicionanteStruct> get listaCondicionante => respuestaCondicionante;
+  set listaCondicionante(List<ValorCondicionanteStruct> val) =>
+      respuestaCondicionante = val;
+
+  void addToRespuestaCondicionante(ValorCondicionanteStruct item) =>
+      respuestaCondicionante.add(item);
   void addToListaCondicionante(ValorCondicionanteStruct item) =>
-      listaCondicionante.add(item);
+      addToRespuestaCondicionante(item);
+
+  void removeFromRespuestaCondicionante(ValorCondicionanteStruct item) =>
+      respuestaCondicionante.remove(item);
   void removeFromListaCondicionante(ValorCondicionanteStruct item) =>
-      listaCondicionante.remove(item);
+      removeFromRespuestaCondicionante(item);
+
+  void removeAtIndexFromRespuestaCondicionante(int index) =>
+      respuestaCondicionante.removeAt(index);
   void removeAtIndexFromListaCondicionante(int index) =>
-      listaCondicionante.removeAt(index);
+      removeAtIndexFromRespuestaCondicionante(index);
+
+  void insertAtIndexInRespuestaCondicionante(
+          int index, ValorCondicionanteStruct item) =>
+      respuestaCondicionante.insert(index, item);
+  void updateRespuestaCondicionanteAtIndex(
+          int index, Function(ValorCondicionanteStruct) updateFn) =>
+      respuestaCondicionante[index] = updateFn(respuestaCondicionante[index]);
 
   List<PreguntasEncuestaStruct> preguntas = [];
   void addToPreguntas(PreguntasEncuestaStruct item) => preguntas.add(item);
@@ -174,6 +215,10 @@ class Editarencuesta2Model extends FlutterFlowModel<Editarencuesta2Widget> {
   // Verdadero o falso
   bool? checkboxValue5;
   bool? checkboxValue6;
+  bool? get checkboxValue9 => checkboxValue5;
+  set checkboxValue9(bool? val) => checkboxValue5 = val;
+  bool? get checkboxValue10 => checkboxValue6;
+  set checkboxValue10(bool? val) => checkboxValue6 = val;
 
   // Checkbox maps and lists
   Map<String, bool> checkboxValueMap2 = {};

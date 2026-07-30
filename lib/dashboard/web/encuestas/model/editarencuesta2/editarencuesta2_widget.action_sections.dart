@@ -738,8 +738,11 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                 finalNumPregunta = numPregunta;
               }
 
-              List<AtributosStruct> finalRespuestaTamizaje =
-                  List.from(_model.listaTamizaje);
+              final esCDIoBeck = _model.tipoValue == 'Tamizaje CDI' ||
+                  _model.tipoValue == 'Tamizajes Depresion Beck';
+              List<AtributosStruct> finalRespuestaTamizaje = esCDIoBeck
+                  ? List.from(_model.respuestaCDI)
+                  : List.from(_model.respuestaTamizaje);
               if (isCRQ) {
                 finalRespuestaTamizaje = [
                   createAtributosStruct(
@@ -768,19 +771,22 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                 ocultarRespuesta: _model.ocultarRespuestaValue,
                 nPregunta: _model.checkboxNPValue1 == true ? 1 : 0,
                 numeroPregunta: isCRQ ? (finalNumPregunta ?? 0) : 0,
-                variable: isCRQ ? 'CRQ' : '',
+                variable: isCRQ ? 'CRQ' : (_model.variableCDIValue ?? ''),
                 fieldValues: {
                   'RespuestaSelection': _model.respuestaSelection,
                   'RespuestasSeleccionUnica': _model.seleccionunica,
                   'RespuestaCondicionante':
                       getValorCondicionanteListFirestoreData(
-                          _model.listaCondicionante),
+                          _model.respuestaCondicionante),
                   'RespuestaTamizaje':
                       getAtributosListFirestoreData(finalRespuestaTamizaje),
                 },
                 clearUnsetFields: false,
               );
               nuevaPregunta.respuestaTamizaje = finalRespuestaTamizaje;
+              nuevaPregunta.respuestaSelection = List.from(_model.respuestaSelection);
+              nuevaPregunta.respuestasSeleccionUnica = List.from(_model.seleccionunica);
+              nuevaPregunta.respuestaCondicionante = List.from(_model.respuestaCondicionante);
 
               safeSetState(() {
                 _model.addToPreguntas(nuevaPregunta);
@@ -788,10 +794,17 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
               _model.respuestaSelection = [];
               _model.seleccionunicarespuesta = null;
               _model.seleccionunica = [];
+              _model.respuestaTamizaje = [];
+              _model.respuestaCondicionante = [];
+              _model.respuestaCDI = [];
+              _model.variableCDI = null;
+              _model.variableCDIValue = null;
+              _model.ideacionSuicidaValue = false;
               safeSetState(() {});
               safeSetState(() {
-                _model.dropDownSustanciaValueController?.value = '-';
-                _model.dropDownSustanciaValue = '-';
+                _model.dropDownSustanciaValueController?.value = null;
+                _model.dropDownSustanciaValue = null;
+                _model.variableCDIValueController?.value = null;
               });
               safeSetState(() {
                 _model.ocultarRespuestaValue = false;
@@ -800,6 +813,15 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
               safeSetState(() {
                 _model.preguntaTextController?.clear();
                 _model.abiertaTextController?.clear();
+                _model.cdiTextController?.clear();
+                _model.cdiValorTextController?.clear();
+                _model.crqNumeroPreguntaTextController?.clear();
+                _model.crqSiScoreTextController?.clear();
+                _model.crqNoScoreTextController?.clear();
+                _model.autoestimaEtiquetaTextController?.clear();
+                _model.autoestimaValorTextController?.clear();
+                _model.tipoValue = null;
+                _model.tipoValueController?.value = null;
               });
             },
             text: 'Agregar preguntas',

@@ -589,6 +589,7 @@ extension _LoginMobile on _LoginWidgetState {
           ),
           FFButtonWidget(
             onPressed: () async {
+              FFAppState().detalleUsuarioTemp = RegistroUsuarioTempStruct();
               context.pushNamed(
                 RegisterContinueWidget.routeName,
                 extra: <String, dynamic>{
