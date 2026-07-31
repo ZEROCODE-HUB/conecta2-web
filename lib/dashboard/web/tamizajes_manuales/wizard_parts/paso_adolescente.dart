@@ -394,6 +394,19 @@ class _DialogoRegistrarAdolescenteState
          return;
       }
 
+      DocumentReference? parentRef;
+      if (acudienteCorreo.isNotEmpty) {
+        final parentUser = await queryUsersRecordOnce(
+          queryBuilder: (usersRecord) => usersRecord
+              .where('email', isEqualTo: acudienteCorreo)
+              .where('rol', whereIn: ['Acudiente', 'Padre']),
+          singleRecord: true,
+        ).then((s) => s.firstOrNull);
+        if (parentUser != null) {
+          parentRef = parentUser.reference;
+        }
+      }
+
       final ref = FirebaseFirestore.instance.collection('users').doc();
       final data = createUsersRecordData(
         email: email,
@@ -411,6 +424,7 @@ class _DialogoRegistrarAdolescenteState
           nombre: acudienteNombre,
           telefono: acudienteTelefono,
           correo: acudienteCorreo,
+          ref: parentRef,
         ),
         profesionales: ProfesionalesStruct(
           ref: currentUserReference,

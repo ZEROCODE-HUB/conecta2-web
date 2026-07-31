@@ -780,10 +780,12 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                         _buildEmailPhoneRow(context, rowUsersRecord),
                         _buildDniAddressRow(context, rowUsersRecord),
                         _buildEdadGeneroRow(context, rowUsersRecord),
-                        _buildNacimientoRow(context, rowUsersRecord),
-                        _buildColegioEpsRow(context, rowUsersRecord),
-                        _buildMunicipioBarrioRow(context, rowUsersRecord),
-                        _buildGradoRow(context, rowUsersRecord),
+                        if (_model.ddTipoValue == 'Adolescente') ...[
+                          _buildNacimientoRow(context, rowUsersRecord),
+                          _buildColegioEpsRow(context, rowUsersRecord),
+                          _buildMunicipioBarrioRow(context, rowUsersRecord),
+                          _buildGradoRow(context, rowUsersRecord),
+                        ],
                         _buildResetPasswordButton(context),
                       ],
                     ),
@@ -1157,22 +1159,24 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
   }
 
   Widget _buildEdadGeneroRow(BuildContext context, UsersRecord rowUsersRecord) {
+    final isAdolescente = _model.ddTipoValue == 'Adolescente';
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
-          Expanded(
-            child: LabeledTextField(
-              label: 'Edad',
-              controller: _model.textFieldedadTextController ??=
-                  TextEditingController(text: rowUsersRecord.edad),
-              focusNode: _model.textFieldedadFocusNode,
-              useErrorColor: false,
-              validator: _model.textFieldedadTextControllerValidator
-                  .asValidator(context),
+          if (isAdolescente)
+            Expanded(
+              child: LabeledTextField(
+                label: 'Edad',
+                controller: _model.textFieldedadTextController ??=
+                    TextEditingController(text: rowUsersRecord.edad),
+                focusNode: _model.textFieldedadFocusNode,
+                useErrorColor: false,
+                validator: _model.textFieldedadTextControllerValidator
+                    .asValidator(context),
+              ),
             ),
-          ),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1351,8 +1355,11 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
 
     final isEditingAcudiente =
         _model.ddTipoValue == 'Acudiente' || _model.ddTipoValue == 'Padre';
+    final isAdolescente = _model.ddTipoValue == 'Adolescente';
 
-    if (!isEditingAcudiente) {
+    if (!isEditingAcudiente &&
+        _model.dropDownAcudienteoAdolescenteValue != null &&
+        _model.dropDownAcudienteoAdolescenteValue!.isNotEmpty) {
       _model.getRefAcud = await queryUsersRecordOnce(
         queryBuilder: (usersRecord) => usersRecord.where(
           'display_name',
@@ -1361,13 +1368,17 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
         singleRecord: true,
       ).then((s) => s.firstOrNull);
     }
-    _model.getRefProf = await queryUsersRecordOnce(
-      queryBuilder: (usersRecord) => usersRecord.where(
-        'display_name',
-        isEqualTo: _model.dropDownProfesionalValue,
-      ),
-      singleRecord: true,
-    ).then((s) => s.firstOrNull);
+
+    if (_model.dropDownProfesionalValue != null &&
+        _model.dropDownProfesionalValue!.isNotEmpty) {
+      _model.getRefProf = await queryUsersRecordOnce(
+        queryBuilder: (usersRecord) => usersRecord.where(
+          'display_name',
+          isEqualTo: _model.dropDownProfesionalValue,
+        ),
+        singleRecord: true,
+      ).then((s) => s.firstOrNull);
+    }
 
     await widget.documentID!.update(createUsersRecordData(
       email: _model.emailTextController.text,
@@ -1377,7 +1388,9 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
           : rowUsersRecord.photoUrl,
       uid: _model.textFielddniTextController.text,
       phoneNumber: _model.textFieldphoneTextController.text,
-      acudiente: isEditingAcudiente
+      acudiente: (isEditingAcudiente ||
+              _model.dropDownAcudienteoAdolescenteValue == null ||
+              _model.dropDownAcudienteoAdolescenteValue!.isEmpty)
           ? null
           : updateAcudienteStruct(
               AcudienteStruct(
@@ -1388,29 +1401,32 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
               clearUnsetFields: false,
             ),
       rol: _model.ddTipoValue,
-      profesionales: updateProfesionalesStruct(
-        ProfesionalesStruct(
-          nombre: _model.dropDownProfesionalValue,
-          ref: _model.getRefProf?.reference,
-        ),
-        clearUnsetFields: false,
-      ),
+      profesionales: (_model.dropDownProfesionalValue == null ||
+              _model.dropDownProfesionalValue!.isEmpty)
+          ? null
+          : updateProfesionalesStruct(
+              ProfesionalesStruct(
+                nombre: _model.dropDownProfesionalValue,
+                ref: _model.getRefProf?.reference,
+              ),
+              clearUnsetFields: false,
+            ),
       address: _model.textFieldaddressTextController.text,
       identidad: _model.textFielddniTextController.text,
-      edad: _model.textFieldedadTextController.text,
+      edad: isAdolescente ? _model.textFieldedadTextController.text : null,
       genero: _model.dropDownGeneroValue,
-      fechaNacimiento: () {
+      fechaNacimiento: isAdolescente ? () {
         try {
           return DateFormat('dd/MM/yyyy').parseStrict(_model.textFieldfechaNacimientoTextController?.text ?? '');
         } catch (_) {
           return null;
         }
-      }(),
-      colegio: _model.textFieldcolegioTextController?.text ?? '',
-      eps: _model.textFieldepsTextController?.text ?? '',
-      grado: _model.textFieldgradoTextController?.text ?? '',
-      municipio: _model.textFieldmunicipioTextController?.text ?? '',
-      barrio: _model.textFieldbarrioTextController?.text ?? '',
+      }() : null,
+      colegio: isAdolescente ? (_model.textFieldcolegioTextController?.text ?? '') : null,
+      eps: isAdolescente ? (_model.textFieldepsTextController?.text ?? '') : null,
+      grado: isAdolescente ? (_model.textFieldgradoTextController?.text ?? '') : null,
+      municipio: isAdolescente ? (_model.textFieldmunicipioTextController?.text ?? '') : null,
+      barrio: isAdolescente ? (_model.textFieldbarrioTextController?.text ?? '') : null,
     ));
     FFAppState().selectUser = '';
     safeSetState(() {});

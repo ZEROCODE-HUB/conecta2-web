@@ -579,9 +579,15 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
           pregunta: preguntaList[index],
           encuestasRecord: encuestasRecord,
           index: index,
+          categoria: _model.categoriaValue ?? encuestasRecord.categoria,
           onDelete: () {
             setState(() {
               _model.preguntas.removeAt(index);
+            });
+          },
+          onEdit: (updatedPregunta) {
+            setState(() {
+              _model.preguntas[index] = updatedPregunta;
             });
           },
         );

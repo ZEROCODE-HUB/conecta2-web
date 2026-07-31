@@ -14,12 +14,7 @@ class PanelPreguntasWidget extends StatelessWidget {
     required this.onUpdate,
   });
 
-  // EncuestasRecord vacío usado solo como placeholder para la firma requerida
-  // de `PreguntaCard`. El delete pasa por `onDelete` y nunca toca este record.
-  EncuestasRecord get _placeholderRecord => EncuestasRecord.getDocumentFromData(
-        createEncuestasRecordData(),
-        EncuestasRecord.collection.doc('__buffer__'),
-      );
+
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +43,10 @@ class PanelPreguntasWidget extends StatelessWidget {
     if (preguntas.isEmpty) {
       return const Center(child: EmptytestWidget());
     }
-    final placeholder = _placeholderRecord;
+    final placeholder = EncuestasRecord.getDocumentFromData(
+      createEncuestasRecordData(categoria: model.categoria),
+      EncuestasRecord.collection.doc('__buffer__'),
+    );
     return ListView.builder(
       padding: EdgeInsets.zero,
       primary: false,
@@ -59,8 +57,13 @@ class PanelPreguntasWidget extends StatelessWidget {
           pregunta: preguntas[index],
           encuestasRecord: placeholder,
           index: index,
+          categoria: model.categoria,
           onDelete: () {
             model.removeAtIndexFromPreguntasBuffer(index);
+            onUpdate();
+          },
+          onEdit: (updatedPregunta) {
+            model.preguntasBuffer[index] = updatedPregunta;
             onUpdate();
           },
         );

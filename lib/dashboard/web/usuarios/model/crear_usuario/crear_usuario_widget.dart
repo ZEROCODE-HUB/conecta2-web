@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
@@ -519,10 +520,12 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                         _buildEmailPhoneRow(context),
                         _buildIdentityAddressRow(context),
                         _buildEdadGeneroRow(context),
-                        _buildNacimientoRow(context),
-                        _buildColegioEpsRow(context),
-                        _buildMunicipioBarrioRow(context),
-                        _buildGradoRow(context),
+                        if (_model.tipoValue == 'Adolescente') ...[
+                          _buildNacimientoRow(context),
+                          _buildColegioEpsRow(context),
+                          _buildMunicipioBarrioRow(context),
+                          _buildGradoRow(context),
+                        ],
                         _buildPasswordRow(context),
                       ],
                     ),
@@ -642,21 +645,23 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
   }
 
   Widget _buildEdadGeneroRow(BuildContext context) {
+    final isAdolescente = _model.tipoValue == 'Adolescente';
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
-          Expanded(
-            child: LabeledTextField(
-              label: 'Edad',
-              controller: _model.textFieldedadTextController,
-              focusNode: _model.textFieldedadFocusNode,
-              useErrorColor: false,
-              validator: _model.textFieldedadTextControllerValidator
-                  .asValidator(context),
+          if (isAdolescente)
+            Expanded(
+              child: LabeledTextField(
+                label: 'Edad',
+                controller: _model.textFieldedadTextController,
+                focusNode: _model.textFieldedadFocusNode,
+                useErrorColor: false,
+                validator: _model.textFieldedadTextControllerValidator
+                    .asValidator(context),
+              ),
             ),
-          ),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1051,6 +1056,75 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
       return;
     }
 
+    final emailVal = _model.emailTextController.text.trim();
+    if (emailVal.isEmpty || !emailVal.contains('@') || !emailVal.contains('.')) {
+      await showDialog(
+        context: context,
+        builder: (alertDialogContext) => WebViewAware(
+          child: AlertDialog(
+            title: const Text('Correo electrónico inválido',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: const Text(
+                'Por favor, ingresa un correo electrónico válido para registrar al usuario.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(alertDialogContext),
+                child: const Text('Entendido'),
+              ),
+            ],
+          ),
+        ),
+      );
+      safeSetState(() {});
+      return;
+    }
+
+    final passwordVal = _model.passwordTextController.text;
+    final repeatPasswordVal = _model.repeatepasswordTextController.text;
+    if (passwordVal.isEmpty || passwordVal.length < 6) {
+      await showDialog(
+        context: context,
+        builder: (alertDialogContext) => WebViewAware(
+          child: AlertDialog(
+            title: const Text('Contraseña requerida',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: const Text(
+                'La contraseña es obligatoria y debe tener al menos 6 caracteres.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(alertDialogContext),
+                child: const Text('Entendido'),
+              ),
+            ],
+          ),
+        ),
+      );
+      safeSetState(() {});
+      return;
+    }
+
+    if (passwordVal != repeatPasswordVal) {
+      await showDialog(
+        context: context,
+        builder: (alertDialogContext) => WebViewAware(
+          child: AlertDialog(
+            title: const Text('Error en la contraseña',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: const Text(
+                'Las contraseñas ingresadas no coinciden. Por favor, verifícalas e inténtalo nuevamente.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(alertDialogContext),
+                child: const Text('Entendido'),
+              ),
+            ],
+          ),
+        ),
+      );
+      safeSetState(() {});
+      return;
+    }
+
     if (_model.tipoValue == 'Adolescente' &&
         _model.textFieldcolegioTextController.text.trim().isEmpty) {
       await showDialog(
@@ -1074,16 +1148,94 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
       return;
     }
 
-    if (_model.passwordTextController.text !=
-        _model.repeatepasswordTextController.text) {
+    final isCreatingAcudiente =
+        _model.tipoValue == 'Acudiente' || _model.tipoValue == 'Padre';
+    final isAdolescente = _model.tipoValue == 'Adolescente';
+
+    // B8: Realizar queries mientras el admin sigue autenticado (antes de crear el usuario)
+    UsersRecord? selectedAdolescenteDoc;
+    if (isCreatingAcudiente &&
+        _model.dropDownValue1 != null &&
+        _model.dropDownValue1!.isNotEmpty) {
+      selectedAdolescenteDoc = await queryUsersRecordOnce(
+        queryBuilder: (usersRecord) => usersRecord.where(
+          'display_name',
+          isEqualTo: _model.dropDownValue1,
+        ),
+        singleRecord: true,
+      ).then((s) => s.firstOrNull);
+    } else if (!isCreatingAcudiente &&
+        _model.dropDownValue1 != null &&
+        _model.dropDownValue1!.isNotEmpty) {
+      _model.getRefAcud = await queryUsersRecordOnce(
+        queryBuilder: (usersRecord) => usersRecord.where(
+          'display_name',
+          isEqualTo: _model.dropDownValue1,
+        ),
+        singleRecord: true,
+      ).then((s) => s.firstOrNull);
+    }
+
+    if (_model.dropDownValue2 != null &&
+        _model.dropDownValue2!.isNotEmpty) {
+      _model.getRefProf = await queryUsersRecordOnce(
+        queryBuilder: (usersRecord) => usersRecord.where(
+          'display_name',
+          isEqualTo: _model.dropDownValue2,
+        ),
+        singleRecord: true,
+      ).then((s) => s.firstOrNull);
+    }
+
+    final fechaNac = () {
+      final text = _model.textFieldfechaNacimientoTextController.text.trim();
+      if (text.isEmpty) return null;
+      final parts = text.split('/');
+      if (parts.length == 3) {
+        final day = int.tryParse(parts[0]);
+        final month = int.tryParse(parts[1]);
+        final year = int.tryParse(parts[2]);
+        if (day != null && month != null && year != null) {
+          return DateTime(year, month, day);
+        }
+      }
+      return DateTime.tryParse(text);
+    }();
+
+    FirebaseApp secondaryApp;
+    try {
+      secondaryApp = Firebase.app('secondary');
+    } catch (_) {
+      secondaryApp = await Firebase.initializeApp(
+        name: 'secondary',
+        options: Firebase.app().options,
+      );
+    }
+    FirebaseAuth secondaryAuth = FirebaseAuth.instanceFor(app: secondaryApp);
+
+    User? authUser;
+    try {
+      final userCredential = await secondaryAuth.createUserWithEmailAndPassword(
+        email: emailVal,
+        password: passwordVal,
+      );
+      authUser = userCredential.user;
+    } on FirebaseAuthException catch (e) {
+      String errMsg = 'Error al registrar el usuario.';
+      if (e.code == 'email-already-in-use') {
+        errMsg = 'El correo electrónico ya está registrado.';
+      } else if (e.code == 'invalid-email') {
+        errMsg = 'El correo electrónico no es válido.';
+      } else if (e.code == 'weak-password') {
+        errMsg = 'La contraseña es muy débil (debe tener al menos 6 caracteres).';
+      }
       await showDialog(
         context: context,
         builder: (alertDialogContext) => WebViewAware(
           child: AlertDialog(
-            title: const Text('Error en la contraseña',
+            title: const Text('Error de registro',
                 style: TextStyle(fontWeight: FontWeight.bold)),
-            content: const Text(
-                'Las contraseñas ingresadas no coinciden. Por favor, verifícalas e inténtalo nuevamente.'),
+            content: Text(errMsg),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(alertDialogContext),
@@ -1093,69 +1245,89 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
           ),
         ),
       );
-      safeSetState(() {});
+      return;
+    } catch (e) {
+      await showDialog(
+        context: context,
+        builder: (alertDialogContext) => WebViewAware(
+          child: AlertDialog(
+            title: const Text('Error inesperado',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: Text('Ha ocurrido un error inesperado: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(alertDialogContext),
+                child: const Text('Entendido'),
+              ),
+            ],
+          ),
+        ),
+      );
       return;
     }
 
-    // B8: Realizar queries mientras el admin sigue autenticado (antes de crear el usuario)
-    _model.getRefAcud = await queryUsersRecordOnce(
-      queryBuilder: (usersRecord) => usersRecord.where(
-        'display_name',
-        isEqualTo: _model.dropDownValue1,
-      ),
-      singleRecord: true,
-    ).then((s) => s.firstOrNull);
-    _model.getRefProf = await queryUsersRecordOnce(
-      queryBuilder: (usersRecord) => usersRecord.where(
-        'display_name',
-        isEqualTo: _model.dropDownValue2,
-      ),
-      singleRecord: true,
-    ).then((s) => s.firstOrNull);
+    if (authUser == null) return;
 
-    GoRouter.of(context).prepareAuthEvent();
-    final user = await authManager.createAccountWithEmail(
-      context,
-      _model.emailTextController.text,
-      _model.passwordTextController.text,
-    );
-    if (user == null) return;
-
-    // Actualizar todo en un solo paso usando user.uid (no requiere query adicional)
-    await UsersRecord.collection.doc(user.uid).update(createUsersRecordData(
+    // Crear todo usando set() en un solo paso usando el UID obtenido (no requiere query adicional)
+    final newAcudienteRef = UsersRecord.collection.doc(authUser.uid);
+    await newAcudienteRef.set(createUsersRecordData(
           createdTime: getCurrentTimestamp,
-          email: _model.emailTextController.text,
+          email: emailVal,
           displayName: _model.textController1.text,
           photoUrl: '',
           rol: _model.tipoValue,
           phoneNumber: _model.textController2.text,
           address: _model.textController4.text,
-          acudiente: updateAcudienteStruct(
-            AcudienteStruct(
-              nombre: _model.dropDownValue1,
-              ref: _model.getRefAcud?.reference,
-              correo: _model.getRefAcud?.email,
-            ),
-            clearUnsetFields: false,
-          ),
-          profesionales: updateProfesionalesStruct(
-            ProfesionalesStruct(
-              nombre: _model.dropDownValue2,
-              ref: _model.getRefProf?.reference,
-            ),
-            clearUnsetFields: false,
-          ),
+          acudiente: (isCreatingAcudiente ||
+                  _model.dropDownValue1 == null ||
+                  _model.dropDownValue1!.isEmpty)
+              ? null
+              : updateAcudienteStruct(
+                  AcudienteStruct(
+                    nombre: _model.dropDownValue1,
+                    ref: _model.getRefAcud?.reference,
+                    correo: _model.getRefAcud?.email,
+                  ),
+                  clearUnsetFields: false,
+                ),
+          profesionales: (_model.dropDownValue2 == null ||
+                  _model.dropDownValue2!.isEmpty)
+              ? null
+              : updateProfesionalesStruct(
+                  ProfesionalesStruct(
+                    nombre: _model.dropDownValue2,
+                    ref: _model.getRefProf?.reference,
+                  ),
+                  clearUnsetFields: false,
+                ),
           identidad: _model.textController3.text,
-          edad: _model.textFieldedadTextController.text,
+          edad: isAdolescente ? _model.textFieldedadTextController.text : null,
           genero: _model.dropDownGeneroValue,
-          fechaNacimiento: DateTime.tryParse(
-              _model.textFieldfechaNacimientoTextController.text),
-          colegio: _model.textFieldcolegioTextController.text,
-          eps: _model.textFieldepsTextController.text,
-          grado: _model.textFieldgradoTextController.text,
-          municipio: _model.textFieldmunicipioTextController.text,
-          barrio: _model.textFieldbarrioTextController.text,
+          fechaNacimiento: isAdolescente ? fechaNac : null,
+          colegio: isAdolescente ? _model.textFieldcolegioTextController.text : null,
+          eps: isAdolescente ? _model.textFieldepsTextController.text : null,
+          grado: isAdolescente ? _model.textFieldgradoTextController.text : null,
+          municipio: isAdolescente ? _model.textFieldmunicipioTextController.text : null,
+          barrio: isAdolescente ? _model.textFieldbarrioTextController.text : null,
         ));
+
+    // Si es Acudiente, vincular la relación en el documento del Adolescente seleccionado
+    if (isCreatingAcudiente && selectedAdolescenteDoc != null) {
+      await selectedAdolescenteDoc.reference.update(createUsersRecordData(
+        acudiente: updateAcudienteStruct(
+          AcudienteStruct(
+            nombre: _model.textController1.text.trim(),
+            correo: emailVal,
+            telefono: _model.textController2.text.trim(),
+            ref: newAcudienteRef,
+          ),
+          clearUnsetFields: false,
+        ),
+      ));
+    }
+
+    // Cerrar sesión en la instancia de Firebase Auth secundaria para limpiar recursos
+    await secondaryAuth.signOut();
 
     await showDialog(
       context: context,

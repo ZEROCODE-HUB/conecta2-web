@@ -571,6 +571,35 @@ class _EditarEncuestaWidgetState extends State<EditarEncuestaWidget> {
             pregunta: preguntas[i],
             encuestasRecord: encuesta,
             index: i,
+            categoria: _model.categoriaValue ?? encuesta.categoria,
+            onEdit: (updatedPregunta) {
+              setState(() {
+                // If this widget is used, update in firestore or local state
+                encuesta.reference.update({
+                  'Preguntas': FieldValue.arrayRemove([
+                    getPreguntasEncuestaFirestoreData(
+                      updatePreguntasEncuestaStruct(
+                        preguntas[i],
+                        clearUnsetFields: false,
+                      ),
+                      true,
+                    )
+                  ])
+                }).then((_) {
+                  encuesta.reference.update({
+                    'Preguntas': FieldValue.arrayUnion([
+                      getPreguntasEncuestaFirestoreData(
+                        updatePreguntasEncuestaStruct(
+                          updatedPregunta,
+                          clearUnsetFields: false,
+                        ),
+                        true,
+                      )
+                    ])
+                  });
+                });
+              });
+            },
           ),
       ],
     );

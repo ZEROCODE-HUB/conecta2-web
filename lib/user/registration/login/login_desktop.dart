@@ -564,7 +564,8 @@ extension _LoginDesktop on _LoginWidgetState {
                         );
                       }
 
-                      await currentUserReference!
+                      await UsersRecord.collection
+                          .doc(user.uid)
                           .update(createUsersRecordData(
                         lastconnectedday:
                             getCurrentTimestamp,

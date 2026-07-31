@@ -239,7 +239,6 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
                                     .detalle
                                     .documento,
                               ));
-                          if (currentUserReference != null) {
                             context.goNamedAuth(
                                 SuccessWidget.routeName, context.mounted);
 
@@ -252,7 +251,6 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
                             FFAppState().emocionDay = 0;
                             FFAppState().CalenderEmotion = [];
                             safeSetState(() {});
-                          }
 
                           safeSetState(() {});
                         },

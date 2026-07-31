@@ -52,6 +52,20 @@ class _BottomSheetRegistrarAdolescenteState
     }
     setState(() => _guardando = true);
     try {
+      DocumentReference? parentRef;
+      final parentEmail = _acudienteCorreo.text.trim();
+      if (parentEmail.isNotEmpty) {
+        final parentUser = await queryUsersRecordOnce(
+          queryBuilder: (usersRecord) => usersRecord
+              .where('email', isEqualTo: parentEmail)
+              .where('rol', whereIn: ['Acudiente', 'Padre']),
+          singleRecord: true,
+        ).then((s) => s.firstOrNull);
+        if (parentUser != null) {
+          parentRef = parentUser.reference;
+        }
+      }
+
       final ref = FirebaseFirestore.instance.collection('users').doc();
       final data = createUsersRecordData(
         email: _email.text.trim(),
@@ -72,7 +86,8 @@ class _BottomSheetRegistrarAdolescenteState
         acudiente: AcudienteStruct(
           nombre: _acudienteNombre.text.trim(),
           telefono: _acudienteTelefono.text.trim(),
-          correo: _acudienteCorreo.text.trim(),
+          correo: parentEmail,
+          ref: parentRef,
         ),
       );
       await ref.set(data);

@@ -566,7 +566,7 @@ extension _LoginMobile on _LoginWidgetState {
                         currentUserDocument?.rol, '') ==
                     'Padre') {
                   context.goNamedAuth(
-                    HomeWidget.routeName,
+                    HomeParentsWidget.routeName,
                     context.mounted,
                     extra: <String, dynamic>{
                       '__transition_info__': TransitionInfo(
@@ -579,7 +579,8 @@ extension _LoginMobile on _LoginWidgetState {
                   );
                 }
 
-                await currentUserReference!
+                await UsersRecord.collection
+                    .doc(user.uid)
                     .update(createUsersRecordData(
                   lastconnectedday: getCurrentTimestamp,
                   status: 1,
