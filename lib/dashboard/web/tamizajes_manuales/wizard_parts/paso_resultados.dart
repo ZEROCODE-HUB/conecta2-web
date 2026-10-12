@@ -178,7 +178,21 @@ class _PasoResultadosState extends State<_PasoResultados> {
   /// Calculates the alert level label for this tamizaje based on the
   /// configured `alertas` ranges and the `puntajeTotal`. Returns empty
   /// string for categories without predefined levels.
+  bool get _esAssist => esEncuestaAssist(
+      widget.encuesta?.categoria ?? '', widget.encuesta?.titulo ?? '');
+
+  /// ASSIST: puntaje y nivel por sustancia (nivel global = peor sustancia).
+  ResultadoAssist? get _assist => (_esAssist && widget.encuesta != null)
+      ? evaluarAssistDesdeStructs(
+          preguntas: widget.encuesta!.preguntas,
+          test: widget.respuestas,
+          alertas: widget.encuesta!.alertas,
+        )
+      : null;
+
   String _nivelCalculado() {
+    final assist = _assist;
+    if (assist != null) return assist.nivelGlobal;
     final categoria = widget.encuesta?.categoria ?? '';
     if (categoria.isEmpty) return '';
     final alertas = widget.encuesta?.alertas.toList() ?? const [];
@@ -225,6 +239,10 @@ class _PasoResultadosState extends State<_PasoResultados> {
                   nivel: _nivelCalculado(),
                 ),
               ],
+              if (_assist != null) ...[
+                const SizedBox(height: 16),
+                RiesgoSustanciasCard(resultado: _assist!),
+              ],
               if (widget.tieneIdeacion) ...[
                 const SizedBox(height: 20),
                 const _AlertCard(
@@ -261,7 +279,10 @@ class _PasoResultadosState extends State<_PasoResultados> {
                 theme: theme,
               ),
               const SizedBox(height: 12),
-              ...widget.respuestas.map(
+              ...widget.respuestas
+                  .where((r) => !itemSustanciaNoAplica(
+                      r, widget.encuesta?.preguntas ?? const []))
+                  .map(
                 (r) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: _RespuestaCard(
@@ -536,6 +557,7 @@ class _NivelAlertaCard extends StatelessWidget {
   Color _colorForNivel() {
     final n = nivel.toLowerCase();
     if (n.contains('baja') ||
+        n.contains('bajo') ||
         n.contains('sin ') ||
         n.contains('mínima') ||
         n.contains('minima')) {

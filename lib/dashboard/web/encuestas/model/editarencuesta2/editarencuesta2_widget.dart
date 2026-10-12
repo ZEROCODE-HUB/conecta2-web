@@ -1,3 +1,5 @@
+import '/tamizajes/shared/assist_utils.dart'
+    show limpiarAlertasAssist, validarAlertasAssist;
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/components/successpopup_widget.dart';
@@ -81,6 +83,11 @@ class _Editarencuesta2WidgetState extends State<Editarencuesta2Widget> {
       } else {
         FFAppState().listaAlertasEnvio =
             FFAppState().listaAlertas.toList().cast<AlertaStruct>();
+      }
+      // ASSIST: descartar entradas basura de la plantilla ("Hello World").
+      if (cat == 'Consumo de SPA') {
+        FFAppState().listaAlertasEnvio =
+            limpiarAlertasAssist(FFAppState().listaAlertasEnvio);
       }
 
       _model.textController1 = TextEditingController(text: doc.titulo);

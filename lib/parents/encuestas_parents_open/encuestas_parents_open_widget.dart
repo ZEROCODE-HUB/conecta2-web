@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/tamizajes/shared/assist_utils.dart';
 import '/backend/backend.dart';
 import '/components/footer_parents/footer_parents_widget.dart';
 import '/components/header_prof_back/header_prof_back_widget.dart';
@@ -612,10 +613,14 @@ class _EncuestasParentsOpenWidgetState
                                                   respondida = r
                                                       .respuestasSeleccionadas
                                                       .isNotEmpty;
-                                                } else if (tipo == 'Tamizaje') {
-                                                  final visible = FFAppState()
-                                                      .TamizajeSustanciaPermitidas
-                                                      .contains(p.sustancia);
+                                                } else if (esPreguntaSustancia(p)) {
+                                                  final visible =
+                                                      preguntaSustanciaVisible(
+                                                    pregunta: p,
+                                                    sustanciasMarcadas: FFAppState()
+                                                        .TamizajeSustanciaPermitidas,
+                                                    preguntas: preguntas,
+                                                  );
                                                   respondida = !visible ||
                                                       r.respuestaTamizaje
                                                           .isNotEmpty;

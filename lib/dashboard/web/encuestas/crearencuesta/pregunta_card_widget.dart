@@ -1,3 +1,5 @@
+import '/tamizajes/shared/assist_utils.dart'
+    show canonicaSustancia, esTipoSustancia;
 import '/backend/backend.dart';
 import '/components/seleccion_unica_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -524,11 +526,21 @@ class _PreguntaCardState extends State<PreguntaCard> {
         border: Border.all(color: color.withValues(alpha: 0.5), width: 1.0),
       ),
       child: Text(
-        labelForTipo(tipo),
+        _etiquetaBadge(tipo),
         style: TextStyle(
             color: color, fontSize: 11.0, fontWeight: FontWeight.w600),
       ),
     );
+  }
+
+  /// En las preguntas de sustancia (ASSIST) el chip muestra la sustancia
+  /// asignada en vez del genérico "Tamizaje (Sub)".
+  String _etiquetaBadge(String tipo) {
+    final sustancia = widget.pregunta.sustancia.trim();
+    if (esTipoSustancia(tipo, sustancia) && sustancia.isNotEmpty) {
+      return 'Sustancia: ${canonicaSustancia(sustancia)}';
+    }
+    return labelForTipo(tipo);
   }
 
   // ── Dispatcher de contenido ────────────────────────────────────────────────
@@ -1039,7 +1051,16 @@ class _PreguntaCardState extends State<PreguntaCard> {
       'Descriptiva'
     ];
 
-    final opcionesTipo = tiposPermitidos(widget.categoria ?? widget.encuestasRecord.categoria, todosLosTipos);
+    final permitidos = tiposPermitidos(
+        widget.categoria ?? widget.encuestasRecord.categoria, todosLosTipos);
+    // Conserva el tipo actual aunque la categoría ya no lo permita (p. ej.
+    // preguntas 'abiertas' o 'Tamizaje' legacy en un ASSIST): si no estuviera
+    // en las opciones, el dropdown quedaría con un valor inválido.
+    final opcionesTipo = [
+      ...permitidos,
+      if ((_tipoValue ?? '').isNotEmpty && !permitidos.contains(_tipoValue))
+        _tipoValue!,
+    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

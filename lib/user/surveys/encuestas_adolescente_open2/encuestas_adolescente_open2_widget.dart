@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/custom_code/actions/evaluar_alertas_especiales.dart';
+import '/tamizajes/shared/assist_utils.dart';
 import '/components/lista_respuestas_cond_widget.dart';
 import '/components/lista_respuestas_widget.dart';
 import '/components/r_seleccion_unica_radious_tamizaje_widget.dart';
@@ -783,17 +784,15 @@ class _EncuestasAdolescenteOpen2WidgetState
                                                       ),
                                                     ],
                                                   ),
-                                                if ((preguntasindeexItem.tipo ==
-                                                        'Tamizaje') &&
-                                                    (FFAppState()
-                                                            .TamizajeSustanciaPermitidas
-                                                            .where((e) =>
-                                                                e ==
-                                                                preguntasindeexItem
-                                                                    .sustancia)
-                                                            .toList()
-                                                            .length !=
-                                                        0))
+                                                if (esPreguntaSustancia(
+                                                        preguntasindeexItem) &&
+                                                    preguntaSustanciaVisible(
+                                                      pregunta:
+                                                          preguntasindeexItem,
+                                                      sustanciasMarcadas: FFAppState()
+                                                          .TamizajeSustanciaPermitidas,
+                                                      preguntas: preguntasindeex,
+                                                    ))
                                                   Column(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
@@ -1349,10 +1348,14 @@ class _EncuestasAdolescenteOpen2WidgetState
                                               respondida = r
                                                   .respuestasSeleccionadas
                                                   .isNotEmpty;
-                                            } else if (tipo == 'Tamizaje') {
-                                              final visible = FFAppState()
-                                                  .TamizajeSustanciaPermitidas
-                                                  .contains(p.sustancia);
+                                            } else if (esPreguntaSustancia(p)) {
+                                              final visible =
+                                                  preguntaSustanciaVisible(
+                                                pregunta: p,
+                                                sustanciasMarcadas: FFAppState()
+                                                    .TamizajeSustanciaPermitidas,
+                                                preguntas: preguntas,
+                                              );
                                               respondida = !visible ||
                                                   r.respuestaTamizaje
                                                       .isNotEmpty;
@@ -1388,6 +1391,31 @@ class _EncuestasAdolescenteOpen2WidgetState
                                               ),
                                             );
                                             return;
+                                          }
+                                        }
+
+                                        // Una respuesta de una sustancia que luego se
+                                        // desmarcó en el Condicionante no debe sumar.
+                                        for (int i = 0;
+                                            i < preguntas.length &&
+                                                i <
+                                                    FFAppState()
+                                                        .RespuestaEnc
+                                                        .length;
+                                            i++) {
+                                          final p = preguntas[i];
+                                          if (esPreguntaSustancia(p) &&
+                                              !preguntaSustanciaVisible(
+                                                pregunta: p,
+                                                sustanciasMarcadas: FFAppState()
+                                                    .TamizajeSustanciaPermitidas,
+                                                preguntas: preguntas,
+                                              )) {
+                                            FFAppState()
+                                                .updateRespuestaEncAtIndex(
+                                              i,
+                                              (e) => e..respuestaTamizaje = [],
+                                            );
                                           }
                                         }
 

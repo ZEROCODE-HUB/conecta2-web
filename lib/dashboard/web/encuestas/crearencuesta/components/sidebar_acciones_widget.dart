@@ -1,3 +1,5 @@
+import '/tamizajes/shared/assist_utils.dart'
+    show limpiarAlertasAssist, validarAlertasAssist;
 import 'package:flutter/material.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -104,7 +106,22 @@ class SidebarAccionesWidget extends StatelessWidget {
     AlertaStruct? moderado;
     AlertaStruct? alto;
     if (cat == 'Consumo de SPA') {
-      alertasFS = getAlertaListFirestoreData(FFAppState().listaAlertasEnvio);
+      final errores = validarAlertasAssist(FFAppState().listaAlertasEnvio);
+      if (errores.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errores.length == 1
+                ? 'Revise las alertas: ${errores.first}'
+                : 'Revise las alertas: ${errores.first} '
+                    '(y ${errores.length - 1} más)'),
+            backgroundColor: FlutterFlowTheme.of(context).error,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+        return null;
+      }
+      alertasFS = getAlertaListFirestoreData(
+          limpiarAlertasAssist(FFAppState().listaAlertasEnvio));
     } else if ((cat == 'Escala autoestima' || cat == 'CDI') &&
         _model.nivelesAlerta.length >= 3) {
       // Guardamos en bajo/moderado/alto (acceso directo) y también
@@ -494,7 +511,10 @@ class SidebarAccionesWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: Visibility(
-            visible: _model.tipoValue == 'Tamizaje (Sustancias)',
+            // Visible por categoría (antes dependía del tipo de la pregunta
+            // que se estaba agregando y desaparecía con Condicionante).
+            visible: _model.categoriaValue == 'Consumo de SPA' ||
+                _model.tipoValue == 'Tamizaje (Sustancias)',
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -606,6 +626,21 @@ class SidebarAccionesWidget extends StatelessWidget {
                         isMultiSelect: false,
                       ),
                     ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(16.0, 8.0, 16.0, 0.0),
+                  child: Text(
+                    'Configure los rangos de cada sustancia. Las sustancias '
+                    'que deje en 0 usarán los cortes ASSIST de la OMS '
+                    '(Alcohol: Bajo 0–10, Moderado 11–26, Alto 27+; resto: '
+                    'Bajo 0–3, Moderado 4–26, Alto 27+). En el nivel Alto, '
+                    'Max = 0 significa "sin tope".',
+                    style: FlutterFlowTheme.of(context).bodySmall.override(
+                          font: GoogleFonts.inter(),
+                          color: FlutterFlowTheme.of(context).secondaryText,
+                          letterSpacing: 0.0,
+                        ),
                   ),
                 ),
                 Builder(

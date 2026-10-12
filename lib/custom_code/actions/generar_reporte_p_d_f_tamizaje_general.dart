@@ -1,4 +1,6 @@
 // Automatic FlutterFlow imports
+import '/tamizajes/shared/assist_utils.dart'
+    show esEncuestaAssist, evaluarAssist;
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
@@ -66,6 +68,14 @@ Future generarReportePDFTamizajeGeneral(
       final encuestaId = encuestaDoc.id;
       final tituloTamizaje = encuestaData['titulo'] ?? 'Sin titulo';
       final alertas = encuestaData['alertas'] as List<dynamic>? ?? [];
+      final preguntasEncuesta =
+          encuestaData['Preguntas'] as List<dynamic>? ?? [];
+
+      // Este reporte es por sustancia: solo aplica a los ASSIST.
+      if (!esEncuestaAssist(
+          (encuestaData['categoria'] ?? '').toString(), '$tituloTamizaje')) {
+        continue;
+      }
 
       print('\nProcesando tamizaje: $tituloTamizaje');
 
@@ -110,36 +120,22 @@ Future generarReportePDFTamizajeGeneral(
               (distribucionPorColegio[colegioUsuario] ?? 0) + 1;
         }
 
-        final test = respuestaData['test'] as List<dynamic>? ?? [];
-        Map<String, double> puntajesPorSustancia = {};
+        if (respuestaData['invalidado'] == true) continue;
 
-        for (var item in test) {
-          if (item is! Map<String, dynamic>) continue;
-
-          final tipo = item['Tipo'] as String?;
-          if (tipo != 'Tamizaje') continue;
-
-          final pregunta = item['Pregunta'] as String? ?? '';
-          final respuestaTamizaje =
-              item['RespuestaTamizaje'] as List<dynamic>? ?? [];
-
-          if (respuestaTamizaje.isEmpty) continue;
-
-          final respuestaSeleccionada =
-              respuestaTamizaje[0] as Map<String, dynamic>;
-          final valor =
-              (respuestaSeleccionada['valor'] as num?)?.toDouble() ?? 0.0;
-
-          String sustanciaItem = _extraerSustanciaGeneral(pregunta);
-          puntajesPorSustancia[sustanciaItem] =
-              (puntajesPorSustancia[sustanciaItem] ?? 0) + valor;
-        }
+        // Puntaje y nivel por la sustancia asignada a cada pregunta (acepta
+        // 'Tamizaje (Sustancias)' y el legacy 'Tamizaje'), con la regla única
+        // de nivel (rangos de la encuesta o cortes OMS).
+        final resultadoAssist = evaluarAssist(
+          preguntas: preguntasEncuesta,
+          test: respuestaData['test'] as List<dynamic>? ?? [],
+          alertas: alertas,
+        );
 
         // Evaluar cada sustancia y CONTAR ALERTAS
-        for (var sustanciaItem in puntajesPorSustancia.keys) {
-          final puntaje = puntajesPorSustancia[sustanciaItem]!;
-          final nivel =
-              _evaluarNivelRiesgoGeneral(sustanciaItem, puntaje, alertas);
+        for (final entrada in resultadoAssist.porSustancia.entries) {
+          final sustanciaItem = entrada.key;
+          final puntaje = entrada.value.puntaje.toDouble();
+          final nivel = entrada.value.nivel;
 
           // FILTRO 2: Por sustancia
           if (sustanciaFiltro != null &&
@@ -241,50 +237,6 @@ String? _normalizarFiltro(String? filtro) {
   final normalized = filtro.trim().toUpperCase();
   if (normalized == 'TODOS' || normalized == 'TODAS') return null;
   return filtro.trim();
-}
-
-String _extraerSustanciaGeneral(String pregunta) {
-  final preguntaLower = pregunta.toLowerCase();
-
-  if (preguntaLower.contains('tabaco')) return 'Tabaco';
-  if (preguntaLower.contains('alcohol') || preguntaLower.contains('bebidas'))
-    return 'Bebidas alcoholicas';
-  if (preguntaLower.contains('cannabis') || preguntaLower.contains('marihuana'))
-    return 'Cannabis';
-  if (preguntaLower.contains('cocaina') || preguntaLower.contains('coca'))
-    return 'Cocaina';
-  if (preguntaLower.contains('anfetamina') ||
-      preguntaLower.contains('estimulante')) return 'Anfetaminas';
-  if (preguntaLower.contains('inhalante')) return 'Inhalantes';
-  if (preguntaLower.contains('tranquilizante')) return 'Tranquilizantes';
-  if (preguntaLower.contains('alucinogeno')) return 'Alucinogenos';
-  if (preguntaLower.contains('opiaceo') || preguntaLower.contains('heroina'))
-    return 'Opiaceos';
-
-  return 'Otros';
-}
-
-String _evaluarNivelRiesgoGeneral(
-    String sustancia, double puntaje, List<dynamic> alertas) {
-  for (var alerta in alertas) {
-    if (alerta is! Map<String, dynamic>) continue;
-
-    final sustanciaAlerta = alerta['sustancia'] as String?;
-    final nivel = alerta['nivel'] as String?;
-    final min = (alerta['min'] as num?)?.toDouble() ?? 0.0;
-    final max = (alerta['max'] as num?)?.toDouble() ?? 0.0;
-
-    if (sustanciaAlerta == sustancia) {
-      if (max == 0 && puntaje >= min) {
-        return nivel ?? 'Desconocido';
-      }
-      if (puntaje >= min && puntaje <= max) {
-        return nivel ?? 'Desconocido';
-      }
-    }
-  }
-
-  return 'Bajo';
 }
 
 Future<Uint8List> _crearPDFVacio(

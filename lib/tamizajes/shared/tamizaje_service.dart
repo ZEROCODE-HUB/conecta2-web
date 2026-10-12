@@ -66,22 +66,46 @@ class TamizajeService {
   }
 
   /// Aplica filtros de categoría y estado (para la vista admin/dashboard).
+  /// Categorías de encuesta (`Encuesta.categoria`) que corresponden a cada
+  /// opción del filtro del listado.
+  static const Map<String, List<String>> _categoriasPorFiltro = {
+    'CDI': ['CDI'],
+    'Beck': ['Depresión Beck'],
+    'RQC': ['RQC', 'CRQ', 'RQC / SRQ', 'CRQ / SRQ'],
+    'SRQ': ['SRQ', 'RQC / SRQ', 'CRQ / SRQ'],
+    'Autoestima': ['Escala autoestima'],
+    'Ansiedad': ['Escala ansiedad'],
+    'Consumo de SPA': ['Consumo de SPA'],
+  };
+
+  /// Filtra por categoría y estado. La categoría se compara con el título
+  /// (comportamiento histórico) **o**, si se pasa [categoriaPorEncuesta]
+  /// (id de encuesta → `categoria`), con la categoría de la encuesta padre;
+  /// así un tamizaje titulado p. ej. "ASSIST colegio X" aparece al filtrar
+  /// por "Consumo de SPA".
   static List<RespuestasRecord> filtrarPorCategoriaYEstado(
     List<RespuestasRecord> tamizajes, {
     required String filtroCategoria,
     required String filtroEstado,
+    Map<String, String>? categoriaPorEncuesta,
   }) {
     return tamizajes.where((r) {
       if (filtroCategoria != 'Todas') {
         final titulo = r.titlo.toUpperCase();
         final cat = filtroCategoria.toUpperCase();
-        
+
         // Match both 'RQC' and 'CRQ' when 'RQC' is selected to support legacy surveys
-        if (cat == 'RQC') {
-          if (!titulo.contains('RQC') && !titulo.contains('CRQ')) return false;
-        } else {
-          if (!titulo.contains(cat)) return false;
-        }
+        final coincideTitulo = cat == 'RQC'
+            ? (titulo.contains('RQC') || titulo.contains('CRQ'))
+            : titulo.contains(cat);
+        final categoriaEncuesta = (categoriaPorEncuesta != null &&
+                r.parentReference.parent.id == 'Encuestas')
+            ? categoriaPorEncuesta[r.parentReference.id]
+            : null;
+        final coincideCategoria = categoriaEncuesta != null &&
+            (_categoriasPorFiltro[filtroCategoria] ?? const [])
+                .contains(categoriaEncuesta);
+        if (!coincideTitulo && !coincideCategoria) return false;
       }
       if (filtroEstado == 'Completados' && r.invalidado) return false;
       if (filtroEstado == 'Invalidados' && !r.invalidado) return false;

@@ -352,6 +352,21 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(16.0, 8.0, 16.0, 0.0),
+              child: Text(
+                'Configure los rangos de cada sustancia. Las sustancias '
+                'que deje en 0 usarán los cortes ASSIST de la OMS '
+                '(Alcohol: Bajo 0–10, Moderado 11–26, Alto 27+; resto: '
+                'Bajo 0–3, Moderado 4–26, Alto 27+). En el nivel Alto, '
+                'Max = 0 significa "sin tope".',
+                style: FlutterFlowTheme.of(context).bodySmall.override(
+                      font: GoogleFonts.inter(),
+                      color: FlutterFlowTheme.of(context).secondaryText,
+                      letterSpacing: 0.0,
+                    ),
+              ),
+            ),
             Builder(
               builder: (context) {
                 final listaAlertasSustancias =
@@ -500,6 +515,32 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
     );
   }
 
+
+  bool get _esAssist =>
+      (widget.docencuestas2?.categoria ?? '') == 'Consumo de SPA';
+
+  /// ASSIST: valida los rangos por sustancia antes de guardar.
+  bool _alertasAssistValidas(BuildContext context) {
+    if (!_esAssist) return true;
+    final errores = validarAlertasAssist(FFAppState().listaAlertasEnvio);
+    if (errores.isEmpty) return true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(errores.length == 1
+            ? 'Revise las alertas: ${errores.first}'
+            : 'Revise las alertas: ${errores.first} '
+                '(y ${errores.length - 1} más)'),
+        backgroundColor: FlutterFlowTheme.of(context).error,
+        duration: const Duration(seconds: 5),
+      ),
+    );
+    return false;
+  }
+
+  List<AlertaStruct> _alertasParaGuardar() => _esAssist
+      ? limpiarAlertasAssist(FFAppState().listaAlertasEnvio)
+      : FFAppState().listaAlertasEnvio;
+
   List<Widget> _buildActionButtons(BuildContext context) {
     return [
       Padding(
@@ -508,6 +549,9 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
           onPressed: () async {
             final okTitulo = await _validarTituloUnico();
             if (!okTitulo) {
+              return;
+            }
+            if (!_alertasAssistValidas(context)) {
               return;
             }
             await widget.encuestaID!.update({
@@ -519,7 +563,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
               ...mapToFirestore(
                 {
                   'alertas': getAlertaListFirestoreData(
-                    FFAppState().listaAlertasEnvio,
+                    _alertasParaGuardar(),
                   ),
                   'alertasEspeciales': _model.alertasEspeciales
                       .map((a) => getAlertaEspecialFirestoreData(a, true))
@@ -569,6 +613,9 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
             if (!okTitulo) {
               return;
             }
+            if (!_alertasAssistValidas(context)) {
+              return;
+            }
             await widget.encuestaID!.update({
               ..._payloadEncuestaRecord(
                 publicado: true,
@@ -578,7 +625,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
               ...mapToFirestore(
                 {
                   'alertas': getAlertaListFirestoreData(
-                    FFAppState().listaAlertasEnvio,
+                    _alertasParaGuardar(),
                   ),
                   'alertasEspeciales': _model.alertasEspeciales
                       .map((a) => getAlertaEspecialFirestoreData(a, true))

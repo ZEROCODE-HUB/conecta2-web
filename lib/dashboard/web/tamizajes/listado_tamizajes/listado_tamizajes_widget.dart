@@ -30,6 +30,26 @@ class _ListadoTamizajesWidgetState extends State<ListadoTamizajesWidget> {
 
   RespuestasRecord? _detalleRespuesta;
 
+  /// id de encuesta → categoría, para filtrar por la categoría real de la
+  /// encuesta y no solo por palabras del título.
+  Map<String, String>? _categoriaPorEncuesta;
+
+  Future<void> _cargarCategorias() async {
+    try {
+      final encuestas = await queryEncuestasRecordOnce(
+        queryBuilder: (q) => q.where('tipo', isEqualTo: 'Tamizajes'),
+      );
+      if (!mounted) return;
+      setState(() {
+        _categoriaPorEncuesta = {
+          for (final e in encuestas) e.reference.id: e.categoria,
+        };
+      });
+    } catch (_) {
+      // Sin el mapa se mantiene el filtro por título.
+    }
+  }
+
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
@@ -41,6 +61,7 @@ class _ListadoTamizajesWidgetState extends State<ListadoTamizajesWidget> {
     super.initState();
     _model = createModel(context, () => ListadoTamizajesModel());
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    _cargarCategorias();
   }
 
   @override
@@ -227,6 +248,7 @@ class _ListadoTamizajesWidgetState extends State<ListadoTamizajesWidget> {
                   tamizajes,
                   filtroCategoria: _model.filtroCategoria,
                   filtroEstado: _model.filtroEstado,
+                  categoriaPorEncuesta: _categoriaPorEncuesta,
                 );
 
                 // Ordenar

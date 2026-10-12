@@ -13,6 +13,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 
 import 'data/substance_data.dart';
 import 'helpers/data_transformers.dart';
+import '/tamizajes/shared/assist_utils.dart' show esEncuestaAssist;
 import 'helpers/excel_export.dart';
 import 'widgets/table_header.dart';
 import 'widgets/table_row_widget.dart';
@@ -154,9 +155,8 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
 
       final categoria = tamizajeData['categoria'] as String? ?? '';
       final titulo = tamizajeData['titulo'] as String? ?? '';
-      final bool esAssist = categoria == 'Consumo de SPA' ||
-          categoria == 'ASSIST' ||
-          titulo.toUpperCase().contains('ASSIST');
+      final bool esAssist =
+          categoria == 'ASSIST' || esEncuestaAssist(categoria, titulo);
 
       if (variables.isEmpty) {
         if (esAssist) {

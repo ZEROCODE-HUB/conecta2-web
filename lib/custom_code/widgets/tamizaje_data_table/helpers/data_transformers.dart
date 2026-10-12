@@ -2,6 +2,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '/tamizajes/shared/assist_utils.dart';
+
 import '../data/substance_data.dart';
 
 String quitarTildes(String texto) {
@@ -18,30 +20,7 @@ String quitarTildes(String texto) {
       .replaceAll('Ú', 'U');
 }
 
-String extraerSustancia(String pregunta) {
-  final preguntaLower = pregunta.toLowerCase();
-  final preguntaNormalizada = quitarTildes(preguntaLower);
-
-  if (preguntaNormalizada.contains('tabaco') ||
-      preguntaNormalizada.contains('cigarrillo')) return 'Tabaco';
-  if (preguntaNormalizada.contains('alcohol') ||
-      preguntaNormalizada.contains('bebidas')) return 'Bebidas alcohólicas';
-  if (preguntaNormalizada.contains('cannabis') ||
-      preguntaNormalizada.contains('marihuana')) return 'Cannabis';
-  if (preguntaNormalizada.contains('cocaina') ||
-      preguntaNormalizada.contains('coca')) return 'Cocaína';
-  if (preguntaNormalizada.contains('anfetamina') ||
-      preguntaNormalizada.contains('estimulante')) return 'Anfetaminas';
-  if (preguntaNormalizada.contains('inhalante')) return 'Inhalantes';
-  if (preguntaNormalizada.contains('tranquilizante') ||
-      preguntaNormalizada.contains('pastillas') ||
-      preguntaNormalizada.contains('sedante')) return 'Tranquilizantes';
-  if (preguntaNormalizada.contains('alucinogeno')) return 'Alucinógenos';
-  if (preguntaNormalizada.contains('opiaceo') ||
-      preguntaNormalizada.contains('heroina')) return 'Opiáceos';
-
-  return 'Otros';
-}
+String extraerSustancia(String pregunta) => sustanciaDesdeTexto(pregunta);
 
 String evaluarNivelRiesgo(
     String sustancia, double puntaje, List<dynamic> alertas) {
@@ -156,9 +135,36 @@ Map<String, dynamic> procesarRespuestasTamizaje(
     }
   }
 
-  final bool esAssist = categoria == 'Consumo de SPA' ||
-      categoria == 'ASSIST' ||
-      titulo.toUpperCase().contains('ASSIST');
+  final bool esAssist =
+      categoria == 'ASSIST' || esEncuestaAssist(categoria, titulo);
+
+  // ASSIST: puntaje y nivel por la sustancia asignada a cada pregunta, con la
+  // regla única de nivel (`nivelPorSustancia`). Las preguntas ocultas por el
+  // Condicionante no tienen respuesta y no cuentan.
+  if (esAssist) {
+    final r = evaluarAssist(
+        preguntas: preguntasEncuesta, test: test, alertas: alertas);
+    return {
+      'puntajesPorSustancia': <String, double>{
+        for (final e in r.porSustancia.entries)
+          e.key: e.value.puntaje.toDouble(),
+      },
+      'detallesPorSustancia': <String, List<Map<String, dynamic>>>{
+        for (final e in r.porSustancia.entries)
+          e.key: [
+            for (final d in e.value.detalles)
+              {
+                'pregunta': d.pregunta,
+                'respuesta': d.respuesta,
+                'valor': d.valor.toDouble(),
+              },
+          ],
+      },
+      'nivelRiesgoPorSustancia': <String, String>{
+        for (final e in r.porSustancia.entries) e.key: e.value.nivel,
+      },
+    };
+  }
 
   if (variables.isEmpty) {
     if (esAssist) {
@@ -200,7 +206,8 @@ Map<String, dynamic> procesarRespuestasTamizaje(
       varName = pregData?['variable']?.toString().trim() ?? '';
     } else {
       for (var p in preguntasEncuesta) {
-        if (p is Map<String, dynamic> && p['pregunta'] == pregunta) {
+        if (p is Map<String, dynamic> &&
+          (p['Pregunta'] ?? p['pregunta']) == pregunta) {
           varName = p['variable']?.toString().trim() ?? '';
           break;
         }
@@ -261,7 +268,7 @@ Map<String, dynamic> completarSustanciasFaltantes(
         detallesPorSustancia[sustancia] = [
           {
             'pregunta': 'Consumo o evaluación de $sustancia',
-            'respuesta': 'Nunca / Sin respuesta',
+            'respuesta': 'No evaluada',
             'valor': 0.0,
           }
         ];

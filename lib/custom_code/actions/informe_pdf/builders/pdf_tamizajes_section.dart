@@ -1,5 +1,6 @@
 // Tamizaje processing + card builders styled to match the reference PDF.
 
+import '/tamizajes/shared/assist_utils.dart';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -114,6 +115,9 @@ Future<Map<String, dynamic>> obtenerRespuestasTamizajeSeguro(
   try {
     final respuestasAgregadas = <RespustaTamizajeStruct>[];
     final notasAgregadas = <String>[];
+    final encuestasCache = <String, Map<String, dynamic>?>{};
+    final assistCandidatos =
+        <({Map<String, dynamic> data, Map<String, dynamic> encuesta})>[];
 
     final userRef = FirebaseFirestore.instance.collection('users').doc(userUid);
 
@@ -126,6 +130,23 @@ Future<Map<String, dynamic>> obtenerRespuestasTamizajeSeguro(
           .timeout(const Duration(seconds: 12));
 
       for (final doc in snap.docs) {
+        // ASSIST (Consumo de SPA): se resume en su propia tarjeta por
+        // sustancia; no pasa al agrupamiento genérico por `Tipo`.
+        final encuestaRef = doc.reference.parent.parent;
+        if (encuestaRef != null && encuestaRef.parent.id == 'Encuestas') {
+          final enc = await _encuestaDe(encuestaRef, encuestasCache);
+          if (enc != null &&
+              esEncuestaAssist((enc['categoria'] ?? '').toString(),
+                  (enc['titulo'] ?? '').toString())) {
+            final data = doc.data();
+            final notas = (data['notasProfesional'] ?? '').toString();
+            if (notas.isNotEmpty) notasAgregadas.add(notas);
+            if (data['invalidado'] != true) {
+              assistCandidatos.add((data: data, encuesta: enc));
+            }
+            continue;
+          }
+        }
         _procesarDocRespuesta(doc.data(), respuestasAgregadas, notasAgregadas);
       }
     } catch (e) {
@@ -148,11 +169,14 @@ Future<Map<String, dynamic>> obtenerRespuestasTamizajeSeguro(
       }
     }
 
-    if (respuestasAgregadas.isNotEmpty) {
+    final assist = _resultadoAssistMasReciente(assistCandidatos);
+
+    if (respuestasAgregadas.isNotEmpty || assist != null) {
       return {
         'respuestas': respuestasAgregadas,
         'completadoSinRespuestas': false,
         'notasProfesional': _mergeQuillDeltas(notasAgregadas),
+        'assist': assist,
       };
     }
 
@@ -169,6 +193,74 @@ Future<Map<String, dynamic>> obtenerRespuestasTamizajeSeguro(
       'notasProfesional': '',
     };
   }
+}
+
+Future<Map<String, dynamic>?> _encuestaDe(
+  DocumentReference ref,
+  Map<String, Map<String, dynamic>?> cache,
+) async {
+  if (cache.containsKey(ref.path)) return cache[ref.path];
+  try {
+    final snap = await ref.get().timeout(const Duration(seconds: 8));
+    final data = snap.data();
+    cache[ref.path] = data is Map<String, dynamic> ? data : null;
+  } catch (_) {
+    cache[ref.path] = null;
+  }
+  return cache[ref.path];
+}
+
+DateTime? _fechaRespuesta(Map<String, dynamic> data) {
+  final f = data['Fecha'] ?? data['fecha'];
+  if (f is Timestamp) return f.toDate();
+  if (f is DateTime) return f;
+  return null;
+}
+
+/// Tarjeta ASSIST con la última aplicación válida: nivel global = peor
+/// sustancia y sub-puntajes por sustancia evaluada.
+ResultadoTamizaje? _resultadoAssistMasReciente(
+    List<({Map<String, dynamic> data, Map<String, dynamic> encuesta})>
+        candidatos) {
+  if (candidatos.isEmpty) return null;
+  final ordenados = [...candidatos]..sort((a, b) {
+      final fa = _fechaRespuesta(a.data);
+      final fb = _fechaRespuesta(b.data);
+      if (fa == null && fb == null) return 0;
+      if (fa == null) return 1;
+      if (fb == null) return -1;
+      return fb.compareTo(fa);
+    });
+  final ultimo = ordenados.first;
+  final r = evaluarAssist(
+    preguntas: (ultimo.encuesta['Preguntas'] as List?) ?? const [],
+    test: (ultimo.data['test'] as List?) ?? const [],
+    alertas: (ultimo.encuesta['alertas'] as List?) ?? const [],
+  );
+  final global = r.nivelGlobal;
+  final peor = r.porSustancia.values
+      .where((s) => s.nivel == global)
+      .fold<SustanciaAssist?>(
+          null, (m, s) => m == null || s.puntaje > m.puntaje ? s : m);
+  return ResultadoTamizaje(
+    titulo: 'CONSUMO DE SUSTANCIAS (ASSIST)',
+    nivelRiesgo: global.isEmpty ? 'N/A' : global.toUpperCase(),
+    puntaje: peor?.puntaje.toInt() ?? 0,
+    subPuntajes: {
+      for (final s in r.porSustancia.values)
+        s.sustancia.toUpperCase(): s.puntaje.toInt(),
+    },
+    estado: 'VÁLIDA',
+    escalaLabel: 'RIESGO POR SUSTANCIA',
+    escalaSubtitulo: r.porSustancia.isEmpty
+        ? 'No se marcó consumo de sustancias'
+        : (peor != null
+            ? 'Mayor riesgo: ${peor.sustancia} (${peor.nivel})'
+            : ''),
+    ideacionSuicida: false,
+    impactoImportante: global == 'Alto',
+    tipoKey: 'sustancias',
+  );
 }
 
 /// Procesa un doc de Respuesta (array `test` o `Respusta`) y agrega los
@@ -370,6 +462,8 @@ String _tituloParaTipo(String key, String fallback) {
       return 'SRQ SELF REPORT QUESTIONARE';
     case 'bdi':
       return 'INVENTARIO DE DEPRESIÓN DE BECK (BDI-2)';
+    case 'sustancias':
+      return 'CONSUMO DE SUSTANCIAS (ASSIST)';
     default:
       return fallback.toUpperCase();
   }

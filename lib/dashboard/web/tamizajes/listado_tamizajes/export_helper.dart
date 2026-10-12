@@ -11,6 +11,7 @@ import '/components/rich_text_notas/rich_text_notas_widget.dart'
     show quillDeltaToPlainText;
 
 import '/custom_code/actions/informe_pdf/builders/pdf_user_info.dart';
+import '/tamizajes/shared/assist_utils.dart';
 
 // ─── Paleta de marca ─────────────────────────────────────────────────────────
 const PdfColor _yellowBrand = PdfColor.fromInt(0xFFF6C04F);
@@ -59,17 +60,43 @@ Future<void> exportarResultadosPDF({
 
   final pdf = pw.Document();
 
-  final _Severity severity = _deriveSeverity(
+  _Severity severity = _deriveSeverity(
     puntaje: puntaje,
     hayIdeacionSuicida: hayIdeacionSuicida,
     invalidado: invalidado,
   );
 
   String? cdiCalculation;
+  ResultadoAssist? assist;
+  var preguntasVisibles = preguntas;
   if (respuesta != null) {
     try {
       final encuesta =
           await EncuestasRecord.getDocumentOnce(respuesta.parentReference);
+      // ASSIST: severidad = peor sustancia (Alto → SEVERO, Moderado → ALTO);
+      // el umbral genérico sobre el puntaje total no tiene sentido aquí.
+      if (esEncuestaAssist(encuesta.categoria, encuesta.titulo)) {
+        assist = evaluarAssistDesdeStructs(
+          preguntas: encuesta.preguntas,
+          test: respuesta.test,
+          alertas: encuesta.alertas,
+        );
+        if (!invalidado && !hayIdeacionSuicida) {
+          severity = switch (assist.nivelGlobal) {
+            'Alto' => _Severity.severo,
+            'Moderado' => _Severity.alto,
+            _ => _Severity.normal,
+          };
+        }
+        final noAplican = {
+          for (final item in respuesta.test)
+            if (itemSustanciaNoAplica(item, encuesta.preguntas)) item.nPregunta,
+        };
+        preguntasVisibles = [
+          for (final p in preguntas)
+            if (!noAplican.contains(p.numero)) p,
+        ];
+      }
       if (encuesta.categoria == 'CDI') {
         int d = 0, a = 0;
         bool tieneVariables = false;
@@ -135,6 +162,12 @@ Future<void> exportarResultadosPDF({
           ),
           pw.SizedBox(height: 16),
 
+          // ── ASSIST: riesgo por sustancia ─────────────────────────────
+          if (assist != null) ...[
+            _buildRiesgoSustanciasSection(assist),
+            pw.SizedBox(height: 16),
+          ],
+
           // ── Badges de alerta ─────────────────────────────────────────
           if (hayIdeacionSuicida ||
               severity == _Severity.severo ||
@@ -146,9 +179,9 @@ Future<void> exportarResultadosPDF({
           ],
 
           // ── Respuestas ───────────────────────────────────────────────
-          if (preguntas.isNotEmpty) ...[
+          if (preguntasVisibles.isNotEmpty) ...[
             pw.SizedBox(height: 24),
-            _buildRespuestasSection(preguntas),
+            _buildRespuestasSection(preguntasVisibles),
           ],
 
           pw.SizedBox(height: 22),
@@ -538,6 +571,100 @@ pw.Widget _buildRespuestasSection(List<_PreguntaExport> preguntas) {
           ),
         );
       }).toList(),
+    ],
+  );
+}
+
+
+/// ASSIST: tabla con el puntaje y el nivel de cada sustancia evaluada.
+pw.Widget _buildRiesgoSustanciasSection(ResultadoAssist r) {
+  PdfColor colorNivel(String nivel) => switch (nivel) {
+        'Alto' => PdfColors.red700,
+        'Moderado' => PdfColors.orange700,
+        'Bajo' => PdfColors.green700,
+        _ => _darkGrey,
+      };
+  final filas = r.porSustancia.values.toList();
+  final usaOms = filas.any((s) => s.origen == OrigenNivel.oms);
+  return pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+    children: [
+      pw.Text(
+        'RIESGO POR SUSTANCIA',
+        style: pw.TextStyle(
+          fontSize: 12,
+          fontWeight: pw.FontWeight.bold,
+          color: _navyBrand,
+          letterSpacing: 0.4,
+        ),
+      ),
+      if (r.sustanciasMarcadas.isNotEmpty) ...[
+        pw.SizedBox(height: 4),
+        pw.Text(
+          'Marcadas en el condicionante: ${r.sustanciasMarcadas.join(', ')}',
+          style: const pw.TextStyle(fontSize: 9.5, color: _darkGrey),
+        ),
+      ],
+      pw.SizedBox(height: 8),
+      if (filas.isEmpty)
+        pw.Text(
+          'No se evaluó ninguna sustancia (no se marcó consumo en el condicionante).',
+          style: const pw.TextStyle(fontSize: 10, color: _darkGrey),
+        )
+      else
+        pw.Table(
+          border: pw.TableBorder.all(color: PdfColors.grey400, width: 0.5),
+          columnWidths: const {
+            0: pw.FlexColumnWidth(3),
+            1: pw.FlexColumnWidth(1.2),
+            2: pw.FlexColumnWidth(1.5),
+          },
+          children: [
+            pw.TableRow(
+              decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+              children: ['Sustancia', 'Puntaje', 'Nivel']
+                  .map((h) => pw.Padding(
+                        padding: const pw.EdgeInsets.all(5),
+                        child: pw.Text(h,
+                            style: pw.TextStyle(
+                                fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                      ))
+                  .toList(),
+            ),
+            for (final s in filas)
+              pw.TableRow(children: [
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text(s.sustancia,
+                      style: const pw.TextStyle(fontSize: 10)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text('${s.puntaje}',
+                      style: const pw.TextStyle(fontSize: 10)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text(
+                    s.origen == OrigenNivel.oms ? '${s.nivel} *' : s.nivel,
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      fontWeight: pw.FontWeight.bold,
+                      color: colorNivel(s.nivel),
+                    ),
+                  ),
+                ),
+              ]),
+          ],
+        ),
+      if (usaOms) ...[
+        pw.SizedBox(height: 4),
+        pw.Text(
+          '* Sin rangos configurados para la sustancia: se usan los cortes ASSIST de la OMS.',
+          style: pw.TextStyle(
+              fontSize: 8.5, fontStyle: pw.FontStyle.italic, color: _darkGrey),
+        ),
+      ],
     ],
   );
 }

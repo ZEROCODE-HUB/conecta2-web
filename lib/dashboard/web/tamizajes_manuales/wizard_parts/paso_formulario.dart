@@ -25,9 +25,53 @@ class _PasoFormulario extends StatefulWidget {
 }
 
 class _PasoFormularioState extends State<_PasoFormulario> {
-  List<_RespuestaState> _estados = const [];
+  List<RespuestaState> _estados = const [];
   late Future<List<PreguntasEncuestaStruct>> _preguntasFuture;
   bool _guardando = false;
+
+  /// true = sub-paso "Consumo" (solo Condicionantes, ASSIST); false = resto.
+  bool _enConsumo = false;
+
+  VisibilidadAssist get _visibilidad => VisibilidadAssist(_estados);
+
+  /// Condicionantes y las Descriptivas que aparecen antes del primero.
+  Set<int> get _indicesConsumo {
+    final primero = _estados.indexWhere((e) => e.esCondicionante);
+    if (primero < 0) return {};
+    return {
+      for (var i = 0; i < _estados.length; i++)
+        if (_estados[i].esCondicionante ||
+            (i < primero &&
+                _estados[i].tipoKind == PreguntaTipo.descriptiva))
+          i,
+    };
+  }
+
+  List<int> get _indicesVisibles {
+    final vis = _visibilidad;
+    final consumo = _indicesConsumo;
+    return [
+      for (var i = 0; i < _estados.length; i++)
+        if (_enConsumo ? consumo.contains(i) : !consumo.contains(i))
+          if (vis.esVisible(_estados[i])) i,
+    ];
+  }
+
+  void _continuar() {
+    for (final i in _indicesConsumo) {
+      if (!_estados[i].estaCompleto()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Marque al menos una opción en la pregunta ${i + 1}'),
+          ),
+        );
+        return;
+      }
+    }
+    _visibilidad.limpiarOcultas(_estados);
+    setState(() => _enConsumo = false);
+  }
 
   @override
   void initState() {
@@ -71,9 +115,12 @@ class _PasoFormularioState extends State<_PasoFormulario> {
   }
 
   void _enviar() {
-    // Validar que todas las preguntas con input tengan respuesta.
+    // Validar solo las preguntas visibles (las de sustancias no marcadas en
+    // el Condicionante no aplican, igual que en el flujo del adolescente).
+    final vis = _visibilidad;
     for (var i = 0; i < _estados.length; i++) {
       final s = _estados[i];
+      if (!vis.esVisible(s)) continue;
       if (!s.estaCompleto()) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -90,7 +137,7 @@ class _PasoFormularioState extends State<_PasoFormulario> {
     var ideacion = false;
     for (var i = 0; i < _estados.length; i++) {
       final s = _estados[i];
-      final r = s.toStruct(i + 1);
+      final r = s.toStruct(i + 1, visible: vis.esVisible(s));
       respuestas.add(r);
       for (final atr in r.respuestaTamizaje) {
         puntaje += atr.valor;
@@ -231,18 +278,52 @@ class _PasoFormularioState extends State<_PasoFormulario> {
                 // or whenever the number of preguntas changed (defensive).
                 if (_estados.length != preguntas.length) {
                   _estados =
-                      preguntas.map((p) => _RespuestaState(p)).toList();
+                      preguntas.map((p) => RespuestaState(p)).toList();
+                  _enConsumo = _estados.any((e) => e.esCondicionante);
                 }
-                return ListView.builder(
-                  itemCount: _estados.length,
-                  itemBuilder: (context, i) {
-                    return _PreguntaCard(
-                      numero: i + 1,
-                      estado: _estados[i],
-                      theme: theme,
-                      onChanged: () => setState(() {}),
-                    );
-                  },
+                final indices = _indicesVisibles;
+                final tieneConsumo = _indicesConsumo.isNotEmpty;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (tieneConsumo)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          _enConsumo
+                              ? 'Parte 1 de 2 · Consumo: marque las sustancias que aplican'
+                              : 'Parte 2 de 2 · Preguntas de las sustancias marcadas',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF265294),
+                          ),
+                        ),
+                      ),
+                    Expanded(
+                      child: indices.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No hay preguntas que responder para las '
+                                'opciones marcadas. Puede finalizar el tamizaje.',
+                                textAlign: TextAlign.center,
+                                style: theme.bodyMedium,
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: indices.length,
+                              itemBuilder: (context, k) {
+                                final i = indices[k];
+                                return _PreguntaCard(
+                                  numero: i + 1,
+                                  estado: _estados[i],
+                                  theme: theme,
+                                  onChanged: () => setState(() {}),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -251,6 +332,37 @@ class _PasoFormularioState extends State<_PasoFormulario> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              if (_indicesConsumo.isNotEmpty && !_enConsumo) ...[
+                OutlinedButton.icon(
+                  onPressed: _guardando
+                      ? null
+                      : () => setState(() => _enConsumo = true),
+                  icon: const Icon(Icons.arrow_back, size: 16),
+                  label: const Text('Volver a Consumo'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 14),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              if (_enConsumo)
+                ElevatedButton.icon(
+                  onPressed: _estados.isEmpty ? null : _continuar,
+                  icon: const Icon(Icons.arrow_forward),
+                  label: const Text('Continuar'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF265294),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 22, vertical: 14),
+                    textStyle: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              if (!_enConsumo)
               ElevatedButton.icon(
                 onPressed: (_estados.isEmpty || _guardando) ? null : _enviar,
                 icon: _guardando
@@ -329,128 +441,6 @@ class _PasoFormularioState extends State<_PasoFormulario> {
   }
 }
 
-/// Estado por pregunta del formulario.
-///
-/// Uses [PreguntaTipo] to normalise raw DB strings (case-insensitive,
-/// accent-insensitive) so that 'Selección', 'selección' and 'seleccion' all
-/// resolve to the same kind.
-class _RespuestaState {
-  _RespuestaState(this.pregunta) {
-    textController = TextEditingController();
-  }
-
-  final PreguntasEncuestaStruct pregunta;
-  late final TextEditingController textController;
-
-  /// Atributo seleccionado (para tamizajes con respuestaTamizaje).
-  AtributosStruct? atributoSeleccionado;
-
-  /// Para selección múltiple ('selección').
-  final Set<String> seleccionMultiple = {};
-
-  /// Para selección única ('Selección única').
-  String? seleccionUnica;
-
-  /// Para verdadero/falso (1 = verdadero, 0 = falso).
-  int? trueAndFalseSeleccion;
-
-  /// Per-substance selection for 'Tamizaje (Sustancias)'.
-  final Map<String, AtributosStruct> sustanciaSelecciones = {};
-
-  /// Selected value for 'Condicionante' questions.
-  String? condicionanteSeleccion;
-
-  PreguntaTipo get tipoKind => resolvePreguntaTipo(pregunta.tipo);
-
-  static const _sustancias = [
-    'Tabaco',
-    'Bebidas alcoh\u00f3licas',
-    'Cannabis',
-    'Coca\u00edna',
-    'Anfetaminas',
-    'Inhalantes',
-    'Tranquilizantes',
-    'Alucin\u00f3genos',
-    'Opi\u00e1ceos',
-    'Otros',
-  ];
-
-  bool estaCompleto() {
-    if (pregunta.nPregunta != 1) {
-      return true;
-    }
-    switch (tipoKind) {
-      case PreguntaTipo.descriptiva:
-        return true;
-      case PreguntaTipo.abiertas:
-        return textController.text.trim().isNotEmpty;
-      case PreguntaTipo.seleccionMultiple:
-        return seleccionMultiple.isNotEmpty;
-      case PreguntaTipo.seleccionUnica:
-        return seleccionUnica != null && seleccionUnica!.isNotEmpty;
-      case PreguntaTipo.verdaderoFalso:
-        return trueAndFalseSeleccion != null;
-      case PreguntaTipo.tamizajeRadio:
-        return atributoSeleccionado != null;
-      case PreguntaTipo.tamizajeSustancias:
-        return sustanciaSelecciones.isNotEmpty;
-      case PreguntaTipo.condicionante:
-        return condicionanteSeleccion != null;
-      case PreguntaTipo.desconocido:
-        return true;
-    }
-  }
-
-  RespuestaTestStruct toStruct(int numero) {
-    final kind = tipoKind;
-    final rawTipo = pregunta.tipo;
-
-    // Collect tamizaje attributes.
-    List<AtributosStruct> tamizajeList = [];
-    if (kind == PreguntaTipo.tamizajeRadio && atributoSeleccionado != null) {
-      tamizajeList = [atributoSeleccionado!];
-    } else if (kind == PreguntaTipo.tamizajeSustancias) {
-      tamizajeList = sustanciaSelecciones.values.toList();
-    } else if (kind == PreguntaTipo.condicionante &&
-        condicionanteSeleccion != null) {
-      final match = pregunta.respuestaCondicionante
-          .where((c) => c.etiqueta == condicionanteSeleccion)
-          .toList();
-      if (match.isNotEmpty) {
-        tamizajeList = [
-          AtributosStruct(
-            etiqueta: match.first.etiqueta,
-            valor: 0,
-          ),
-        ];
-      }
-    }
-
-    String respuestaSU = '';
-    if (kind == PreguntaTipo.tamizajeRadio && atributoSeleccionado != null) {
-      respuestaSU = atributoSeleccionado!.etiqueta;
-    } else if (kind == PreguntaTipo.condicionante) {
-      respuestaSU = condicionanteSeleccion ?? '';
-    } else if (kind == PreguntaTipo.seleccionUnica) {
-      respuestaSU = seleccionUnica ?? '';
-    }
-
-    return RespuestaTestStruct(
-      pregunta: pregunta.pregunta,
-      tipo: rawTipo,
-      nPregunta: numero,
-      respuesta:
-          kind == PreguntaTipo.abiertas ? textController.text.trim() : '',
-      respuestaSeleccionUnica: respuestaSU,
-      respuestasSeleccionadas: kind == PreguntaTipo.seleccionMultiple
-          ? seleccionMultiple.toList()
-          : <String>[],
-      trueAndFalse: trueAndFalseSeleccion,
-      respuestaTamizaje: tamizajeList,
-    );
-  }
-}
-
 class _PreguntaCard extends StatelessWidget {
   const _PreguntaCard({
     required this.numero,
@@ -460,7 +450,7 @@ class _PreguntaCard extends StatelessWidget {
   });
 
   final int numero;
-  final _RespuestaState estado;
+  final RespuestaState estado;
   final FlutterFlowTheme theme;
   final VoidCallback onChanged;
 
@@ -552,43 +542,7 @@ class _PreguntaCard extends StatelessWidget {
     }
 
     if (kind == PreguntaTipo.tamizajeRadio) {
-      final opciones = p.respuestaTamizaje;
-      if (opciones.isEmpty) {
-        return Text(
-          'Sin opciones configuradas',
-          style: theme.bodySmall,
-        );
-      }
-      return RadioGroup<String>(
-        groupValue: estado.atributoSeleccionado?.etiqueta,
-        onChanged: (value) {
-          final opt = opciones.firstWhere(
-            (o) => o.etiqueta == value,
-            orElse: () => opciones.first,
-          );
-          estado.atributoSeleccionado = opt;
-          onChanged();
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: opciones.map((opt) {
-            final selected =
-                estado.atributoSeleccionado?.etiqueta == opt.etiqueta;
-            return RadioListTile<String>(
-              value: opt.etiqueta,
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                '${opt.etiqueta}  (${opt.valor})',
-                style: GoogleFonts.inter(
-                  fontWeight:
-                      selected ? FontWeight.w600 : FontWeight.w400,
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      );
+      return _radioAtributos(p.respuestaTamizaje);
     }
 
     if (kind == PreguntaTipo.seleccionMultiple) {
@@ -681,109 +635,82 @@ class _PreguntaCard extends StatelessWidget {
       );
     }
 
-    // Tamizaje (Sustancias) -- dropdown per substance
+    // Tamizaje (Sustancias): una pregunta evalúa SOLO su sustancia asignada.
     if (kind == PreguntaTipo.tamizajeSustancias) {
-      final opciones = p.respuestaTamizaje;
-      if (opciones.isEmpty) {
-        return Text('Sin opciones configuradas', style: theme.bodySmall);
-      }
+      final sustancia = canonicaSustancia(p.sustancia);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: _RespuestaState._sustancias.map((sustancia) {
-          final seleccionada = estado.sustanciaSelecciones[sustancia];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 180,
-                  child: Text(
-                    sustancia,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+        children: [
+          if (sustancia.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Chip(
+                visualDensity: VisualDensity.compact,
+                backgroundColor:
+                    const Color(0xFF009688).withValues(alpha: 0.12),
+                side: BorderSide(
+                    color: const Color(0xFF009688).withValues(alpha: 0.5)),
+                label: Text(
+                  'Sustancia: $sustancia',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF00796B),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: seleccionada?.etiqueta,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: theme.alternate),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                    ),
-                    hint: Text(
-                      'Seleccionar...',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: theme.secondaryText,
-                      ),
-                    ),
-                    items: opciones.map((opt) {
-                      return DropdownMenuItem<String>(
-                        value: opt.etiqueta,
-                        child: Text('${opt.etiqueta}  (${opt.valor})'),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        final opt = opciones.firstWhere(
-                            (o) => o.etiqueta == val);
-                        estado.sustanciaSelecciones[sustancia] =
-                            AtributosStruct(
-                          etiqueta: '$sustancia: ${opt.etiqueta}',
-                          valor: opt.valor,
-                          ideacionSuicida: opt.ideacionSuicida,
-                        );
-                        onChanged();
-                      }
-                    },
-                  ),
-                ),
-              ],
+              ),
             ),
-          );
-        }).toList(),
+          _radioAtributos(p.respuestaTamizaje),
+        ],
       );
     }
 
+    // Condicionante: selección MÚLTIPLE; cada opción marcada habilita las
+    // preguntas de su sustancia.
     if (kind == PreguntaTipo.condicionante) {
       final opciones = p.respuestaCondicionante;
       if (opciones.isEmpty) {
         return Text('Sin opciones condicionantes configuradas',
             style: theme.bodySmall);
       }
-      return RadioGroup<String>(
-        groupValue: estado.condicionanteSeleccion,
-        onChanged: (value) {
-          estado.condicionanteSeleccion = value;
-          onChanged();
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: opciones.map((opt) {
-            return RadioListTile<String>(
-              value: opt.etiqueta,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Marque todas las que apliquen.',
+            style: theme.bodySmall.override(
+              font: GoogleFonts.inter(fontStyle: FontStyle.italic),
+              color: theme.secondaryText,
+              letterSpacing: 0.0,
+            ),
+          ),
+          ...opciones.map((opt) {
+            final marcada =
+                estado.condicionanteSeleccionadas.contains(opt.etiqueta);
+            final sustancia = canonicaSustancia(opt.sustanciaValor);
+            return CheckboxListTile(
+              value: marcada,
               dense: true,
               contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
               title: Text(
                 opt.etiqueta,
                 style: GoogleFonts.inter(
-                  fontWeight: estado.condicionanteSeleccion == opt.etiqueta
-                      ? FontWeight.w600
-                      : FontWeight.w400,
+                  fontWeight: marcada ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
+              subtitle: sustancia.isEmpty ? null : Text(sustancia),
+              onChanged: (v) {
+                if (v == true) {
+                  estado.condicionanteSeleccionadas.add(opt.etiqueta);
+                } else {
+                  estado.condicionanteSeleccionadas.remove(opt.etiqueta);
+                }
+                onChanged();
+              },
             );
-          }).toList(),
-        ),
+          }),
+        ],
       );
     }
 
@@ -828,6 +755,43 @@ class _PreguntaCard extends StatelessWidget {
       ),
     );
   }
+
+  /// Radio sobre las opciones etiqueta→valor de una pregunta de tamizaje.
+  Widget _radioAtributos(List<AtributosStruct> opciones) {
+    if (opciones.isEmpty) {
+      return Text('Sin opciones configuradas', style: theme.bodySmall);
+    }
+    return RadioGroup<String>(
+      groupValue: estado.atributoSeleccionado?.etiqueta,
+      onChanged: (value) {
+        final opt = opciones.firstWhere(
+          (o) => o.etiqueta == value,
+          orElse: () => opciones.first,
+        );
+        estado.atributoSeleccionado = opt;
+        onChanged();
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: opciones.map((opt) {
+          final selected =
+              estado.atributoSeleccionado?.etiqueta == opt.etiqueta;
+          return RadioListTile<String>(
+            value: opt.etiqueta,
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              '${opt.etiqueta}  (${opt.valor})',
+              style: GoogleFonts.inter(
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

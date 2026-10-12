@@ -3,9 +3,11 @@ import '/components/admin_estadsticas/helpers/classification.dart';
 import '/components/rich_text_notas/rich_text_notas_widget.dart';
 import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/tamizajes/shared/assist_utils.dart';
 import '/tamizajes/shared/tamizaje_utils.dart';
 import '/tamizajes/shared/tamizajes_constants.dart';
 import '/tamizajes/shared/widgets/agendar_recordatorio_dialog.dart';
+import '/tamizajes/shared/widgets/riesgo_sustancias_card.dart';
 import '/tamizajes/shared/widgets/tamizaje_page_header.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -99,8 +101,24 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
     }
   }
 
+  /// ASSIST: puntaje y nivel por sustancia (nivel global = peor sustancia).
+  /// `null` si el tamizaje no es de Consumo de SPA.
+  ResultadoAssist? get _assist {
+    final e = _encuesta;
+    if (e == null || !esEncuestaAssist(e.categoria, e.titulo)) return null;
+    return evaluarAssistDesdeStructs(
+      preguntas: e.preguntas,
+      test: widget.respuesta.test,
+      alertas: e.alertas,
+    );
+  }
+
   String _nivelCalculado() {
     if (_encuesta == null) return '';
+    // ASSIST: las alertas son por sustancia; compararlas contra el puntaje
+    // total daba un nivel arbitrario.
+    final assist = _assist;
+    if (assist != null) return assist.nivelGlobal;
     final categoria = _encuesta!.categoria;
     if (categoria.isEmpty) return '';
 
@@ -166,6 +184,7 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
   Color _colorNivel(String nivel) {
     final n = nivel.toLowerCase();
     if (n.contains('baja') ||
+        n.contains('bajo') ||
         n.contains('sin ') ||
         n.contains('mínima') ||
         n.contains('minima')) return kSuccess;
@@ -245,6 +264,15 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
         return 'Depresión grave. Intervención clínica prioritaria.';
     }
     if (categoria == 'Consumo de SPA') {
+      if (n == 'bajo') {
+        return 'Riesgo bajo en todas las sustancias evaluadas.';
+      }
+      if (n == 'moderado') {
+        return 'Riesgo moderado en al menos una sustancia. Intervención breve y seguimiento.';
+      }
+      if (n == 'alto') {
+        return 'Riesgo alto en al menos una sustancia. Derivar a atención especializada.';
+      }
       if (n.contains('sin ')) return 'Sin indicios de consumo problemático.';
       if (n.contains('moderad'))
         return 'Consumo moderado. Requiere seguimiento.';
@@ -339,6 +367,12 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
                           theme: theme,
                           cdiSub: cdiSub,
                         ),
+                      ],
+
+                      // ── ASSIST: riesgo por sustancia ───────────────────
+                      if (_assist != null) ...[
+                        const SizedBox(height: 16.0),
+                        RiesgoSustanciasCard(resultado: _assist!),
                       ],
 
                       // // ── Subescalas CDI (D + A) ─────────────────────────
@@ -489,7 +523,12 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
                           title: 'Respuestas del paciente',
                           icon: Icons.quiz_outlined),
                       const SizedBox(height: 12.0),
-                      ...respuesta.test.map(
+                      // Las preguntas de sustancias no marcadas en el
+                      // Condicionante no aplicaron: no se listan.
+                      ...respuesta.test
+                          .where((item) => !itemSustanciaNoAplica(
+                              item, _encuesta?.preguntas ?? const []))
+                          .map(
                         (item) => _PreguntaRespuestaCard(
                           item: item,
                           theme: theme,

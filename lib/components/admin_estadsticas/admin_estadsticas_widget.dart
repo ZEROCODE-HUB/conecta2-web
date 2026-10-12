@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../admin_estadsticas2_model.dart';
 import 'common/section_title.dart';
 import 'helpers/stats_calculator.dart';
+import 'widgets/chart_por_sustancia.dart';
 import 'widgets/chart_distribucion_niveles.dart';
 import 'widgets/chart_por_edad.dart';
 import 'widgets/chart_por_genero.dart';
@@ -261,6 +262,10 @@ class _AdminEstadsticas2WidgetState extends State<AdminEstadsticas2Widget> {
                       ChartPorEdad(stats: stats),
                       const SizedBox(height: 16),
                       ChartDistribucionNiveles(stats: stats),
+                      if (_tipoSeleccionado == TamizajeTipo.sustancias) ...[
+                        const SizedBox(height: 16),
+                        ChartPorSustancia(stats: stats),
+                      ],
                       if (_tipoSeleccionado == TamizajeTipo.todas) ...[
                         const SizedBox(height: 16),
                         ChartPorTamizaje(stats: stats),
@@ -284,6 +289,10 @@ class _AdminEstadsticas2WidgetState extends State<AdminEstadsticas2Widget> {
                         Expanded(child: ChartDistribucionNiveles(stats: stats)),
                       ],
                     ),
+                    if (_tipoSeleccionado == TamizajeTipo.sustancias) ...[
+                      const SizedBox(height: 16),
+                      ChartPorSustancia(stats: stats),
+                    ],
                     if (_tipoSeleccionado == TamizajeTipo.todas) ...[
                       const SizedBox(height: 16),
                       ChartPorTamizaje(stats: stats),

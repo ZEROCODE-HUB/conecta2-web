@@ -8,7 +8,7 @@ import '/flutter_flow/form_field_controller.dart';
 /// Mapa de categoria -> tipos de pregunta permitidos.
 /// Si la categoria no esta en el mapa, retorna todos los tipos (comportamiento default).
 const Map<String, List<String>> kTiposPorCategoria = {
-  'Consumo de SPA': ['Tamizaje (Sustancias)', 'Condicionante', 'abiertas'],
+  'Consumo de SPA': ['Tamizaje (Sustancias)', 'Condicionante', 'Descriptiva'],
   'Escala autoestima': ['Tamizaje autoestima', 'Descriptiva'],
   'CDI': ['Tamizaje CDI', 'Descriptiva'],
   'Depresión Beck': ['Tamizajes Depresion Beck', 'Descriptiva'],

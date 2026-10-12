@@ -2,7 +2,9 @@ import '/backend/backend.dart';
 import '/components/rich_text_notas/rich_text_notas_widget.dart';
 import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/tamizajes/shared/assist_utils.dart';
 import '/tamizajes/shared/tamizajes_constants.dart';
+import '/tamizajes/shared/widgets/riesgo_sustancias_card.dart';
 import '/tamizajes/shared/widgets/agendar_recordatorio_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -96,6 +98,13 @@ class _PasoResultadosState extends State<PasoResultados> {
                       categoria: widget.encuesta?.categoria ?? '',
                       theme: theme,
                     ),
+                  ),
+
+                // ASSIST: desglose por sustancia evaluada.
+                if (_assist != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: RiesgoSustanciasCard(resultado: _assist!),
                   ),
 
                 // Alerta de ideación suicida
@@ -194,9 +203,12 @@ class _PasoResultadosState extends State<PasoResultados> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                ...widget.respuestas.map(
-                  (r) => _RespuestaResumenItem(respuesta: r, theme: theme),
-                ),
+                ...widget.respuestas
+                    .where((r) => !itemSustanciaNoAplica(
+                        r, widget.encuesta?.preguntas ?? const []))
+                    .map(
+                      (r) => _RespuestaResumenItem(respuesta: r, theme: theme),
+                    ),
               ],
             ),
           ),
@@ -238,7 +250,21 @@ class _PasoResultadosState extends State<PasoResultados> {
     );
   }
 
+  bool get _esAssist => esEncuestaAssist(
+      widget.encuesta?.categoria ?? '', widget.encuesta?.titulo ?? '');
+
+  /// ASSIST: puntaje y nivel por sustancia (nivel global = peor sustancia).
+  ResultadoAssist? get _assist => (_esAssist && widget.encuesta != null)
+      ? evaluarAssistDesdeStructs(
+          preguntas: widget.encuesta!.preguntas,
+          test: widget.respuestas,
+          alertas: widget.encuesta!.alertas,
+        )
+      : null;
+
   String _nivelCalculado() {
+    final assist = _assist;
+    if (assist != null) return assist.nivelGlobal;
     final categoria = widget.encuesta?.categoria ?? '';
     if (categoria.isEmpty) return '';
     final alertas = widget.encuesta?.alertas.toList() ?? const [];
@@ -357,7 +383,8 @@ class _NivelAlertaCard extends StatelessWidget {
 
   Color _colorNivel() {
     final n = nivel.toLowerCase();
-    if (n.contains('baja') || n.contains('sin ') || n.contains('mínima') ||
+    if (n.contains('baja') || n.contains('bajo') || n.contains('sin ') ||
+        n.contains('mínima') ||
         n.contains('minima')) return kSuccess;
     if (n.contains('media') || n.contains('moderad') || n.contains('leve')) {
       return const Color(0xFFF6BD33);

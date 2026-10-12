@@ -1,3 +1,4 @@
+import '/tamizajes/shared/assist_utils.dart' show limpiarAlertasAssist;
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -44,8 +45,9 @@ class _CrearencuestaWidgetState extends State<CrearencuestaWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      FFAppState().listaAlertasEnvio =
-          FFAppState().listaAlertas.toList().cast<AlertaStruct>();
+      // Plantilla de alertas por sustancia sin entradas basura ("Hello World").
+      FFAppState().listaAlertasEnvio = limpiarAlertasAssist(
+          FFAppState().listaAlertas.toList().cast<AlertaStruct>());
       safeSetState(() {});
     });
 

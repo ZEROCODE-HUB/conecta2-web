@@ -3,6 +3,8 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '/tamizajes/shared/assist_utils.dart';
+
 import '../state/respuesta_state.dart';
 
 /// Renders a single question card, dispatching on question type.
@@ -153,91 +155,7 @@ class MobilePreguntaCard extends StatelessWidget {
 
     // Tamizaje radio types
     if (kind == PreguntaTipo.tamizajeRadio) {
-      final opciones = p.respuestaTamizaje;
-      if (opciones.isEmpty) {
-        return Text('Sin opciones configuradas',
-            style: GoogleFonts.inter(
-                fontSize: 13, color: theme.secondaryText));
-      }
-      return Column(
-        children: opciones.map((opt) {
-          final selected =
-              estado.atributoSeleccionado?.etiqueta == opt.etiqueta;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Material(
-              color: selected
-                  ? const Color(0xFF265294).withValues(alpha: 0.08)
-                  : theme.primaryBackground,
-              borderRadius: BorderRadius.circular(10),
-              child: InkWell(
-                onTap: () {
-                  estado.atributoSeleccionado = opt;
-                  onChanged();
-                },
-                borderRadius: BorderRadius.circular(10),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: selected
-                                ? const Color(0xFF265294)
-                                : theme.alternate,
-                            width: 2,
-                          ),
-                          color: selected
-                              ? const Color(0xFF265294)
-                              : Colors.transparent,
-                        ),
-                        child: selected
-                            ? const Icon(Icons.circle,
-                                size: 10, color: Colors.white)
-                            : null,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          opt.etiqueta,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: selected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                            color: theme.primaryText,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: theme.alternate.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '${opt.valor}',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: theme.secondaryText,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      );
+      return _buildAtributosRadio(p.respuestaTamizaje);
     }
 
     // Seleccion -- checkboxes for multiple selection
@@ -421,92 +339,41 @@ class MobilePreguntaCard extends StatelessWidget {
       );
     }
 
-    // Tamizaje (Sustancias) -- dropdown per substance
+    // Tamizaje (Sustancias): una pregunta evalúa SOLO su sustancia asignada.
     if (kind == PreguntaTipo.tamizajeSustancias) {
-      final opciones = p.respuestaTamizaje;
-      if (opciones.isEmpty) {
-        return Text('Sin opciones configuradas',
-            style: GoogleFonts.inter(
-                fontSize: 13, color: theme.secondaryText));
-      }
+      final sustancia = canonicaSustancia(p.sustancia);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: RespuestaState.sustancias.map((sustancia) {
-          final seleccionada = estado.sustanciaSelecciones[sustancia];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  sustancia,
+        children: [
+          if (sustancia.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF009688).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: const Color(0xFF009688).withValues(alpha: 0.5)),
+                ),
+                child: Text(
+                  'Sustancia: $sustancia',
                   style: GoogleFonts.inter(
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF265294),
+                    color: const Color(0xFF00796B),
                   ),
                 ),
-                const SizedBox(height: 6),
-                Container(
-                  width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: theme.primaryBackground,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: seleccionada != null
-                          ? const Color(0xFF265294)
-                          : theme.alternate,
-                    ),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: seleccionada?.etiqueta,
-                      isExpanded: true,
-                      hint: Text(
-                        'Seleccionar...',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: theme.secondaryText,
-                        ),
-                      ),
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: theme.primaryText,
-                      ),
-                      items: opciones.map((opt) {
-                        return DropdownMenuItem<String>(
-                          value: opt.etiqueta,
-                          child: Text(
-                              '${opt.etiqueta}  (${opt.valor})'),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          final opt = opciones.firstWhere(
-                              (o) => o.etiqueta == val);
-                          estado.sustanciaSelecciones[sustancia] =
-                              AtributosStruct(
-                            etiqueta:
-                                '$sustancia: ${opt.etiqueta}',
-                            valor: opt.valor,
-                            ideacionSuicida: opt.ideacionSuicida,
-                          );
-                          onChanged();
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          );
-        }).toList(),
+          _buildAtributosRadio(p.respuestaTamizaje),
+        ],
       );
     }
 
-    // Condicionante -- radio buttons from respuestaCondicionante
+    // Condicionante: selección MÚLTIPLE. Cada opción marcada habilita las
+    // preguntas de su sustancia (igual que el flujo del adolescente).
     if (kind == PreguntaTipo.condicionante) {
       final opciones = p.respuestaCondicionante;
       if (opciones.isEmpty) {
@@ -515,67 +382,98 @@ class MobilePreguntaCard extends StatelessWidget {
                 fontSize: 13, color: theme.secondaryText));
       }
       return Column(
-        children: opciones.map((opt) {
-          final selected =
-              estado.condicionanteSeleccion == opt.etiqueta;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Material(
-              color: selected
-                  ? const Color(0xFF265294).withValues(alpha: 0.08)
-                  : theme.primaryBackground,
-              borderRadius: BorderRadius.circular(10),
-              child: InkWell(
-                onTap: () {
-                  estado.condicionanteSeleccion = opt.etiqueta;
-                  onChanged();
-                },
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Marque todas las que apliquen.',
+              style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: theme.secondaryText),
+            ),
+          ),
+          ...opciones.map((opt) {
+            final marcada =
+                estado.condicionanteSeleccionadas.contains(opt.etiqueta);
+            final sustancia = canonicaSustancia(opt.sustanciaValor);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Material(
+                color: marcada
+                    ? const Color(0xFF265294).withValues(alpha: 0.08)
+                    : theme.primaryBackground,
                 borderRadius: BorderRadius.circular(10),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: selected
+                child: InkWell(
+                  onTap: () {
+                    if (marcada) {
+                      estado.condicionanteSeleccionadas.remove(opt.etiqueta);
+                    } else {
+                      estado.condicionanteSeleccionadas.add(opt.etiqueta);
+                    }
+                    onChanged();
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: marcada
+                                  ? const Color(0xFF265294)
+                                  : theme.alternate,
+                              width: 2,
+                            ),
+                            color: marcada
                                 ? const Color(0xFF265294)
-                                : theme.alternate,
-                            width: 2,
+                                : Colors.transparent,
                           ),
-                          color: selected
-                              ? const Color(0xFF265294)
-                              : Colors.transparent,
+                          child: marcada
+                              ? const Icon(Icons.check,
+                                  size: 14, color: Colors.white)
+                              : null,
                         ),
-                        child: selected
-                            ? const Icon(Icons.circle,
-                                size: 10, color: Colors.white)
-                            : null,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          opt.etiqueta,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: selected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                            color: theme.primaryText,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                opt.etiqueta,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: marcada
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                  color: theme.primaryText,
+                                ),
+                              ),
+                              if (sustancia.isNotEmpty)
+                                Text(
+                                  sustancia,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: theme.secondaryText,
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }),
+        ],
       );
     }
 
@@ -620,6 +518,93 @@ class MobilePreguntaCard extends StatelessWidget {
       ),
     );
   }
+
+  /// Radio sobre las opciones etiqueta→valor de una pregunta de tamizaje.
+  Widget _buildAtributosRadio(List<AtributosStruct> opciones) {
+    if (opciones.isEmpty) {
+      return Text('Sin opciones configuradas',
+          style: GoogleFonts.inter(fontSize: 13, color: theme.secondaryText));
+    }
+    return Column(
+      children: opciones.map((opt) {
+        final selected =
+            estado.atributoSeleccionado?.etiqueta == opt.etiqueta;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Material(
+            color: selected
+                ? const Color(0xFF265294).withValues(alpha: 0.08)
+                : theme.primaryBackground,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              onTap: () {
+                estado.atributoSeleccionado = opt;
+                onChanged();
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: selected
+                              ? const Color(0xFF265294)
+                              : theme.alternate,
+                          width: 2,
+                        ),
+                        color: selected
+                            ? const Color(0xFF265294)
+                            : Colors.transparent,
+                      ),
+                      child: selected
+                          ? const Icon(Icons.circle,
+                              size: 10, color: Colors.white)
+                          : null,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        opt.etiqueta,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.w400,
+                          color: theme.primaryText,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: theme.alternate.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '${opt.valor}',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: theme.secondaryText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
 }
 
 class ToggleButton extends StatelessWidget {

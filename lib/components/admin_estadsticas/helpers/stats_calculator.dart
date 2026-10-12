@@ -8,6 +8,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' show DateTimeRange;
 
+import '/tamizajes/shared/assist_utils.dart';
+
 import 'classification.dart';
 
 // Re-export pure helpers so widgets can keep importing a single file.
@@ -111,6 +113,22 @@ bool _matchesTipo(TamizajeTipo tipo, String titulo) {
   }
 }
 
+/// Una encuesta pertenece al tipo seleccionado. Para Sustancias se decide por
+/// la categoría ('Consumo de SPA'), con el título como respaldo; el resto de
+/// tipos sigue usando el título.
+bool _encuestaMatchesTipo(TamizajeTipo tipo, Map<String, dynamic> data) {
+  final titulo = (data['titulo'] ?? '').toString();
+  if (tipo == TamizajeTipo.sustancias) {
+    return esEncuestaAssist((data['categoria'] ?? '').toString(), titulo);
+  }
+  return _matchesTipo(tipo, titulo);
+}
+
+bool _esEncuestaAssistData(Map<String, dynamic>? data) =>
+    data != null &&
+    esEncuestaAssist((data['categoria'] ?? '').toString(),
+        (data['titulo'] ?? '').toString());
+
 TamizajeTipo _resolveTipoForTitulo(String titulo) {
   final key = tipoKeyFromTitulo(titulo);
   switch (key) {
@@ -146,6 +164,9 @@ class ClassifiedResponse {
   final String titulo;
   final String userId;
 
+  /// ASSIST: nivel (Bajo/Moderado/Alto) de cada sustancia evaluada.
+  final Map<String, String> nivelesPorSustancia;
+
   ClassifiedResponse({
     required this.nivel,
     required this.genero,
@@ -153,6 +174,7 @@ class ClassifiedResponse {
     required this.tipo,
     required this.titulo,
     required this.userId,
+    this.nivelesPorSustancia = const {},
   });
 
   String get rangoEdad => rangoEdadFromEdad(edad);
@@ -170,6 +192,9 @@ class StatsAggregates {
   final Map<String, int> porTamizaje; // titulo -> alert count
   final String categoria;
 
+  /// ASSIST: sustancia -> nivel (Bajo/Moderado/Alto) -> personas evaluadas.
+  final Map<String, Map<String, int>> porSustancia;
+
   StatsAggregates({
     required this.tipo,
     required this.total,
@@ -180,6 +205,7 @@ class StatsAggregates {
     required this.distribucion,
     required this.porTamizaje,
     required this.categoria,
+    this.porSustancia = const {},
   });
 
   static StatsAggregates empty(TamizajeTipo tipo) => StatsAggregates(
@@ -233,10 +259,7 @@ Future<List<String>> loadEncuestasByTipo(
     final rawDocs = snap.docs;
     final filteredDocs = tipo == TamizajeTipo.todas
         ? rawDocs
-        : rawDocs.where((d) {
-            final titulo = (d.data()['titulo'] ?? '').toString();
-            return _matchesTipo(tipo, titulo);
-          });
+        : rawDocs.where((d) => _encuestaMatchesTipo(tipo, d.data()));
     final setTitulos = filteredDocs
         .map((d) => (d.data()['titulo'] ?? '').toString())
         .where((t) => t.isNotEmpty)
@@ -279,10 +302,14 @@ Future<StatsAggregates> loadStats(
           if (tituloEncuesta != null && tituloEncuesta.isNotEmpty) {
             return t == tituloEncuesta;
           }
-          return _matchesTipo(tipo, t);
+          return _encuestaMatchesTipo(tipo, d.data());
         })
         .map((d) => d.reference)
         .toSet();
+    // Datos de cada encuesta (preguntas y alertas) para evaluar ASSIST.
+    final encuestaPorPath = <String, Map<String, dynamic>>{
+      for (final d in encuestasSnap.docs) d.reference.path: d.data(),
+    };
 
     Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs;
 
@@ -347,7 +374,10 @@ Future<StatsAggregates> loadStats(
       final data = doc.data();
       final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
       if (titulo.isEmpty) continue;
-      if (!_matchesTipo(tipo, titulo)) continue;
+      // Sustancias ya se filtró por la categoría de la encuesta padre.
+      if (tipo != TamizajeTipo.sustancias && !_matchesTipo(tipo, titulo)) {
+        continue;
+      }
       if (tituloEncuesta != null &&
           tituloEncuesta.isNotEmpty &&
           titulo != tituloEncuesta) continue;
@@ -419,14 +449,33 @@ Future<StatsAggregates> loadStats(
       }
       if (items.isEmpty) continue;
 
-      final nivel = classifyNivel(
-        titulo,
-        items,
-        puntajeTotal: data['puntajeTotal'] as num?,
-        alertasEspeciales: (data['alertasEspeciales'] as List?)
-            ?.map((e) => e.toString())
-            .toList(),
-      );
+      // ASSIST: nivel por sustancia con los rangos de la encuesta (o cortes
+      // OMS) y nivel de la persona = peor sustancia. Antes se usaba el
+      // puntaje total con cortes fijos, sin sentido clínico.
+      final encuestaData = encuestaPorPath[doc.reference.parent.parent?.path];
+      final esAssist = _esEncuestaAssistData(encuestaData);
+      Map<String, String> nivelesPorSustancia = const {};
+      final String nivel;
+      if (esAssist) {
+        final r = evaluarAssist(
+          preguntas: (encuestaData!['Preguntas'] as List?) ?? const [],
+          test: items,
+          alertas: (encuestaData['alertas'] as List?) ?? const [],
+        );
+        nivelesPorSustancia = {
+          for (final e in r.porSustancia.entries) e.key: e.value.nivel,
+        };
+        nivel = r.tieneEvaluaciones ? bucketStats(r.nivelGlobal) : 'Sin alerta';
+      } else {
+        nivel = classifyNivel(
+          titulo,
+          items,
+          puntajeTotal: data['puntajeTotal'] as num?,
+          alertasEspeciales: (data['alertasEspeciales'] as List?)
+              ?.map((e) => e.toString())
+              .toList(),
+        );
+      }
       final bucket = mapNivelToBucket(nivel, nivelesEje);
       if (nivelAlerta != null &&
           nivelAlerta.isNotEmpty &&
@@ -438,9 +487,12 @@ Future<StatsAggregates> loadStats(
         nivel: nivel,
         genero: normalizeGenero(userData['genero']?.toString()),
         edad: _edadFromUser(userData),
-        tipo: _resolveTipoForTitulo(titulo),
+        tipo: esAssist
+            ? TamizajeTipo.sustancias
+            : _resolveTipoForTitulo(titulo),
         titulo: titulo,
         userId: userRef.path,
+        nivelesPorSustancia: nivelesPorSustancia,
       ));
     }
   } catch (e) {
@@ -507,6 +559,7 @@ StatsAggregates _aggregate(
   final distribucion = <String, int>{for (final n in niveles) n: 0};
   final porTamizaje = <String, int>{};
   final uniqueUsers = <String>{};
+  final porSustancia = <String, Map<String, int>>{};
 
   for (final r in items) {
     uniqueUsers.add(r.userId);
@@ -515,6 +568,12 @@ StatsAggregates _aggregate(
     final rango = r.rangoEdad;
     porEdad[rango]![nivel] = (porEdad[rango]![nivel] ?? 0) + 1;
     distribucion[nivel] = (distribucion[nivel] ?? 0) + 1;
+
+    r.nivelesPorSustancia.forEach((sustancia, nivelSust) {
+      final fila = porSustancia.putIfAbsent(
+          sustancia, () => {for (final n in kNivelesAssist) n: 0});
+      fila[nivelSust] = (fila[nivelSust] ?? 0) + 1;
+    });
 
     final n = r.nivel.toLowerCase();
     final isAlert = _criticoNiveles.any((c) => n.contains(c.toLowerCase())) ||
@@ -540,6 +599,13 @@ StatsAggregates _aggregate(
     distribucion: distribucion,
     porTamizaje: porTamizaje,
     categoria: categoriaForTipo(tipo) ?? '',
+    porSustancia: {
+      for (final nombre in [
+        ...kSustanciasOrden,
+        ...porSustancia.keys.where((k) => !kSustanciasOrden.contains(k)),
+      ])
+        if (porSustancia.containsKey(nombre)) nombre: porSustancia[nombre]!,
+    },
   );
 }
 
@@ -577,6 +643,9 @@ class StatsColors {
     }
     if (n.contains('baja')) {
       return rojo;
+    }
+    if (n.contains('bajo')) {
+      return verde;
     }
     if (n.contains('mínima') || n.contains('minima') || n.contains('sin')) {
       return verde;

@@ -26,7 +26,7 @@ Future<void> generarInformeIndividualPDF(String userUid) async {
   String nombreCompleto = 'Usuario';
   String notasProfesional = '';
   bool tieneDatosTamizaje = false;
-  bool tamizajeCompletadoSinRespuestas = false;
+  ResultadoTamizaje? resultadoAssist;
   final erroresEncontrados = <String>[];
 
   try {
@@ -58,15 +58,13 @@ Future<void> generarInformeIndividualPDF(String userUid) async {
       final resultado = await obtenerRespuestasTamizajeSeguro(userUid);
       respuestasTamizaje =
           (resultado['respuestas'] as List).cast<RespustaTamizajeStruct>();
-      tamizajeCompletadoSinRespuestas =
-          resultado['completadoSinRespuestas'] as bool? ?? false;
       notasProfesional = resultado['notasProfesional']?.toString() ?? '';
+      resultadoAssist = resultado['assist'] as ResultadoTamizaje?;
 
-      if (respuestasTamizaje.isNotEmpty) {
+      // Ya no se completan sustancias con respuestas "Nunca" inventadas: el
+      // ASSIST se presenta en su propia tarjeta con lo realmente evaluado.
+      if (respuestasTamizaje.isNotEmpty || resultadoAssist != null) {
         tieneDatosTamizaje = true;
-        if (!tamizajeCompletadoSinRespuestas) {
-          respuestasTamizaje = completarSustanciasFaltantes(respuestasTamizaje);
-        }
       } else {
         erroresEncontrados.add('Sin respuestas de tamizaje disponibles');
       }
@@ -84,6 +82,7 @@ Future<void> generarInformeIndividualPDF(String userUid) async {
         respuestasTamizaje,
         tieneDatosTamizaje,
         notasProfesional,
+        resultadoAssist,
       );
     } catch (e) {
       erroresEncontrados.add('Error al crear PDF: ${e.toString()}');
@@ -117,6 +116,7 @@ Future<Uint8List> _crearInformeIndividualPDF(
   List<RespustaTamizajeStruct> respuestas,
   bool tieneDatosTamizaje,
   String notasProfesional,
+  ResultadoTamizaje? resultadoAssist,
 ) async {
   // Cargar fuente Inter (soporta Unicode: •, acentos, ñ, etc.)
   // Esto reemplaza Helvetica base que no puede renderizar bullets/emojis.
@@ -142,8 +142,12 @@ Future<Uint8List> _crearInformeIndividualPDF(
   );
 
   // Classify the answers into per-test result cards.
-  final List<ResultadoTamizaje> resultados =
-      tieneDatosTamizaje ? clasificarRespuestas(respuestas) : [];
+  final List<ResultadoTamizaje> resultados = tieneDatosTamizaje
+      ? [
+          ...clasificarRespuestas(respuestas),
+          if (resultadoAssist != null) resultadoAssist,
+        ]
+      : [];
 
   // Build the full list of body widgets once. MultiPage will paginate them
   // automatically. The branded header is rendered on every page via the

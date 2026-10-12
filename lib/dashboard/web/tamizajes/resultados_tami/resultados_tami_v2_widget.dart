@@ -2,6 +2,7 @@ import '/backend/backend.dart';
 import '/components/admin_estadsticas/helpers/classification.dart';
 import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/tamizajes/shared/assist_utils.dart';
 import '/tamizajes/shared/tamizaje_service.dart';
 import '/tamizajes/shared/tamizaje_utils.dart';
 import '/tamizajes/shared/tamizajes_constants.dart';
@@ -228,6 +229,15 @@ class _RespuestaCardState extends State<_RespuestaCard> {
   // tamizaje y del puntaje total. Devuelve '' si no hay encuesta aún.
   String _nivelDe(EncuestasRecord? encuesta, RespuestasRecord r) {
     if (encuesta == null) return '';
+    // ASSIST: nivel = peor sustancia, con los rangos por sustancia de la
+    // encuesta (o cortes OMS); no el puntaje total con cortes fijos.
+    if (esEncuestaAssist(encuesta.categoria, encuesta.titulo)) {
+      return evaluarAssistDesdeStructs(
+        preguntas: encuesta.preguntas,
+        test: r.test,
+        alertas: encuesta.alertas,
+      ).nivelGlobal;
+    }
     String titulo = encuesta.titulo;
     switch (encuesta.categoria) {
       case 'Consumo de SPA':
@@ -279,6 +289,9 @@ class _RespuestaCardState extends State<_RespuestaCard> {
     final n = nivel.toLowerCase();
     if (n.contains('grave')) return kDanger;
     if (n.contains('severo') || n.contains('severa')) return kDanger;
+    // ASSIST
+    if (n == 'alto') return kDanger;
+    if (n == 'bajo') return kSuccess;
     if (n.contains('baja')) return kDanger;
     if (n.contains('moderad')) return const Color(0xFFFF8A00);
     if (n.contains('leve') || n.contains('media'))

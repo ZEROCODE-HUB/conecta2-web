@@ -3,6 +3,8 @@
 // Los defensive null checks del original se mantienen intencionalmente.
 // ignore_for_file: unnecessary_null_comparison, unnecessary_non_null_assertion, invalid_null_aware_operator, dead_null_aware_expression
 
+import '/tamizajes/shared/assist_utils.dart'
+    show esTipoCondicionante, esTipoSustancia;
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -82,10 +84,15 @@ Future generarImprimirPDF(String userUid) async {
           erroresEncontrados.add(
               'Tamizaje completado sin respuestas registradas - mostrando valores por defecto (Nunca)');
         } else {
-          // NUEVO: Completar sustancias faltantes con valor "Nunca"
-          respuestasTamizaje =
-              _completarSustanciasFaltantes(respuestasTamizaje);
-          print('✓ Sustancias faltantes completadas con valor "Nunca"');
+          // Completar sustancias no evaluadas SOLO si el usuario tiene un
+          // ASSIST (antes se agregaban respuestas "Nunca" inventadas al
+          // informe de cualquier usuario con tamizajes).
+          final tieneAssist = respuestasTamizaje.any((r) =>
+              esTipoSustancia(r.tipo, '-') || esTipoCondicionante(r.tipo));
+          if (tieneAssist) {
+            respuestasTamizaje =
+                _completarSustanciasFaltantes(respuestasTamizaje);
+          }
         }
       } else {
         print('⚠ No se encontraron respuestas de tamizaje');
@@ -420,7 +427,7 @@ List<RespustaTamizajeStruct> _completarSustanciasFaltantes(
           RespustaTamizajeStruct(
             pregunta:
                 '¿Con qué frecuencia ha consumido $sustancia en los últimos 3 meses?',
-            respuesta: 'Nunca',
+            respuesta: 'No evaluada (no marcada en el condicionante)',
           ),
         );
         print('  ✓ Agregada sustancia faltante: $sustancia');

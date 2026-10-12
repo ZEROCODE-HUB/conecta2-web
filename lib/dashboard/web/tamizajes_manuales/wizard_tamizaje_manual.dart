@@ -5,8 +5,10 @@ import '/components/rich_text_notas/rich_text_notas_widget.dart';
 import '/custom_code/actions/evaluar_alertas_especiales.dart';
 import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/tamizajes/shared/assist_utils.dart';
+import '/tamizajes/shared/widgets/riesgo_sustancias_card.dart';
 import '/user/professional/tamizajes_manuales/wizard/state/respuesta_state.dart'
-    show PreguntaTipo, resolvePreguntaTipo;
+    show PreguntaTipo, RespuestaState, VisibilidadAssist;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
