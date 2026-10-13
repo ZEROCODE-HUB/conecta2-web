@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
@@ -1244,36 +1245,106 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
         padding: const EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
         child: buildPrimaryButton(
           context: context,
-          text: 'Restaurar contraseña',
+          text: 'Restablecer contraseña',
           width: 245.0,
           height: 45.0,
           borderRadius: 40.0,
-          onPressed: () async {
-            if (_model.emailTextController.text.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Email required!')),
-              );
-              return;
-            }
-            await authManager.resetPassword(
-              email: _model.emailTextController.text,
-              context: context,
-            );
-            await showDialog(
-              context: context,
-              builder: (dialogContext) => Dialog(
-                elevation: 0,
-                insetPadding: EdgeInsets.zero,
-                backgroundColor: Colors.transparent,
-                alignment: const AlignmentDirectional(0.0, 0.0)
-                    .resolve(Directionality.of(context)),
-                child: WebViewAware(child: SuccesspopupWidget()),
-              ),
-            );
-          },
+          onPressed: () => _restablecerContrasena(context),
         ),
       ),
     );
+  }
+
+  /// Envía el correo de Firebase con el enlace para restablecer la
+  /// contraseña, al correo guardado del usuario (no al campo editable),
+  /// previa confirmación.
+  Future<void> _restablecerContrasena(BuildContext context) async {
+    final email = (widget.userdoc?.email ?? '').trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Este usuario no tiene correo registrado.')),
+      );
+      return;
+    }
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.lock_reset_rounded,
+                color: Color(0xFF265294), size: 24.0),
+            const SizedBox(width: 8.0),
+            Text(
+              'Restablecer contraseña',
+              style: GoogleFonts.inter(
+                  fontSize: 17.0, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Text.rich(
+          TextSpan(
+            style: GoogleFonts.inter(fontSize: 14.0),
+            children: [
+              const TextSpan(
+                  text: 'Se enviará un enlace para restablecer la contraseña '
+                      'al correo del usuario:\n\n'),
+              TextSpan(
+                text: email,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const TextSpan(
+                  text: '\n\nEl usuario podrá crear una nueva contraseña '
+                      'desde ese enlace.'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.inter(color: const Color(0xFF959595)),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF265294),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              'Enviar enlace',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true || !context.mounted) return;
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Enlace enviado a $email')),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se pudo enviar el enlace: ${e.message ?? e.code}'),
+          backgroundColor: FlutterFlowTheme.of(context).error,
+        ),
+      );
+    }
   }
 
   Widget _buildActionButtons(BuildContext context, UsersRecord rowUsersRecord) {

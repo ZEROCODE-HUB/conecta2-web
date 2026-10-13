@@ -104,6 +104,14 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
     }
   }
 
+  // Avisa al padre (AdminUsuariosWidget) para que Cancelar y la flecha
+  // vuelvan al listado al cambiar FFAppState().selectUser.
+  @override
+  void setState(VoidCallback callback) {
+    super.setState(callback);
+    _model.onUpdate();
+  }
+
   @override
   void initState() {
     super.initState();
