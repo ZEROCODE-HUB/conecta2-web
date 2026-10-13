@@ -8,11 +8,9 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
-import '/backend/schema/structs/index.dart';
 
 import 'builders/pdf_footer.dart';
 import 'builders/pdf_header.dart';
-import 'builders/pdf_observaciones.dart';
 import 'builders/pdf_tamizajes_section.dart';
 import 'builders/pdf_user_info.dart';
 import 'helpers/pdf_assets.dart';
@@ -22,11 +20,8 @@ import 'helpers/pdf_styles.dart';
 /// prints it or shares it. Resilient to missing/partial data.
 Future<void> generarInformeIndividualPDF(String userUid) async {
   Map<String, dynamic>? datosPersonales;
-  List<RespustaTamizajeStruct> respuestasTamizaje = [];
+  List<ResultadoTamizaje> resultados = [];
   String nombreCompleto = 'Usuario';
-  String notasProfesional = '';
-  bool tieneDatosTamizaje = false;
-  ResultadoTamizaje? resultadoAssist;
   final erroresEncontrados = <String>[];
 
   try {
@@ -53,25 +48,16 @@ Future<void> generarInformeIndividualPDF(String userUid) async {
       nombreCompleto = 'Usuario (Error en datos)';
     }
 
-    // Tamizaje responses
+    // Tamizajes: una tarjeta por tamizaje realizado, cada una con su fecha y
+    // sus propias notas del profesional.
     try {
-      final resultado = await obtenerRespuestasTamizajeSeguro(userUid);
-      respuestasTamizaje =
-          (resultado['respuestas'] as List).cast<RespustaTamizajeStruct>();
-      notasProfesional = resultado['notasProfesional']?.toString() ?? '';
-      resultadoAssist = resultado['assist'] as ResultadoTamizaje?;
-
-      // Ya no se completan sustancias con respuestas "Nunca" inventadas: el
-      // ASSIST se presenta en su propia tarjeta con lo realmente evaluado.
-      if (respuestasTamizaje.isNotEmpty || resultadoAssist != null) {
-        tieneDatosTamizaje = true;
-      } else {
+      resultados = await obtenerTamizajesPorDocumento(userUid);
+      if (resultados.isEmpty) {
         erroresEncontrados.add('Sin respuestas de tamizaje disponibles');
       }
     } catch (e) {
       erroresEncontrados.add('Error al obtener tamizaje: ${e.toString()}');
-      respuestasTamizaje = [];
-      tieneDatosTamizaje = false;
+      resultados = [];
     }
 
     // Build + show
@@ -79,10 +65,7 @@ Future<void> generarInformeIndividualPDF(String userUid) async {
     try {
       pdfBytes = await _crearInformeIndividualPDF(
         datosPersonales,
-        respuestasTamizaje,
-        tieneDatosTamizaje,
-        notasProfesional,
-        resultadoAssist,
+        resultados,
       );
     } catch (e) {
       erroresEncontrados.add('Error al crear PDF: ${e.toString()}');
@@ -113,10 +96,7 @@ Future<void> generarInformeIndividualPDF(String userUid) async {
 
 Future<Uint8List> _crearInformeIndividualPDF(
   Map<String, dynamic> datosPersonales,
-  List<RespustaTamizajeStruct> respuestas,
-  bool tieneDatosTamizaje,
-  String notasProfesional,
-  ResultadoTamizaje? resultadoAssist,
+  List<ResultadoTamizaje> resultados,
 ) async {
   // Cargar fuente Inter (soporta Unicode: •, acentos, ñ, etc.)
   // Esto reemplaza Helvetica base que no puede renderizar bullets/emojis.
@@ -141,14 +121,6 @@ Future<Uint8List> _crearInformeIndividualPDF(
     ),
   );
 
-  // Classify the answers into per-test result cards.
-  final List<ResultadoTamizaje> resultados = tieneDatosTamizaje
-      ? [
-          ...clasificarRespuestas(respuestas),
-          if (resultadoAssist != null) resultadoAssist,
-        ]
-      : [];
-
   // Build the full list of body widgets once. MultiPage will paginate them
   // automatically. The branded header is rendered on every page via the
   // `header` callback.
@@ -164,10 +136,9 @@ Future<Uint8List> _crearInformeIndividualPDF(
     body.add(pw.SizedBox(height: 30));
   } else {
     body.addAll(buildTamizajeCards(resultados, assets: assets));
-    body.add(pw.SizedBox(height: 30));
   }
 
-  body.add(buildObservacionesSection(notasProfesional));
+  // Las observaciones del profesional van dentro de cada tarjeta.
   body.add(pw.SizedBox(height: 68));
 
   final nombreProfesional =

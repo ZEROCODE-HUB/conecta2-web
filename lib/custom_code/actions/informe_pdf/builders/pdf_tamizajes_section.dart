@@ -1,18 +1,15 @@
 // Tamizaje processing + card builders styled to match the reference PDF.
 
 import '/tamizajes/shared/assist_utils.dart';
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '/backend/schema/structs/index.dart';
-import '/components/rich_text_notas/rich_text_notas_widget.dart'
-    show quillDeltaToPlainText;
 
 import '../helpers/pdf_assets.dart';
 import '../helpers/pdf_styles.dart';
+import 'pdf_observaciones.dart' show parseQuillDeltaToPdf;
 
 const List<String> _kTodasLasSustancias = [
   'Tabaco/Cigarrillo',
@@ -83,43 +80,17 @@ List<RespustaTamizajeStruct> completarSustanciasFaltantes(
   }
 }
 
-String _mergeQuillDeltas(List<String> deltas) {
-  if (deltas.isEmpty) return '';
-  final mergedOps = <dynamic>[];
-  for (var i = 0; i < deltas.length; i++) {
-    final delta = deltas[i].trim();
-    if (delta.isEmpty) continue;
-    
-    try {
-      final decoded = jsonDecode(delta);
-      if (decoded is List) {
-        mergedOps.addAll(decoded);
-      } else if (decoded is Map && decoded.containsKey('ops') && decoded['ops'] is List) {
-        mergedOps.addAll(decoded['ops'] as List);
-      } else {
-        mergedOps.add({"insert": "$delta\n"});
-      }
-    } catch (_) {
-      mergedOps.add({"insert": "$delta\n"});
-    }
-    
-    if (i < deltas.length - 1) {
-      mergedOps.add({"insert": "\n\n"});
-    }
-  }
-  return jsonEncode(mergedOps);
-}
-
-Future<Map<String, dynamic>> obtenerRespuestasTamizajeSeguro(
+/// Lee los tamizajes del usuario y devuelve **un resultado por documento**
+/// `Respuestas`, con su fecha y sus propias notas del profesional, del más
+/// reciente al más antiguo. Lee las dos rutas donde se guardan
+/// (`/Encuestas/{id}/Respuestas` por `User_respuesta` y
+/// `/users/{uid}/Respuestas`) sin duplicar documentos.
+Future<List<ResultadoTamizaje>> obtenerTamizajesPorDocumento(
     String userUid) async {
+  final resultados = <ResultadoTamizaje>[];
   try {
-    final respuestasAgregadas = <RespustaTamizajeStruct>[];
-    final notasAgregadas = <String>[];
-    final encuestasCache = <String, Map<String, dynamic>?>{};
-    final assistCandidatos =
-        <({Map<String, dynamic> data, Map<String, dynamic> encuesta})>[];
-
     final userRef = FirebaseFirestore.instance.collection('users').doc(userUid);
+    final docs = <String, DocumentSnapshot<Map<String, dynamic>>>{};
 
     // 1) Respuestas bajo /Encuestas/{id}/Respuestas filtradas por userRespuesta
     try {
@@ -128,71 +99,111 @@ Future<Map<String, dynamic>> obtenerRespuestasTamizajeSeguro(
           .where('User_respuesta', isEqualTo: userRef)
           .get()
           .timeout(const Duration(seconds: 12));
-
       for (final doc in snap.docs) {
-        // ASSIST (Consumo de SPA): se resume en su propia tarjeta por
-        // sustancia; no pasa al agrupamiento genérico por `Tipo`.
-        final encuestaRef = doc.reference.parent.parent;
-        if (encuestaRef != null && encuestaRef.parent.id == 'Encuestas') {
-          final enc = await _encuestaDe(encuestaRef, encuestasCache);
-          if (enc != null &&
-              esEncuestaAssist((enc['categoria'] ?? '').toString(),
-                  (enc['titulo'] ?? '').toString())) {
-            final data = doc.data();
-            final notas = (data['notasProfesional'] ?? '').toString();
-            if (notas.isNotEmpty) notasAgregadas.add(notas);
-            if (data['invalidado'] != true) {
-              assistCandidatos.add((data: data, encuesta: enc));
-            }
-            continue;
-          }
-        }
-        _procesarDocRespuesta(doc.data(), respuestasAgregadas, notasAgregadas);
+        docs[doc.reference.path] = doc;
       }
     } catch (e) {
       print('  Info: no se pudo leer collectionGroup Respuestas: $e');
     }
 
-    // 2) Fallback: Respuestas guardadas bajo /users/{userUid}/Respuestas/...
-    if (respuestasAgregadas.isEmpty) {
-      try {
-        final snap = await userRef
-            .collection('Respuestas')
-            .get()
-            .timeout(const Duration(seconds: 10));
-        for (final doc in snap.docs) {
-          _procesarDocRespuesta(
-              doc.data(), respuestasAgregadas, notasAgregadas);
-        }
-      } catch (e) {
-        print('  Info: no se pudo leer users/$userUid/Respuestas: $e');
+    // 2) Respuestas guardadas bajo /users/{userUid}/Respuestas/...
+    try {
+      final snap = await userRef
+          .collection('Respuestas')
+          .get()
+          .timeout(const Duration(seconds: 10));
+      for (final doc in snap.docs) {
+        docs[doc.reference.path] = doc;
       }
+    } catch (e) {
+      print('  Info: no se pudo leer users/$userUid/Respuestas: $e');
     }
 
-    final assist = _resultadoAssistMasReciente(assistCandidatos);
-
-    if (respuestasAgregadas.isNotEmpty || assist != null) {
-      return {
-        'respuestas': respuestasAgregadas,
-        'completadoSinRespuestas': false,
-        'notasProfesional': _mergeQuillDeltas(notasAgregadas),
-        'assist': assist,
-      };
+    final encuestasCache = <String, Map<String, dynamic>?>{};
+    for (final doc in docs.values) {
+      final r = await _resultadoDeDocumento(doc, encuestasCache);
+      if (r != null) resultados.add(r);
     }
 
-    return {
-      'respuestas': <RespustaTamizajeStruct>[],
-      'completadoSinRespuestas': false,
-      'notasProfesional': '',
-    };
+    resultados.sort((a, b) {
+      if (a.fecha == null && b.fecha == null) return 0;
+      if (a.fecha == null) return 1;
+      if (b.fecha == null) return -1;
+      return b.fecha!.compareTo(a.fecha!);
+    });
   } catch (e) {
     print('  ERROR al obtener respuestas de tamizaje: $e');
-    return {
-      'respuestas': <RespustaTamizajeStruct>[],
-      'completadoSinRespuestas': false,
-      'notasProfesional': '',
-    };
   }
+  return resultados;
+}
+
+/// Clasifica un único doc de `Respuestas` como una tarjeta propia.
+/// Devuelve `null` si no tiene ítems (y no está invalidado).
+Future<ResultadoTamizaje?> _resultadoDeDocumento(
+  DocumentSnapshot<Map<String, dynamic>> doc,
+  Map<String, Map<String, dynamic>?> encuestasCache,
+) async {
+  try {
+    final data = doc.data() ?? const <String, dynamic>{};
+
+    // Encuesta padre: /Encuestas/{id}/Respuestas/{doc}
+    Map<String, dynamic>? encuesta;
+    final encuestaRef = doc.reference.parent.parent;
+    if (encuestaRef != null && encuestaRef.parent.id == 'Encuestas') {
+      encuesta = await _encuestaDe(encuestaRef, encuestasCache);
+    }
+
+    final titulo =
+        (data['Titlo'] ?? data['titlo'] ?? encuesta?['titulo'] ?? '')
+            .toString()
+            .trim();
+    final esAssist = esEncuestaAssist(
+        (encuesta?['categoria'] ?? '').toString(),
+        titulo.isNotEmpty ? titulo : (encuesta?['titulo'] ?? '').toString());
+    final fecha = _fechaRespuesta(data);
+    final notas = _notasDe(data);
+
+    if (data['invalidado'] == true) {
+      final key = esAssist ? 'sustancias' : _clasificarTipo(titulo);
+      final motivo = (data['motivoInvalidacion'] ?? '').toString().trim();
+      return ResultadoTamizaje(
+        titulo: _tituloParaTipo(key, titulo.isEmpty ? 'Tamizaje' : titulo),
+        nivelRiesgo: 'N/A',
+        puntaje: 0,
+        subPuntajes: const {},
+        estado: 'INVALIDADA',
+        escalaLabel: motivo.isEmpty ? '' : 'MOTIVO:',
+        escalaSubtitulo: motivo,
+        ideacionSuicida: false,
+        impactoImportante: false,
+        tipoKey: key,
+        fecha: fecha,
+        notas: notas,
+      );
+    }
+
+    // ASSIST (Consumo de SPA): resumen por sustancia evaluada.
+    if (esAssist && encuesta != null) {
+      return _resultadoAssistDe(data, encuesta, fecha: fecha, notas: notas);
+    }
+
+    final items = <RespustaTamizajeStruct>[];
+    _procesarDocRespuesta(data, items);
+    if (items.isEmpty) return null;
+    final tipoDoc = titulo.isNotEmpty ? titulo : items.first.tipo;
+    return _clasificarUnTamizaje(tipoDoc, items)
+        .conDocumento(fecha: fecha, notas: notas);
+  } catch (e) {
+    print('  Error procesando doc de tamizaje: $e');
+    return null;
+  }
+}
+
+/// Notas del profesional de un doc de `Respuestas` (Quill delta, HTML o texto).
+String _notasDe(Map<String, dynamic> data) {
+  final notas = (data['notasProfesional'] ?? '').toString().trim();
+  if (notas.isNotEmpty) return notas;
+  return (data['notas_profesional'] ?? '').toString().trim();
 }
 
 Future<Map<String, dynamic>?> _encuestaDe(
@@ -217,25 +228,18 @@ DateTime? _fechaRespuesta(Map<String, dynamic> data) {
   return null;
 }
 
-/// Tarjeta ASSIST con la última aplicación válida: nivel global = peor
-/// sustancia y sub-puntajes por sustancia evaluada.
-ResultadoTamizaje? _resultadoAssistMasReciente(
-    List<({Map<String, dynamic> data, Map<String, dynamic> encuesta})>
-        candidatos) {
-  if (candidatos.isEmpty) return null;
-  final ordenados = [...candidatos]..sort((a, b) {
-      final fa = _fechaRespuesta(a.data);
-      final fb = _fechaRespuesta(b.data);
-      if (fa == null && fb == null) return 0;
-      if (fa == null) return 1;
-      if (fb == null) return -1;
-      return fb.compareTo(fa);
-    });
-  final ultimo = ordenados.first;
+/// Tarjeta ASSIST de una aplicación: nivel global = peor sustancia y
+/// sub-puntajes por sustancia evaluada.
+ResultadoTamizaje _resultadoAssistDe(
+  Map<String, dynamic> data,
+  Map<String, dynamic> encuesta, {
+  DateTime? fecha,
+  String notas = '',
+}) {
   final r = evaluarAssist(
-    preguntas: (ultimo.encuesta['Preguntas'] as List?) ?? const [],
-    test: (ultimo.data['test'] as List?) ?? const [],
-    alertas: (ultimo.encuesta['alertas'] as List?) ?? const [],
+    preguntas: (encuesta['Preguntas'] as List?) ?? const [],
+    test: (data['test'] as List?) ?? const [],
+    alertas: (encuesta['alertas'] as List?) ?? const [],
   );
   final global = r.nivelGlobal;
   final peor = r.porSustancia.values
@@ -260,15 +264,16 @@ ResultadoTamizaje? _resultadoAssistMasReciente(
     ideacionSuicida: false,
     impactoImportante: global == 'Alto',
     tipoKey: 'sustancias',
+    fecha: fecha,
+    notas: notas,
   );
 }
 
-/// Procesa un doc de Respuesta (array `test` o `Respusta`) y agrega los
-/// items al listado y las notas profesionales recopiladas.
+/// Procesa un doc de Respuesta (array `test` o `Respusta`) y agrega sus
+/// items al listado.
 void _procesarDocRespuesta(
   Map<String, dynamic> data,
   List<RespustaTamizajeStruct> respuestas,
-  List<String> notas,
 ) {
   try {
     // Nombre del tamizaje para prefijar la pregunta y poder reagruparlo luego.
@@ -282,7 +287,7 @@ void _procesarDocRespuesta(
     for (final item in items) {
       if (item is! Map) continue;
       final m = Map<String, dynamic>.from(item);
-      
+
       final structItem = RespuestaTestStruct.fromMap(m);
       String respuestaText = structItem.respuesta.trim();
       if (respuestaText.isEmpty) {
@@ -310,11 +315,6 @@ void _procesarDocRespuesta(
         nPregunta: (m['NPregunta'] as num?)?.toInt(),
       ));
     }
-
-    final notas1 = data['notasProfesional']?.toString() ?? '';
-    final notas2 = data['notas_profesional']?.toString() ?? '';
-    if (notas1.isNotEmpty) notas.add(notas1);
-    if (notas2.isNotEmpty) notas.add(notas2);
   } catch (e) {
     print('  Error procesando doc de respuesta: $e');
   }
@@ -421,6 +421,8 @@ class ResultadoTamizaje {
   final bool ideacionSuicida;
   final bool impactoImportante;
   final String tipoKey; // internal key (cdi, hamilton, bdi, srq, rosemberg, otros)
+  final DateTime? fecha; // fecha de aplicación del tamizaje
+  final String notas; // notas del profesional (Quill delta, HTML o texto)
 
   ResultadoTamizaje({
     required this.titulo,
@@ -433,7 +435,26 @@ class ResultadoTamizaje {
     required this.ideacionSuicida,
     required this.impactoImportante,
     required this.tipoKey,
+    this.fecha,
+    this.notas = '',
   });
+
+  /// Copia con la fecha y las notas del doc de `Respuestas` de origen.
+  ResultadoTamizaje conDocumento({DateTime? fecha, String notas = ''}) =>
+      ResultadoTamizaje(
+        titulo: titulo,
+        nivelRiesgo: nivelRiesgo,
+        puntaje: puntaje,
+        subPuntajes: subPuntajes,
+        estado: estado,
+        escalaLabel: escalaLabel,
+        escalaSubtitulo: escalaSubtitulo,
+        ideacionSuicida: ideacionSuicida,
+        impactoImportante: impactoImportante,
+        tipoKey: tipoKey,
+        fecha: fecha,
+        notas: notas,
+      );
 }
 
 /// Maps a raw `Tipo` string to a normalized bucket key.
@@ -753,29 +774,38 @@ List<ResultadoTamizaje> clasificarRespuestas(
   }
   final resultados = <ResultadoTamizaje>[];
   buckets.forEach((key, rs) {
-    switch (key) {
-      case 'cdi':
-        resultados.add(_clasificarCDI(rs));
-        break;
-      case 'hamilton':
-        resultados.add(_clasificarHamilton(rs));
-        break;
-      case 'rosemberg':
-        resultados.add(_clasificarRosemberg(rs));
-        break;
-      case 'srq':
-        resultados.add(_clasificarSRQ(rs));
-        break;
-      case 'bdi':
-        resultados.add(_clasificarBDI(rs));
-        break;
-      default:
-        final tipoOriginal =
-            rs.isNotEmpty ? rs.first.tipo : 'Tamizaje';
-        resultados.add(_clasificarGenerico(tipoOriginal, rs));
-    }
+    final tipoOriginal = rs.isNotEmpty ? rs.first.tipo : 'Tamizaje';
+    resultados.add(_clasificarPorClave(key, tipoOriginal, rs));
   });
   return resultados;
+}
+
+/// Clasifica los ítems de **un** tamizaje (un doc de `Respuestas`) como una
+/// sola tarjeta. La clave sale del título del tamizaje y, si no se reconoce,
+/// del `Tipo` del primer ítem.
+ResultadoTamizaje _clasificarUnTamizaje(
+    String tipoDoc, List<RespustaTamizajeStruct> rs) {
+  var key = _clasificarTipo(tipoDoc);
+  if (key == 'otros' && rs.isNotEmpty) key = _clasificarTipo(rs.first.tipo);
+  return _clasificarPorClave(key, tipoDoc, rs);
+}
+
+ResultadoTamizaje _clasificarPorClave(
+    String key, String tipoOriginal, List<RespustaTamizajeStruct> rs) {
+  switch (key) {
+    case 'cdi':
+      return _clasificarCDI(rs);
+    case 'hamilton':
+      return _clasificarHamilton(rs);
+    case 'rosemberg':
+      return _clasificarRosemberg(rs);
+    case 'srq':
+      return _clasificarSRQ(rs);
+    case 'bdi':
+      return _clasificarBDI(rs);
+    default:
+      return _clasificarGenerico(tipoOriginal, rs);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -937,8 +967,10 @@ pw.Widget buildTamizajeCard(ResultadoTamizaje r, {PdfAssets? assets}) {
     tipoKey: r.tipoKey,
     titulo: r.titulo,
   );
-  final mostrarImpacto = r.impactoImportante && !r.ideacionSuicida;
-  final mostrarVital = r.ideacionSuicida;
+  final invalidada = r.estado == 'INVALIDADA';
+  final mostrarImpacto =
+      !invalidada && r.impactoImportante && !r.ideacionSuicida;
+  final mostrarVital = !invalidada && r.ideacionSuicida;
 
   final puntajeLabel =
       r.tipoKey == 'cdi' ? 'PUNTAJE GLOBAL:' : 'PUNTAJE:';
@@ -977,17 +1009,25 @@ pw.Widget buildTamizajeCard(ResultadoTamizaje r, {PdfAssets? assets}) {
                     r.nivelRiesgo,
                     valueColor: colorValorNivelRiesgo(r.nivelRiesgo),
                   ),
+                  if (!invalidada) ...[
+                    pw.SizedBox(height: 4),
+                    pw.Row(
+                      children: [
+                        _kvPair(puntajeLabel, r.puntaje.toString()),
+                        if (r.subPuntajes.isNotEmpty) pw.SizedBox(width: 18),
+                        if (r.subPuntajes.isNotEmpty)
+                          pw.Expanded(
+                              child: _buildSubPuntajesRow(r.subPuntajes)),
+                      ],
+                    ),
+                  ],
                   pw.SizedBox(height: 4),
-                  pw.Row(
-                    children: [
-                      _kvPair(puntajeLabel, r.puntaje.toString()),
-                      if (r.subPuntajes.isNotEmpty) pw.SizedBox(width: 18),
-                      if (r.subPuntajes.isNotEmpty)
-                        pw.Expanded(child: _buildSubPuntajesRow(r.subPuntajes)),
-                    ],
-                  ),
-                  pw.SizedBox(height: 4),
-                  _kvPair('ESTADO:', r.estado),
+                  _kvPair('ESTADO:', r.estado,
+                      valueColor: invalidada ? PdfBrand.redAlert : null),
+                  if (r.fecha != null) ...[
+                    pw.SizedBox(height: 4),
+                    _kvPair('FECHA:', _formatearFecha(r.fecha!)),
+                  ],
                   if (r.escalaLabel.isNotEmpty) ...[
                     pw.SizedBox(height: 4),
                     pw.Text(
@@ -1019,8 +1059,37 @@ pw.Widget buildTamizajeCard(ResultadoTamizaje r, {PdfAssets? assets}) {
               ),
           ],
         ),
+        _buildObservacionesTamizaje(r.notas),
       ],
     ),
+  );
+}
+
+String _formatearFecha(DateTime f) {
+  String dos(int n) => n.toString().padLeft(2, '0');
+  return '${dos(f.day)}/${dos(f.month)}/${f.year}';
+}
+
+/// Notas del profesional de este tamizaje, dentro de su propia tarjeta.
+pw.Widget _buildObservacionesTamizaje(String notas) {
+  final baseStyle = pw.TextStyle(fontSize: 8.5, color: PdfBrand.darkGrey);
+  return pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      pw.SizedBox(height: 10),
+      pw.Divider(height: 1, thickness: 0.5, color: PdfColors.grey400),
+      pw.SizedBox(height: 8),
+      pw.Text(
+        'OBSERVACIONES DEL PROFESIONAL:',
+        style: pw.TextStyle(
+          fontSize: 8.5,
+          fontWeight: pw.FontWeight.bold,
+          color: PdfBrand.cardGrey,
+        ),
+      ),
+      pw.SizedBox(height: 4),
+      ...parseQuillDeltaToPdf(notas, baseStyle),
+    ],
   );
 }
 
