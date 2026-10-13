@@ -541,6 +541,35 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
       ? limpiarAlertasAssist(FFAppState().listaAlertasEnvio)
       : FFAppState().listaAlertasEnvio;
 
+  /// Guarda lo editado (incluidas preguntas y roles, que en Editar solo viven
+  /// en memoria) conservando el estado de publicación actual del doc.
+  /// Devuelve el `publicado` con el que quedó.
+  Future<bool> _guardarEdicion() async {
+    final actual = await EncuestasRecord.getDocumentOnce(widget.encuestaID!);
+    await widget.encuestaID!.update({
+      ..._payloadEncuestaRecord(
+        publicado: actual.publicado,
+        titulo: _model.textController1.text,
+        descripcion: _model.descTextController.text,
+      ),
+      ...mapToFirestore(
+        {
+          'Preguntas': _model.preguntas
+              .map((p) => getPreguntasEncuestaFirestoreData(p, true))
+              .toList(),
+          'Roles': _model.roleValue,
+          'alertas': getAlertaListFirestoreData(
+            _alertasParaGuardar(),
+          ),
+          'alertasEspeciales': _model.alertasEspeciales
+              .map((a) => getAlertaEspecialFirestoreData(a, true))
+              .toList(),
+        },
+      ),
+    });
+    return actual.publicado;
+  }
+
   List<Widget> _buildActionButtons(BuildContext context) {
     return [
       Padding(
@@ -555,25 +584,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
               return;
             }
             // Previsualizar no cambia el estado de publicación.
-            final actual =
-                await EncuestasRecord.getDocumentOnce(widget.encuestaID!);
-            await widget.encuestaID!.update({
-              ..._payloadEncuestaRecord(
-                publicado: actual.publicado,
-                titulo: _model.textController1.text,
-                descripcion: _model.descTextController.text,
-              ),
-              ...mapToFirestore(
-                {
-                  'alertas': getAlertaListFirestoreData(
-                    _alertasParaGuardar(),
-                  ),
-                  'alertasEspeciales': _model.alertasEspeciales
-                      .map((a) => getAlertaEspecialFirestoreData(a, true))
-                      .toList(),
-                },
-              ),
-            });
+            await _guardarEdicion();
             FFAppState().selectUser = 'VistaPrevia';
             FFAppState().createEncuesta = false;
             _model.updatePage(() {});
@@ -619,27 +630,23 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
             if (!_alertasAssistValidas(context)) {
               return;
             }
-            await widget.encuestaID!.update({
-              ..._payloadEncuestaRecord(
-                publicado: true,
-                titulo: _model.textController1.text,
-                descripcion: _model.descTextController.text,
-              ),
-              ...mapToFirestore(
-                {
-                  'alertas': getAlertaListFirestoreData(
-                    _alertasParaGuardar(),
-                  ),
-                  'alertasEspeciales': _model.alertasEspeciales
-                      .map((a) => getAlertaEspecialFirestoreData(a, true))
-                      .toList(),
-                },
-              ),
-            });
+            // Un borrador sigue en borrador; uno publicado sigue publicado.
+            final publicado = await _guardarEdicion();
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      publicado ? 'Cambios guardados' : 'Borrador guardado'),
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            }
             FFAppState().selectUser = '';
             safeSetState(() {});
           },
-          text: 'Guardar como borrador',
+          text: widget.docencuestas2?.publicado == true
+              ? 'Guardar cambios'
+              : 'Guardar como borrador',
           options: FFButtonOptions(
             width: MediaQuery.sizeOf(context).width * 1.0,
             height: 54.0,
