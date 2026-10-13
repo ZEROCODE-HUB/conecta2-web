@@ -1,10 +1,9 @@
-// Legacy "Imprimir" PDF portado del proyecto viejo tal cual para
-// preservar el comportamiento que el equipo clinico ya tenia validado.
-// Los defensive null checks del original se mantienen intencionalmente.
+// Legacy "Imprimir" PDF portado del proyecto viejo. Los defensive null
+// checks del original se mantienen intencionalmente.
 // ignore_for_file: unnecessary_null_comparison, unnecessary_non_null_assertion, invalid_null_aware_operator, dead_null_aware_expression
 
 import '/tamizajes/shared/assist_utils.dart'
-    show esTipoCondicionante, esTipoSustancia;
+    show esEncuestaAssist, evaluarAssist, itemSustanciaNoAplica, ResultadoAssist;
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -12,9 +11,9 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-/// "Imprimir" - informe individual PDF con datos detallados crudos:
-/// tabla plana de todas las respuestas del tamizaje, dimensiones, y
-/// resumen con nivel de riesgo. Diseño sobrio, sin branding.
+/// "Imprimir" - informe individual PDF con datos detallados crudos: datos
+/// del paciente y, por cada tamizaje realizado, su nombre, fecha, origen
+/// (app o manual), resumen propio y sus preguntas y respuestas.
 ///
 /// Para el informe branded ("Reporte") con cards por tamizaje y
 /// factores de alerta, ver `generarInformeIndividualPDF` en
@@ -22,11 +21,9 @@ import 'package:printing/printing.dart';
 Future generarImprimirPDF(String userUid) async {
   // Variables para tracking del estado
   Map<String, dynamic>? datosPersonales;
-  List<RespustaTamizajeStruct> respuestasTamizaje = [];
+  List<_TamizajeImprimir> tamizajes = [];
   String nombreCompleto = 'Usuario';
   bool tieneDatosPersonales = false;
-  bool tieneDatosTamizaje = false;
-  bool tamizajeCompletadoSinRespuestas = false;
   List<String> erroresEncontrados = [];
 
   try {
@@ -64,87 +61,31 @@ Future generarImprimirPDF(String userUid) async {
       nombreCompleto = 'Usuario (Error en datos)';
     }
 
-    // PASO 2: Obtener respuestas de tamizaje (CON MANEJO DE ERRORES)
+    // PASO 2: Obtener los tamizajes, cada uno con sus respuestas
     try {
-      print('PASO 2: Obteniendo respuestas de tamizaje...');
-      var resultado = await _obtenerRespuestasTamizajeSeguro(userUid);
-      respuestasTamizaje =
-          List<RespustaTamizajeStruct>.from(resultado['respuestas'] ?? []);
-      tamizajeCompletadoSinRespuestas = resultado['completadoSinRespuestas'];
-
-      if (respuestasTamizaje.isNotEmpty) {
-        tieneDatosTamizaje = true;
-        print(
-            '✓ Respuestas de tamizaje obtenidas: ${respuestasTamizaje.length} respuestas');
-
-        // NUEVO: Verificar si son respuestas por defecto
-        if (tamizajeCompletadoSinRespuestas) {
-          print(
-              '⚠ Mostrando respuestas por defecto (Nunca) para tamizaje vacío');
-          erroresEncontrados.add(
-              'Tamizaje completado sin respuestas registradas - mostrando valores por defecto (Nunca)');
-        } else {
-          // Completar sustancias no evaluadas SOLO si el usuario tiene un
-          // ASSIST (antes se agregaban respuestas "Nunca" inventadas al
-          // informe de cualquier usuario con tamizajes).
-          final tieneAssist = respuestasTamizaje.any((r) =>
-              esTipoSustancia(r.tipo, '-') || esTipoCondicionante(r.tipo));
-          if (tieneAssist) {
-            respuestasTamizaje =
-                _completarSustanciasFaltantes(respuestasTamizaje);
-          }
-        }
+      print('PASO 2: Obteniendo tamizajes...');
+      tamizajes = await _obtenerTamizajesSeguro(userUid);
+      if (tamizajes.isNotEmpty) {
+        print('✓ Tamizajes obtenidos: ${tamizajes.length}');
       } else {
-        print('⚠ No se encontraron respuestas de tamizaje');
+        print('⚠ No se encontraron tamizajes');
         erroresEncontrados.add('Sin respuestas de tamizaje disponibles');
       }
     } catch (e) {
-      print('⚠ ERROR al obtener tamizaje: $e');
+      print('⚠ ERROR al obtener tamizajes: $e');
       erroresEncontrados.add('Error al obtener tamizaje: ${e.toString()}');
-      respuestasTamizaje = [];
-      tieneDatosTamizaje = false;
+      tamizajes = [];
     }
 
-    // PASO 3: Generar interpretación (SOLO SI HAY DATOS DE TAMIZAJE)
-    String interpretacionAutomatica = '';
-    Map<String, dynamic> datosAnalisis = {};
-
-    if (tieneDatosTamizaje && respuestasTamizaje.isNotEmpty) {
-      try {
-        print('PASO 3: Generando interpretación del tamizaje...');
-        interpretacionAutomatica =
-            _generarInterpretacionIndividualSegura(respuestasTamizaje);
-        datosAnalisis =
-            _procesarDatosParaAnalisisIndividualSeguro(respuestasTamizaje);
-        print('✓ Interpretación generada correctamente');
-      } catch (e) {
-        print('⚠ ERROR al generar interpretación: $e');
-        erroresEncontrados
-            .add('Error al generar interpretación: ${e.toString()}');
-        interpretacionAutomatica =
-            'No se pudo generar la interpretación automática.';
-        datosAnalisis = _generarDatosAnalisisPorDefecto();
-      }
-    } else {
-      print('⚠ Sin datos de tamizaje, omitiendo interpretación');
-      interpretacionAutomatica =
-          'No hay datos de tamizaje disponibles para este usuario.';
-      datosAnalisis = _generarDatosAnalisisPorDefecto();
-    }
-
-    // PASO 4: Crear el PDF (SIEMPRE SE EJECUTA)
+    // PASO 3: Crear el PDF (SIEMPRE SE EJECUTA)
     Uint8List? pdfBytes;
     try {
-      print('PASO 4: Creando PDF del informe...');
+      print('PASO 3: Creando PDF del informe...');
       pdfBytes = await _crearInformeIndividualPDFSeguro(
         nombreCompleto,
         datosPersonales!,
-        respuestasTamizaje,
-        interpretacionAutomatica,
-        datosAnalisis,
+        tamizajes,
         tieneDatosPersonales,
-        tieneDatosTamizaje,
-        tamizajeCompletadoSinRespuestas,
         erroresEncontrados,
       );
       print('✓ PDF creado exitosamente');
@@ -169,10 +110,10 @@ Future generarImprimirPDF(String userUid) async {
       }
     }
 
-    // PASO 5: Mostrar el PDF (CON MANEJO DE ERRORES)
+    // PASO 4: Mostrar el PDF (CON MANEJO DE ERRORES)
     if (pdfBytes != null) {
       try {
-        print('PASO 5: Mostrando PDF...');
+        print('PASO 4: Mostrando PDF...');
         await _mostrarPDFIndividualSeguro(pdfBytes, nombreCompleto);
         print('✓ PDF mostrado exitosamente');
       } catch (e) {
@@ -384,219 +325,213 @@ Map<String, dynamic> _generarDatosPersonalesPorDefecto(String userUid) {
   };
 }
 
-/// NUEVA FUNCIÓN: Completa las sustancias faltantes con valor "Nunca"
-List<RespustaTamizajeStruct> _completarSustanciasFaltantes(
-    List<RespustaTamizajeStruct> respuestasExistentes) {
-  try {
-    print('  Completando sustancias faltantes...');
+/// Un tamizaje aplicado al usuario (un documento `Respuestas`) con sus
+/// preguntas y respuestas.
+class _TamizajeImprimir {
+  _TamizajeImprimir({
+    required this.titulo,
+    required this.fecha,
+    required this.esManual,
+    required this.realizadoPorNombre,
+    required this.invalidado,
+    required this.motivoInvalidacion,
+    required this.puntajeTotal,
+    required this.alertasEspeciales,
+    required this.assist,
+    required this.items,
+  });
 
-    // Lista completa de todas las sustancias que deben aparecer
-    List<String> todasLasSustancias = [
-      'Tabaco/Cigarrillo',
-      'Bebidas alcohólicas',
-      'Cannabis/Marihuana',
-      'Cocaína',
-      'Estimulantes tipo anfetamina',
-      'Inhalantes',
-      'Tranquilizantes o pastillas para dormir',
-      'Alucinógenos',
-      'Opiáceos',
-      'Otras drogas',
-    ];
+  final String titulo;
+  final DateTime? fecha;
+  final bool esManual;
+  final String realizadoPorNombre;
+  final bool invalidado;
+  final String motivoInvalidacion;
+  final int? puntajeTotal;
+  final List<String> alertasEspeciales;
 
-    // Crear un mapa de las sustancias que ya existen en las respuestas
-    Map<String, bool> sustanciasExistentes = {};
-    for (var respuesta in respuestasExistentes) {
-      for (var sustancia in todasLasSustancias) {
-        if (respuesta.pregunta?.contains(sustancia) == true) {
-          sustanciasExistentes[sustancia] = true;
-          break;
-        }
-      }
-    }
-
-    // Lista para resultados finales (comenzamos con las respuestas existentes)
-    List<RespustaTamizajeStruct> respuestasCompletas = [
-      ...respuestasExistentes
-    ];
-
-    // Agregar las sustancias faltantes
-    for (var sustancia in todasLasSustancias) {
-      if (!sustanciasExistentes.containsKey(sustancia)) {
-        respuestasCompletas.add(
-          RespustaTamizajeStruct(
-            pregunta:
-                '¿Con qué frecuencia ha consumido $sustancia en los últimos 3 meses?',
-            respuesta: 'No evaluada (no marcada en el condicionante)',
-          ),
-        );
-        print('  ✓ Agregada sustancia faltante: $sustancia');
-      }
-    }
-
-    print(
-        '  ✓ Total respuestas después de completar: ${respuestasCompletas.length}');
-    return respuestasCompletas;
-  } catch (e) {
-    print('  ERROR al completar sustancias faltantes: $e');
-    return respuestasExistentes;
-  }
+  /// Resultado por sustancia; solo para el ASSIST (Consumo de SPA).
+  final ResultadoAssist? assist;
+  final List<RespustaTamizajeStruct> items;
 }
 
-/// Genera respuestas por defecto con "Nunca" para todas las sustancias
-List<RespustaTamizajeStruct> _generarRespuestasPorDefecto() {
-  List<RespustaTamizajeStruct> respuestasDefault = [];
-
-  List<String> sustancias = [
-    'Tabaco/Cigarrillo',
-    'Bebidas alcohólicas',
-    'Cannabis/Marihuana',
-    'Cocaína',
-    'Estimulantes tipo anfetamina',
-    'Inhalantes',
-    'Tranquilizantes o pastillas para dormir',
-    'Alucinógenos',
-    'Opiáceos',
-    'Otras drogas',
-  ];
-
-  for (var sustancia in sustancias) {
-    try {
-      respuestasDefault.add(
-        RespustaTamizajeStruct(
-          pregunta:
-              '¿Con qué frecuencia ha consumido $sustancia en los últimos 3 meses?',
-          respuesta: 'Nunca',
-        ),
-      );
-    } catch (e) {
-      print('Error al crear respuesta por defecto para $sustancia: $e');
-    }
+/// Texto de la respuesta de un ítem, probando cada formato guardado.
+String _textoRespuestaItem(RespuestaTestStruct item) {
+  String texto = item.respuesta.trim();
+  if (texto.isEmpty) texto = item.respuestaSeleccionUnica.trim();
+  if (texto.isEmpty && item.respuestasSeleccionadas.isNotEmpty) {
+    texto = item.respuestasSeleccionadas.join(', ');
   }
-
-  print(
-      '  ✓ Generadas ${respuestasDefault.length} respuestas por defecto (Nunca)');
-  return respuestasDefault;
+  if (texto.isEmpty && item.respuestaSelection.isNotEmpty) {
+    texto = item.respuestaSelection.join(', ');
+  }
+  if (texto.isEmpty && item.respuestaTamizaje.isNotEmpty) {
+    texto = item.respuestaTamizaje.map((e) => e.etiqueta).join(', ');
+  }
+  return texto;
 }
 
-void _procesarDocRespuestaImprimir(
-  Map<String, dynamic> data,
-  List<RespustaTamizajeStruct> respuestas,
-) {
+Future<Map<String, dynamic>?> _leerDocCacheado(
+  DocumentReference ref,
+  Map<String, Map<String, dynamic>?> cache,
+) async {
+  if (cache.containsKey(ref.path)) return cache[ref.path];
   try {
-    final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
-    final List<dynamic> items = [];
-    if (data['test'] is List) items.addAll(data['test'] as List);
-    if (data['Respusta'] is List) items.addAll(data['Respusta'] as List);
+    final snap = await ref.get().timeout(const Duration(seconds: 8));
+    final data = snap.data();
+    cache[ref.path] = data is Map<String, dynamic> ? data : null;
+  } catch (_) {
+    cache[ref.path] = null;
+  }
+  return cache[ref.path];
+}
 
-    for (final item in items) {
-      if (item is! Map) continue;
-      final m = Map<String, dynamic>.from(item);
+/// Arma un tamizaje a partir de un doc de `Respuestas` y su encuesta padre.
+Future<_TamizajeImprimir?> _procesarDocTamizaje(
+  DocumentSnapshot<Map<String, dynamic>> doc,
+  Map<String, Map<String, dynamic>?> cache,
+) async {
+  try {
+    final data = doc.data() ?? const <String, dynamic>{};
 
-      final structItem = RespuestaTestStruct.fromMap(m);
-      String respuestaText = structItem.respuesta.trim();
-      if (respuestaText.isEmpty) {
-        respuestaText = structItem.respuestaSeleccionUnica.trim();
-      }
-      if (respuestaText.isEmpty &&
-          structItem.respuestasSeleccionadas.isNotEmpty) {
-        respuestaText = structItem.respuestasSeleccionadas.join(', ');
-      }
-      if (respuestaText.isEmpty && structItem.respuestaSelection.isNotEmpty) {
-        respuestaText = structItem.respuestaSelection.join(', ');
-      }
-      if (respuestaText.isEmpty && structItem.respuestaTamizaje.isNotEmpty) {
-        respuestaText =
-            structItem.respuestaTamizaje.map((e) => e.etiqueta).join(', ');
-      }
+    // Encuesta padre: /Encuestas/{id}/Respuestas/{doc}
+    Map<String, dynamic>? encuesta;
+    final encuestaRef = doc.reference.parent.parent;
+    if (encuestaRef != null && encuestaRef.parent.id == 'Encuestas') {
+      encuesta = await _leerDocCacheado(encuestaRef, cache);
+    }
+    final preguntasRaw = (encuesta?['Preguntas'] as List?) ?? const [];
+    final preguntas = [
+      for (final p in preguntasRaw)
+        if (p is Map) PreguntasEncuestaStruct.fromMap(Map<String, dynamic>.from(p)),
+    ];
 
-      final tipo = (m['Tipo'] ?? m['tipo'] ?? titulo).toString();
-      respuestas.add(RespustaTamizajeStruct(
+    final titulo = (data['Titlo'] ?? data['titlo'] ?? encuesta?['titulo'] ?? '')
+        .toString()
+        .trim();
+    final esAssist = esEncuestaAssist(
+        (encuesta?['categoria'] ?? '').toString(),
+        titulo.isNotEmpty ? titulo : (encuesta?['titulo'] ?? '').toString());
+
+    final rawItems = <dynamic>[
+      if (data['test'] is List) ...(data['test'] as List),
+      if (data['Respusta'] is List) ...(data['Respusta'] as List),
+    ];
+    final items = <RespustaTamizajeStruct>[];
+    for (final raw in rawItems) {
+      if (raw is! Map) continue;
+      final m = Map<String, dynamic>.from(raw);
+      final item = RespuestaTestStruct.fromMap(m);
+      // Las preguntas de sustancias no marcadas en el Condicionante no
+      // aplicaron: no se listan (igual que en el resto de la app).
+      if (esAssist && itemSustanciaNoAplica(item, preguntas)) continue;
+      final texto = _textoRespuestaItem(item);
+      items.add(RespustaTamizajeStruct(
         pregunta: m['Pregunta']?.toString() ??
             m['pregunta']?.toString() ??
             'Pregunta no disponible',
-        respuesta: respuestaText.isEmpty ? 'No respondida' : respuestaText,
-        tipo: tipo,
+        respuesta: texto.isEmpty ? 'No respondida' : texto,
+        tipo: (m['Tipo'] ?? m['tipo'] ?? titulo).toString(),
         trueAndFalse: (m['TrueAndFalse'] as num?)?.toInt(),
         nPregunta: (m['NPregunta'] as num?)?.toInt(),
       ));
     }
+
+    final esManual = data['tipoTamizaje'] == 'manual';
+    String realizadoPorNombre = '';
+    final realizadoPor = data['realizadoPor'];
+    if (esManual && realizadoPor is DocumentReference) {
+      final prof = await _leerDocCacheado(realizadoPor, cache);
+      realizadoPorNombre = (prof?['display_name'] ?? '').toString().trim();
+    }
+
+    final fechaRaw = data['Fecha'] ?? data['fecha'];
+    final invalidado = data['invalidado'] == true;
+
+    return _TamizajeImprimir(
+      titulo: titulo.isEmpty ? 'Tamizaje sin nombre' : titulo,
+      fecha: fechaRaw is Timestamp
+          ? fechaRaw.toDate()
+          : (fechaRaw is DateTime ? fechaRaw : null),
+      esManual: esManual,
+      realizadoPorNombre: realizadoPorNombre,
+      invalidado: invalidado,
+      motivoInvalidacion: (data['motivoInvalidacion'] ?? '').toString().trim(),
+      puntajeTotal: (data['puntajeTotal'] as num?)?.toInt(),
+      alertasEspeciales: [
+        if (data['alertasEspeciales'] is List)
+          for (final a in data['alertasEspeciales'] as List)
+            if (a.toString().trim().isNotEmpty) a.toString().trim(),
+      ],
+      assist: esAssist && !invalidado
+          ? evaluarAssist(
+              preguntas: preguntasRaw,
+              test: (data['test'] as List?) ?? const [],
+              alertas: (encuesta?['alertas'] as List?) ?? const [],
+            )
+          : null,
+      items: items,
+    );
   } catch (e) {
-    print('  Error procesando doc de respuesta (Imprimir): $e');
+    print('  Error procesando doc de tamizaje (Imprimir): $e');
+    return null;
   }
 }
 
-/// Obtiene respuestas de tamizaje de forma segura
-/// Ahora retorna Map con respuestas y flag de completado sin respuestas
-Future<Map<String, dynamic>> _obtenerRespuestasTamizajeSeguro(
-    String userUid) async {
+/// Obtiene los tamizajes del usuario, del más reciente al más antiguo.
+/// Lee las dos rutas donde se guardan (`/Encuestas/{id}/Respuestas` por
+/// `User_respuesta` y `/users/{uid}/Respuestas`) sin duplicar documentos.
+Future<List<_TamizajeImprimir>> _obtenerTamizajesSeguro(String userUid) async {
+  final userRef = FirebaseFirestore.instance.collection('users').doc(userUid);
+  final docs = <String, DocumentSnapshot<Map<String, dynamic>>>{};
+
   try {
-    print('  Buscando respuestas de tamizaje para usuario: $userUid');
-    final respuestasAgregadas = <RespustaTamizajeStruct>[];
-    final userRef = FirebaseFirestore.instance.collection('users').doc(userUid);
-
-    // 1) Respuestas bajo /Encuestas/{id}/Respuestas filtradas por userRespuesta
-    try {
-      final snap = await FirebaseFirestore.instance
-          .collectionGroup('Respuestas')
-          .where('User_respuesta', isEqualTo: userRef)
-          .get()
-          .timeout(const Duration(seconds: 12));
-
-      for (final doc in snap.docs) {
-        _procesarDocRespuestaImprimir(doc.data(), respuestasAgregadas);
-      }
-    } catch (e) {
-      print(
-          '  Info: no se pudo leer collectionGroup Respuestas en Imprimir: $e');
+    final snap = await FirebaseFirestore.instance
+        .collectionGroup('Respuestas')
+        .where('User_respuesta', isEqualTo: userRef)
+        .get()
+        .timeout(const Duration(seconds: 12));
+    for (final doc in snap.docs) {
+      docs[doc.reference.path] = doc;
     }
-
-    // 2) Fallback: Respuestas guardadas bajo /users/{userUid}/Respuestas/...
-    if (respuestasAgregadas.isEmpty) {
-      try {
-        final snap = await userRef
-            .collection('Respuestas')
-            .get()
-            .timeout(const Duration(seconds: 10));
-        for (final doc in snap.docs) {
-          _procesarDocRespuestaImprimir(doc.data(), respuestasAgregadas);
-        }
-      } catch (e) {
-        print(
-            '  Info: no se pudo leer users/$userUid/Respuestas en Imprimir: $e');
-      }
-    }
-
-    if (respuestasAgregadas.isNotEmpty) {
-      return {
-        'respuestas': respuestasAgregadas,
-        'completadoSinRespuestas': false,
-      };
-    }
-
-    return {
-      'respuestas': <RespustaTamizajeStruct>[],
-      'completadoSinRespuestas': false,
-    };
   } catch (e) {
-    print('  ERROR al obtener respuestas de tamizaje en Imprimir: $e');
-    return {
-      'respuestas': <RespustaTamizajeStruct>[],
-      'completadoSinRespuestas': false,
-    };
+    print('  Info: no se pudo leer collectionGroup Respuestas en Imprimir: $e');
   }
+
+  try {
+    final snap = await userRef
+        .collection('Respuestas')
+        .get()
+        .timeout(const Duration(seconds: 10));
+    for (final doc in snap.docs) {
+      docs[doc.reference.path] = doc;
+    }
+  } catch (e) {
+    print('  Info: no se pudo leer users/$userUid/Respuestas en Imprimir: $e');
+  }
+
+  final cache = <String, Map<String, dynamic>?>{};
+  final tamizajes = <_TamizajeImprimir>[];
+  for (final doc in docs.values) {
+    final t = await _procesarDocTamizaje(doc, cache);
+    if (t != null && (t.items.isNotEmpty || t.invalidado)) tamizajes.add(t);
+  }
+
+  tamizajes.sort((a, b) {
+    if (a.fecha == null && b.fecha == null) return 0;
+    if (a.fecha == null) return 1;
+    if (b.fecha == null) return -1;
+    return b.fecha!.compareTo(a.fecha!);
+  });
+  return tamizajes;
 }
 
 /// Crea el PDF del informe con manejo robusto de errores
 Future<Uint8List> _crearInformeIndividualPDFSeguro(
   String nombrePaciente,
   Map<String, dynamic> datosPersonales,
-  List<RespustaTamizajeStruct> respuestas,
-  String interpretacion,
-  Map<String, dynamic> datosAnalisis,
+  List<_TamizajeImprimir> tamizajes,
   bool tieneDatosPersonales,
-  bool tieneDatosTamizaje,
-  bool tamizajeCompletadoSinRespuestas,
   List<String> errores,
 ) async {
   try {
@@ -657,15 +592,12 @@ Future<Uint8List> _crearInformeIndividualPDFSeguro(
     ));
     contenidoPDF.add(pw.SizedBox(height: 20));
 
-    // Incluir sección de tamizaje SOLO si hay datos
-    if (tieneDatosTamizaje && respuestas.isNotEmpty) {
+    // Incluir sección de tamizajes SOLO si hay datos
+    if (tamizajes.isNotEmpty) {
       try {
-        contenidoPDF.add(_buildSeccionTamizajeSegura(
-          respuestas,
-          interpretacion,
-          datosAnalisis,
-          tamizajeCompletadoSinRespuestas,
-        ));
+        // Se agregan como widgets sueltos (no una sola Column) para que
+        // MultiPage pueda partir los tamizajes largos entre páginas.
+        contenidoPDF.addAll(_buildSeccionTamizajesSegura(tamizajes));
         contenidoPDF.add(pw.SizedBox(height: 20));
       } catch (e) {
         print('  Error al construir sección de tamizaje: $e');
@@ -953,207 +885,151 @@ pw.Widget _buildCampoInfoSeguro(String etiqueta, String valor) {
   );
 }
 
-pw.Widget _buildSeccionTamizajeSegura(
-  List<RespustaTamizajeStruct> respuestas,
-  String interpretacion,
-  Map<String, dynamic> datosAnalisis,
-  bool tamizajeCompletadoSinRespuestas,
-) {
-  return pw.Column(
-    crossAxisAlignment: pw.CrossAxisAlignment.start,
-    children: [
-      pw.Text(
-        'RESULTADOS DEL TAMIZAJE',
-        style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-      ),
-      pw.Divider(),
-      pw.SizedBox(height: 10),
+/// Sección de tamizajes: un bloque por tamizaje (cabecera + preguntas),
+/// numerando las preguntas desde 1 dentro de cada uno.
+List<pw.Widget> _buildSeccionTamizajesSegura(
+    List<_TamizajeImprimir> tamizajes) {
+  final widgets = <pw.Widget>[
+    pw.Text(
+      'TAMIZAJES REALIZADOS (${tamizajes.length})',
+      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+    ),
+    pw.Divider(),
+    pw.SizedBox(height: 10),
+  ];
 
-      // Nota especial para tamizaje sin respuestas
-      if (tamizajeCompletadoSinRespuestas) ...[
-        pw.Container(
-          padding: pw.EdgeInsets.all(10),
-          decoration: pw.BoxDecoration(
-            color: PdfColors.orange50,
-            border: pw.Border.all(color: PdfColors.orange700, width: 1),
-            borderRadius: pw.BorderRadius.circular(5),
-          ),
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                '📝 INFORMACIÓN SOBRE LOS RESULTADOS',
-                style: pw.TextStyle(
-                  fontWeight: pw.FontWeight.bold,
-                  fontSize: 11,
-                  color: PdfColors.orange900,
-                ),
-              ),
-              pw.SizedBox(height: 5),
-              pw.Text(
-                'El usuario completó el proceso de tamizaje pero no registró respuestas específicas. '
-                'Se muestran valores por defecto "Nunca" para todas las sustancias, indicando '
-                'que no se reportó consumo en ninguna de las categorías evaluadas.',
-                style: pw.TextStyle(fontSize: 9),
-                textAlign: pw.TextAlign.justify,
-              ),
-              pw.SizedBox(height: 3),
-              pw.Text(
-                'Estos resultados representan la ausencia de datos reportados, no necesariamente '
-                'la ausencia de consumo.',
-                style: pw.TextStyle(
-                  fontSize: 8,
-                  fontStyle: pw.FontStyle.italic,
-                  color: PdfColors.orange700,
-                ),
-              ),
-            ],
-          ),
-        ),
-        pw.SizedBox(height: 10),
-      ],
-
-      // Resumen de resultados (SIEMPRE mostrar, incluso con valores por defecto)
-      if (datosAnalisis.isNotEmpty) ...[
-        _buildResumenResultadosSeguro(
-            datosAnalisis, tamizajeCompletadoSinRespuestas),
-        pw.SizedBox(height: 15),
-      ],
-
-      // Interpretación
-      pw.Container(
-        padding: pw.EdgeInsets.all(10),
-        decoration: pw.BoxDecoration(
-          color: PdfColors.grey100,
-          borderRadius: pw.BorderRadius.circular(5),
-        ),
-        child: pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text(
-              'INTERPRETACIÓN:',
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
-            ),
-            pw.SizedBox(height: 5),
-            pw.Text(
-              interpretacion,
-              style: pw.TextStyle(fontSize: 10),
-              textAlign: pw.TextAlign.justify,
-            ),
-          ],
-        ),
-      ),
-
-      pw.SizedBox(height: 15),
-
-      // Lista de respuestas (SIEMPRE mostrar cuando hay respuestas, aunque sean por defecto)
-      pw.Text(
-        'DETALLE DE RESPUESTAS:',
-        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
-      ),
-      pw.SizedBox(height: 5),
-
-      ...respuestas.asMap().entries.map((entry) {
-        int index = entry.key;
-        var respuesta = entry.value;
-        return _buildItemRespuestaSeguro(
-            index + 1, respuesta, tamizajeCompletadoSinRespuestas);
-      }).toList(),
-    ],
-  );
+  for (var i = 0; i < tamizajes.length; i++) {
+    final t = tamizajes[i];
+    try {
+      widgets.add(_buildCabeceraTamizaje(i + 1, t));
+      widgets.add(pw.SizedBox(height: 8));
+      if (!t.invalidado) {
+        for (var n = 0; n < t.items.length; n++) {
+          widgets.add(_buildItemRespuestaSeguro(n + 1, t.items[n]));
+        }
+      }
+    } catch (e) {
+      print('  Error al construir el tamizaje "${t.titulo}": $e');
+      widgets.add(_buildMensajeError(
+          'No se pudo mostrar el tamizaje "${t.titulo}"'));
+    }
+    widgets.add(pw.SizedBox(height: 16));
+  }
+  return widgets;
 }
 
-pw.Widget _buildResumenResultadosSeguro(
-    Map<String, dynamic> datos, bool esPorDefecto) {
-  String nivelRiesgo = datos['nivelRiesgo']?.toString() ?? 'DESCONOCIDO';
-  double promedio = (datos['promedio'] as num?)?.toDouble() ?? 0.0;
-  int totalRespuestas = datos['totalRespuestas'] as int? ?? 0;
+String _formatearFechaHora(DateTime? fecha) {
+  if (fecha == null) return 'Sin fecha';
+  String dos(int v) => v.toString().padLeft(2, '0');
+  return '${dos(fecha.day)}/${dos(fecha.month)}/${fecha.year} '
+      '${dos(fecha.hour)}:${dos(fecha.minute)}';
+}
 
-  PdfColor colorRiesgo;
-  String etiquetaRiesgo = nivelRiesgo;
+PdfColor _colorNivel(String nivel) {
+  switch (nivel.toLowerCase()) {
+    case 'alto':
+      return PdfColors.red700;
+    case 'moderado':
+      return PdfColors.orange700;
+    case 'bajo':
+      return PdfColors.green700;
+    default:
+      return PdfColors.grey700;
+  }
+}
 
-  if (esPorDefecto) {
-    colorRiesgo = PdfColors.grey;
-    etiquetaRiesgo = 'SIN DATOS';
+pw.Widget _buildCabeceraTamizaje(int numero, _TamizajeImprimir t) {
+  final origen = t.esManual
+      ? 'Manual' +
+          (t.realizadoPorNombre.isNotEmpty
+              ? ' — aplicado por ${t.realizadoPorNombre}'
+              : '')
+      : 'Llenado por el adolescente (app)';
+
+  final resumen = <pw.Widget>[];
+  if (t.invalidado) {
+    resumen.add(pw.Text(
+      'INVALIDADO' +
+          (t.motivoInvalidacion.isNotEmpty
+              ? ' — ${t.motivoInvalidacion}'
+              : ' — aplicación marcada como no válida; sin respuestas'),
+      style: pw.TextStyle(
+          fontSize: 10,
+          fontWeight: pw.FontWeight.bold,
+          color: PdfColors.red800),
+    ));
+  } else if (t.assist != null) {
+    final a = t.assist!;
+    if (!a.tieneEvaluaciones) {
+      resumen.add(pw.Text('No se marcó consumo de sustancias.',
+          style: pw.TextStyle(fontSize: 10)));
+    } else {
+      final global = a.nivelGlobal;
+      resumen.add(pw.Text(
+        'Nivel de riesgo: ${global.isEmpty ? 'N/A' : global.toUpperCase()}',
+        style: pw.TextStyle(
+            fontSize: 10,
+            fontWeight: pw.FontWeight.bold,
+            color: _colorNivel(global)),
+      ));
+      for (final s in a.porSustancia.values) {
+        resumen.add(pw.Text(
+          '• ${s.sustancia}: ${s.puntaje} puntos'
+          '${s.nivel.isNotEmpty ? ' — riesgo ${s.nivel}' : ''}',
+          style: pw.TextStyle(fontSize: 9, color: _colorNivel(s.nivel)),
+        ));
+      }
+    }
   } else {
-    switch (nivelRiesgo) {
-      case 'BAJO':
-        colorRiesgo = PdfColors.green;
-        break;
-      case 'MODERADO':
-        colorRiesgo = PdfColors.orange;
-        break;
-      case 'ALTO':
-        colorRiesgo = PdfColors.red;
-        break;
-      default:
-        colorRiesgo = PdfColors.grey;
+    if (t.puntajeTotal != null) {
+      resumen.add(pw.Text('Puntaje total: ${t.puntajeTotal}',
+          style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)));
+    }
+    for (final alerta in t.alertasEspeciales) {
+      resumen.add(pw.Text('⚠ $alerta',
+          style: pw.TextStyle(fontSize: 9, color: PdfColors.red800)));
     }
   }
 
   return pw.Container(
+    width: double.infinity,
     padding: pw.EdgeInsets.all(10),
     decoration: pw.BoxDecoration(
-      color: colorRiesgo.shade(0.1),
-      border: pw.Border.all(color: colorRiesgo, width: 2),
+      color: t.invalidado ? PdfColors.red50 : PdfColors.blue50,
+      border: pw.Border.all(
+          color: t.invalidado ? PdfColors.red200 : PdfColors.blue200,
+          width: 1),
       borderRadius: pw.BorderRadius.circular(5),
     ),
     child: pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        if (esPorDefecto) ...[
-          pw.Text(
-            'RESULTADOS POR DEFECTO',
-            style: pw.TextStyle(
-              fontSize: 12,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColors.grey700,
-            ),
-            textAlign: pw.TextAlign.center,
+        pw.Text(
+          'TAMIZAJE $numero: ${t.titulo}',
+          style: pw.TextStyle(
+            fontSize: 12,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColors.blue900,
           ),
-          pw.SizedBox(height: 5),
-        ],
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
-          children: [
-            _buildMetricaSegura('Nivel de Riesgo', etiquetaRiesgo, colorRiesgo),
-            _buildMetricaSegura(
-                'Promedio', promedio.toStringAsFixed(2), PdfColors.blue),
-            _buildMetricaSegura(
-                'Respuestas', totalRespuestas.toString(), PdfColors.grey700),
-          ],
         ),
-        if (esPorDefecto) ...[
-          pw.SizedBox(height: 5),
-          pw.Text(
-            'Valores calculados basados en respuestas por defecto "Nunca"',
-            style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
-            textAlign: pw.TextAlign.center,
-          ),
+        pw.SizedBox(height: 4),
+        pw.Text('Fecha: ${_formatearFechaHora(t.fecha)}',
+            style: pw.TextStyle(fontSize: 10)),
+        pw.Text('Origen: $origen', style: pw.TextStyle(fontSize: 10)),
+        if (!t.invalidado)
+          pw.Text('Preguntas: ${t.items.length}',
+              style: pw.TextStyle(fontSize: 10)),
+        if (resumen.isNotEmpty) ...[
+          pw.SizedBox(height: 4),
+          ...resumen,
         ],
       ],
     ),
   );
 }
 
-pw.Widget _buildMetricaSegura(String etiqueta, String valor, PdfColor color) {
-  return pw.Column(
-    children: [
-      pw.Text(
-        etiqueta,
-        style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
-      ),
-      pw.SizedBox(height: 3),
-      pw.Text(
-        valor,
-        style: pw.TextStyle(
-            fontSize: 14, fontWeight: pw.FontWeight.bold, color: color),
-      ),
-    ],
-  );
-}
-
 pw.Widget _buildItemRespuestaSeguro(
-    int numero, RespustaTamizajeStruct respuesta, bool esPorDefecto) {
+    int numero, RespustaTamizajeStruct respuesta) {
   String pregunta = respuesta.pregunta ?? 'Pregunta no disponible';
   String respuestaTexto = respuesta.respuesta ?? 'Sin respuesta';
 
@@ -1161,62 +1037,30 @@ pw.Widget _buildItemRespuestaSeguro(
     margin: pw.EdgeInsets.only(bottom: 8),
     padding: pw.EdgeInsets.all(8),
     decoration: pw.BoxDecoration(
-      border: pw.Border.all(
-          color: esPorDefecto ? PdfColors.grey400 : PdfColors.grey300,
-          width: esPorDefecto ? 1 : 0.5),
+      border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
       borderRadius: pw.BorderRadius.circular(3),
-      color: esPorDefecto ? PdfColors.grey50 : PdfColors.white,
+      color: PdfColors.white,
     ),
     child: pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Row(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            if (esPorDefecto)
-              pw.Text('• ',
-                  style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600)),
-            pw.Expanded(
-              child: pw.Text(
-                '$numero. $pregunta',
-                style: pw.TextStyle(
-                  fontSize: 10,
-                  fontWeight: pw.FontWeight.bold,
-                  color: esPorDefecto ? PdfColors.grey700 : PdfColors.black,
-                ),
-              ),
-            ),
-          ],
+        pw.Text(
+          '$numero. $pregunta',
+          style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
         ),
         pw.SizedBox(height: 3),
         pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
               'Respuesta: ',
-              style: pw.TextStyle(
-                fontSize: 9,
-                fontWeight: pw.FontWeight.bold,
-                color: esPorDefecto ? PdfColors.grey600 : PdfColors.black,
-              ),
+              style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
             ),
-            pw.Text(
-              respuestaTexto,
-              style: pw.TextStyle(
-                fontSize: 9,
-                color: esPorDefecto ? PdfColors.grey600 : PdfColors.black,
-                fontStyle:
-                    esPorDefecto ? pw.FontStyle.italic : pw.FontStyle.normal,
-              ),
+            // Expanded para que las respuestas largas hagan salto de línea
+            // en vez de salirse del recuadro.
+            pw.Expanded(
+              child: pw.Text(respuestaTexto, style: pw.TextStyle(fontSize: 9)),
             ),
-            if (esPorDefecto)
-              pw.Text(
-                ' (por defecto)',
-                style: pw.TextStyle(
-                  fontSize: 8,
-                  color: PdfColors.grey500,
-                  fontStyle: pw.FontStyle.italic,
-                ),
-              ),
           ],
         ),
       ],
@@ -1311,330 +1155,6 @@ pw.Widget _buildFooterInformeSeguro() {
       ),
     ],
   );
-}
-
-// ============================================================================
-// FUNCIONES DE ANÁLISIS Y PROCESAMIENTO (VERSIONES SEGURAS)
-// ============================================================================
-
-String _generarInterpretacionIndividualSegura(
-    List<RespustaTamizajeStruct> respuestas) {
-  try {
-    if (respuestas.isEmpty) {
-      return 'No se encontraron respuestas para interpretar.';
-    }
-
-    double puntuacionTotal = 0;
-    int totalRespuestas = respuestas.length;
-
-    for (var respuesta in respuestas) {
-      try {
-        puntuacionTotal +=
-            double.tryParse(_obtenerValorRespuestaSeguro(respuesta)) ?? 0;
-      } catch (e) {
-        print('Error al procesar respuesta: $e');
-      }
-    }
-
-    double promedio =
-        totalRespuestas > 0 ? puntuacionTotal / totalRespuestas : 0;
-    String interpretacion = '';
-
-    if (promedio >= 0 && promedio < 1.5) {
-      interpretacion =
-          'PERFIL DE BIENESTAR ÓPTIMO: El análisis revela un estado de salud general satisfactorio. '
-          'Los indicadores se encuentran dentro de rangos esperados con adecuados recursos de afrontamiento. '
-          'No se identifican áreas de preocupación inmediata.\n\n'
-          'FORTALEZAS: Capacidad adaptativa, estabilidad emocional y prácticas de autocuidado consistentes.\n\n'
-          'RECOMENDACIÓN: Mantener rutinas de cuidado preventivo y monitoreo regular.';
-    } else if (promedio >= 1.5 && promedio < 2.5) {
-      interpretacion =
-          'PERFIL DE ATENCIÓN PREVENTIVA: Se identifican indicadores que sugieren intervención temprana. '
-          'Se observan áreas donde el paciente podría beneficiarse de apoyo profesional para optimizar bienestar.\n\n'
-          'ÁREAS DE OPORTUNIDAD: Dimensiones que requieren atención focalizada en manejo del estrés y regulación emocional.\n\n'
-          'ENFOQUE: Implementación de plan personalizado con seguimiento activo.';
-    } else if (promedio >= 2.5) {
-      interpretacion =
-          'PERFIL DE INTERVENCIÓN PRIORITARIA: Los resultados indican múltiples factores que requieren atención inmediata. '
-          'Se detectan indicadores significativos que ameritan evaluación integral especializada.\n\n'
-          'ÁREAS CRÍTICAS: Dimensiones que requieren intervención urgente con posible afectación en funcionamiento general.\n\n'
-          'ACCIÓN INMEDIATA: Remisión especializada e implementación de plan integral con monitoreo estrecho.';
-    }
-
-    try {
-      Map<String, Map<String, dynamic>> analisisDimensiones =
-          _analizarDimensionesSeguro(respuestas);
-
-      interpretacion += '\n\nANÁLISIS DIMENSIONAL:\n';
-      analisisDimensiones.forEach((dimension, datos) {
-        try {
-          double promedioDim = (datos['promedio'] as num?)?.toDouble() ?? 0.0;
-          String nivel = _obtenerNivelDimensionSeguro(promedioDim);
-          interpretacion +=
-              '• $dimension: ${promedioDim.toStringAsFixed(2)} - Nivel $nivel\n';
-        } catch (e) {
-          print('Error al procesar dimensión $dimension: $e');
-        }
-      });
-    } catch (e) {
-      print('Error al analizar dimensiones: $e');
-    }
-
-    interpretacion += '\nRESUMEN CUANTITATIVO:\n';
-    interpretacion +=
-        '• Puntuación: ${puntuacionTotal.toStringAsFixed(1)}/${totalRespuestas * 4}\n';
-    interpretacion += '• Promedio: ${promedio.toStringAsFixed(2)}/4\n';
-    interpretacion +=
-        '• Porcentaje: ${((puntuacionTotal / (totalRespuestas * 4)) * 100).toStringAsFixed(1)}%\n';
-    interpretacion += '• Ítems evaluados: $totalRespuestas';
-
-    return interpretacion;
-  } catch (e) {
-    print('Error en _generarInterpretacionIndividualSegura: $e');
-    return 'No se pudo generar la interpretación debido a un error en el procesamiento de datos.';
-  }
-}
-
-Map<String, dynamic> _procesarDatosParaAnalisisIndividualSeguro(
-    List<RespustaTamizajeStruct> respuestas) {
-  try {
-    double puntuacionTotal = 0;
-    int totalRespuestas = respuestas.length;
-
-    for (var respuesta in respuestas) {
-      try {
-        String valorStr = _obtenerValorRespuestaSeguro(respuesta);
-        double valor = double.tryParse(valorStr) ?? 0;
-        puntuacionTotal += valor;
-      } catch (e) {
-        print('Error al procesar respuesta individual: $e');
-      }
-    }
-
-    double promedio =
-        totalRespuestas > 0 ? puntuacionTotal / totalRespuestas : 0;
-    String nivelRiesgo;
-
-    if (promedio < 1.5) {
-      nivelRiesgo = 'BAJO';
-    } else if (promedio < 2.5) {
-      nivelRiesgo = 'MODERADO';
-    } else {
-      nivelRiesgo = 'ALTO';
-    }
-
-    double porcentajeMaximo = totalRespuestas > 0
-        ? (puntuacionTotal / (totalRespuestas * 4)) * 100
-        : 0;
-
-    return {
-      'puntuacionTotal': puntuacionTotal,
-      'promedio': promedio,
-      'nivelRiesgo': nivelRiesgo,
-      'totalRespuestas': totalRespuestas,
-      'porcentajeMaximo': porcentajeMaximo,
-    };
-  } catch (e) {
-    print('Error en _procesarDatosParaAnalisisIndividualSeguro: $e');
-    return _generarDatosAnalisisPorDefecto();
-  }
-}
-
-Map<String, dynamic> _generarDatosAnalisisPorDefecto() {
-  return {
-    'puntuacionTotal': 0.0,
-    'promedio': 0.0,
-    'nivelRiesgo': 'DESCONOCIDO',
-    'totalRespuestas': 0,
-    'porcentajeMaximo': 0.0,
-  };
-}
-
-String _obtenerValorRespuestaSeguro(RespustaTamizajeStruct respuesta) {
-  try {
-    if (respuesta.respuesta == null || respuesta.respuesta!.isEmpty) {
-      return '0';
-    }
-
-    String resp = respuesta.respuesta!.toLowerCase().trim();
-
-    Map<String, String> mapeoRespuestas = {
-      'nunca': '0',
-      'no': '0',
-      'pocas veces': '1',
-      'rara vez': '1',
-      'algunas veces': '2',
-      'a veces': '2',
-      'frecuentemente': '3',
-      'a menudo': '3',
-      'siempre': '4',
-      'sí': '4',
-      'mucho': '4',
-    };
-
-    for (String key in mapeoRespuestas.keys) {
-      if (resp.contains(key)) {
-        return mapeoRespuestas[key]!;
-      }
-    }
-
-    if (RegExp(r'^\d+$').hasMatch(resp)) {
-      int valor = int.tryParse(resp) ?? 1;
-      return valor.clamp(0, 4).toString();
-    }
-
-    return '1';
-  } catch (e) {
-    print('Error en _obtenerValorRespuestaSeguro: $e');
-    return '0';
-  }
-}
-
-Map<String, Map<String, dynamic>> _analizarDimensionesSeguro(
-    List<RespustaTamizajeStruct> respuestas) {
-  try {
-    // Implementación simplificada para evitar errores
-    Map<String, Map<String, dynamic>> dimensiones = {};
-
-    // Agrupar por dimensión basándonos en la pregunta
-    // Como no existe el campo 'dimension', creamos categorías basadas en palabras clave
-    for (var respuesta in respuestas) {
-      try {
-        String dimension =
-            _extraerDimensionDePregunta(respuesta.pregunta ?? '');
-
-        if (!dimensiones.containsKey(dimension)) {
-          dimensiones[dimension] = {
-            'respuestas': [],
-            'promedio': 0.0,
-          };
-        }
-
-        dimensiones[dimension]!['respuestas'].add(respuesta);
-      } catch (e) {
-        print('Error al procesar dimensión de respuesta: $e');
-      }
-    }
-
-    // Si no se pudo categorizar, crear una dimensión general
-    if (dimensiones.isEmpty) {
-      dimensiones['General'] = {
-        'respuestas': respuestas,
-        'promedio': 0.0,
-      };
-    }
-
-    // Calcular promedios
-    dimensiones.forEach((key, value) {
-      try {
-        List<RespustaTamizajeStruct> respuestasDim = value['respuestas'];
-        double suma = 0;
-        for (var resp in respuestasDim) {
-          suma += double.tryParse(_obtenerValorRespuestaSeguro(resp)) ?? 0;
-        }
-        value['promedio'] =
-            respuestasDim.isNotEmpty ? suma / respuestasDim.length : 0.0;
-      } catch (e) {
-        print('Error al calcular promedio de dimensión $key: $e');
-        value['promedio'] = 0.0;
-      }
-    });
-
-    return dimensiones;
-  } catch (e) {
-    print('Error en _analizarDimensionesSeguro: $e');
-    return {
-      'General': {'respuestas': [], 'promedio': 0.0}
-    };
-  }
-}
-
-/// Extrae una dimensión aproximada basándose en palabras clave de la pregunta
-String _extraerDimensionDePregunta(String pregunta) {
-  try {
-    String preguntaLower = pregunta.toLowerCase();
-
-    // Categorías emocionales/psicológicas
-    if (preguntaLower.contains('ansioso') ||
-        preguntaLower.contains('nervioso') ||
-        preguntaLower.contains('preocup')) {
-      return 'Ansiedad';
-    }
-
-    if (preguntaLower.contains('triste') ||
-        preguntaLower.contains('deprimido') ||
-        preguntaLower.contains('desanim')) {
-      return 'Estado de Ánimo';
-    }
-
-    if (preguntaLower.contains('dormir') ||
-        preguntaLower.contains('sueño') ||
-        preguntaLower.contains('descanso')) {
-      return 'Sueño';
-    }
-
-    if (preguntaLower.contains('concentr') ||
-        preguntaLower.contains('atención') ||
-        preguntaLower.contains('memoria')) {
-      return 'Cognición';
-    }
-
-    if (preguntaLower.contains('energía') ||
-        preguntaLower.contains('cansancio') ||
-        preguntaLower.contains('fatiga')) {
-      return 'Energía';
-    }
-
-    if (preguntaLower.contains('dolor') ||
-        preguntaLower.contains('cabeza') ||
-        preguntaLower.contains('malestar')) {
-      return 'Síntomas Físicos';
-    }
-
-    if (preguntaLower.contains('apetito') ||
-        preguntaLower.contains('comer') ||
-        preguntaLower.contains('alimenta')) {
-      return 'Alimentación';
-    }
-
-    if (preguntaLower.contains('irritable') ||
-        preguntaLower.contains('enojado') ||
-        preguntaLower.contains('frustrado')) {
-      return 'Irritabilidad';
-    }
-
-    if (preguntaLower.contains('interés') ||
-        preguntaLower.contains('disfrutar') ||
-        preguntaLower.contains('placer')) {
-      return 'Motivación';
-    }
-
-    if (preguntaLower.contains('social') ||
-        preguntaLower.contains('amigos') ||
-        preguntaLower.contains('relacione')) {
-      return 'Relaciones Sociales';
-    }
-
-    // Si no coincide con ninguna categoría
-    return 'General';
-  } catch (e) {
-    print('Error en _extraerDimensionDePregunta: $e');
-    return 'General';
-  }
-}
-
-String _obtenerNivelDimensionSeguro(double promedio) {
-  try {
-    if (promedio < 1.5) {
-      return 'BAJO';
-    } else if (promedio < 2.5) {
-      return 'MODERADO';
-    } else {
-      return 'ALTO';
-    }
-  } catch (e) {
-    return 'DESCONOCIDO';
-  }
 }
 
 // ============================================================================
