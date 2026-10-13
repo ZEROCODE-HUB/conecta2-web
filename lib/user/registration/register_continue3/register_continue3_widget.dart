@@ -12,6 +12,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'register_continue3_model.dart';
+import '../revertir_alta.dart';
 export 'register_continue3_model.dart';
 
 part 'register_continue3_form.dart';
@@ -195,50 +196,55 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
 
                           // Fix: Avoid querying by email which fails due to Firestore delay.
                           // Update all fields directly using user.uid in a single call.
-                          await UsersRecord.collection
-                              .doc(authUser.uid)
-                              .set(createUsersRecordData(
-                                createdTime: getCurrentTimestamp,
-                                email: FFAppState().detalleUsuarioTemp.email,
-                                displayName: FFAppState().detalleUsuarioTemp.nombre,
-                                phoneNumber: FFAppState().detalleUsuarioTemp.phone,
-                                rol: FFAppState().detalleUsuarioTemp.tipo,
-                                acudiente: createAcudienteStruct(
-                                  nombre: _model.matchedParentUser != null
-                                      ? _model.matchedParentUser!.displayName
-                                      : (_model.selectParentsValue ?? _model.textFieldNombreParentescoTextController.text),
-                                  ref: _model.matchedParentUser?.reference,
-                                  parentesco:
-                                      _model.textFieldParentescoTextController.text,
-                                  correo:
-                                      _model.correoParentescoTextController.text,
-                                  telefono: _model
-                                      .textFieldTelefonoParentescoTextController
-                                      .text,
-                                  clearUnsetFields: false,
-                                ),
-                                fechaNacimiento: FFAppState()
-                                    .detalleUsuarioTemp
-                                    .detalle
-                                    .fechaNacimiento,
-                                genero:
-                                    FFAppState().detalleUsuarioTemp.detalle.genero,
-                                municipio: FFAppState()
-                                    .detalleUsuarioTemp
-                                    .detalle
-                                    .municipio,
-                                barrio:
-                                    FFAppState().detalleUsuarioTemp.detalle.barrio,
-                                colegio:
-                                    FFAppState().detalleUsuarioTemp.detalle.colegio,
-                                eps: FFAppState().detalleUsuarioTemp.detalle.eps,
-                                grado:
-                                    FFAppState().detalleUsuarioTemp.detalle.grado,
-                                identidad: FFAppState()
-                                    .detalleUsuarioTemp
-                                    .detalle
-                                    .documento,
-                              ));
+                          try {
+                            await UsersRecord.collection
+                                .doc(authUser.uid)
+                                .set(createUsersRecordData(
+                                  createdTime: getCurrentTimestamp,
+                                  email: FFAppState().detalleUsuarioTemp.email,
+                                  displayName: FFAppState().detalleUsuarioTemp.nombre,
+                                  phoneNumber: FFAppState().detalleUsuarioTemp.phone,
+                                  rol: FFAppState().detalleUsuarioTemp.tipo,
+                                  acudiente: createAcudienteStruct(
+                                    nombre: _model.matchedParentUser != null
+                                        ? _model.matchedParentUser!.displayName
+                                        : (_model.selectParentsValue ?? _model.textFieldNombreParentescoTextController.text),
+                                    ref: _model.matchedParentUser?.reference,
+                                    parentesco:
+                                        _model.textFieldParentescoTextController.text,
+                                    correo:
+                                        _model.correoParentescoTextController.text,
+                                    telefono: _model
+                                        .textFieldTelefonoParentescoTextController
+                                        .text,
+                                    clearUnsetFields: false,
+                                  ),
+                                  fechaNacimiento: FFAppState()
+                                      .detalleUsuarioTemp
+                                      .detalle
+                                      .fechaNacimiento,
+                                  genero:
+                                      FFAppState().detalleUsuarioTemp.detalle.genero,
+                                  municipio: FFAppState()
+                                      .detalleUsuarioTemp
+                                      .detalle
+                                      .municipio,
+                                  barrio:
+                                      FFAppState().detalleUsuarioTemp.detalle.barrio,
+                                  colegio:
+                                      FFAppState().detalleUsuarioTemp.detalle.colegio,
+                                  eps: FFAppState().detalleUsuarioTemp.detalle.eps,
+                                  grado:
+                                      FFAppState().detalleUsuarioTemp.detalle.grado,
+                                  identidad: FFAppState()
+                                      .detalleUsuarioTemp
+                                      .detalle
+                                      .documento,
+                                ));
+                          } catch (e) {
+                            await revertirAltaIncompleta(context, authUser, e);
+                            return;
+                          }
                             context.goNamedAuth(
                                 SuccessWidget.routeName, context.mounted);
 

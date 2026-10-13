@@ -104,6 +104,27 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
     }
   }
 
+  /// Explica por qué el correo ya está en uso: si pertenece a un perfil
+  /// existente o a una cuenta de acceso sin perfil (p. ej. de un usuario
+  /// eliminado antes de que Eliminar borrara también la cuenta Auth).
+  Future<String> _mensajeCorreoEnUso(String email) async {
+    try {
+      final existente = await queryUsersRecordOnce(
+        queryBuilder: (u) => u.where('email', isEqualTo: email),
+        singleRecord: true,
+      ).then((s) => s.firstOrNull);
+      if (existente != null) {
+        final nombre = existente.displayName.isNotEmpty
+            ? existente.displayName
+            : 'otro usuario';
+        return 'El correo $email ya pertenece al usuario "$nombre".';
+      }
+    } catch (_) {}
+    return 'Existe una cuenta de acceso sin perfil con el correo $email '
+        '(posiblemente de un usuario eliminado). Contacta al administrador '
+        'técnico para liberarla.';
+  }
+
   // Avisa al padre (AdminUsuariosWidget) para que Cancelar y la flecha
   // vuelvan al listado al cambiar FFAppState().selectUser.
   @override
@@ -1231,7 +1252,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
     } on FirebaseAuthException catch (e) {
       String errMsg = 'Error al registrar el usuario.';
       if (e.code == 'email-already-in-use') {
-        errMsg = 'El correo electrónico ya está registrado.';
+        errMsg = await _mensajeCorreoEnUso(emailVal);
       } else if (e.code == 'invalid-email') {
         errMsg = 'El correo electrónico no es válido.';
       } else if (e.code == 'weak-password') {
@@ -1278,46 +1299,75 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
 
     // Crear todo usando set() en un solo paso usando el UID obtenido (no requiere query adicional)
     final newAcudienteRef = UsersRecord.collection.doc(authUser.uid);
-    await newAcudienteRef.set(createUsersRecordData(
-          createdTime: getCurrentTimestamp,
-          email: emailVal,
-          displayName: _model.textController1.text,
-          photoUrl: '',
-          rol: _model.tipoValue,
-          phoneNumber: _model.textController2.text,
-          address: _model.textController4.text,
-          acudiente: (isCreatingAcudiente ||
-                  _model.dropDownValue1 == null ||
-                  _model.dropDownValue1!.isEmpty)
-              ? null
-              : updateAcudienteStruct(
-                  AcudienteStruct(
-                    nombre: _model.dropDownValue1,
-                    ref: _model.getRefAcud?.reference,
-                    correo: _model.getRefAcud?.email,
+    try {
+      await newAcudienteRef.set(createUsersRecordData(
+            createdTime: getCurrentTimestamp,
+            email: emailVal,
+            displayName: _model.textController1.text,
+            photoUrl: '',
+            rol: _model.tipoValue,
+            phoneNumber: _model.textController2.text,
+            address: _model.textController4.text,
+            acudiente: (isCreatingAcudiente ||
+                    _model.dropDownValue1 == null ||
+                    _model.dropDownValue1!.isEmpty)
+                ? null
+                : updateAcudienteStruct(
+                    AcudienteStruct(
+                      nombre: _model.dropDownValue1,
+                      ref: _model.getRefAcud?.reference,
+                      correo: _model.getRefAcud?.email,
+                    ),
+                    clearUnsetFields: false,
                   ),
-                  clearUnsetFields: false,
-                ),
-          profesionales: (_model.dropDownValue2 == null ||
-                  _model.dropDownValue2!.isEmpty)
-              ? null
-              : updateProfesionalesStruct(
-                  ProfesionalesStruct(
-                    nombre: _model.dropDownValue2,
-                    ref: _model.getRefProf?.reference,
+            profesionales: (_model.dropDownValue2 == null ||
+                    _model.dropDownValue2!.isEmpty)
+                ? null
+                : updateProfesionalesStruct(
+                    ProfesionalesStruct(
+                      nombre: _model.dropDownValue2,
+                      ref: _model.getRefProf?.reference,
+                    ),
+                    clearUnsetFields: false,
                   ),
-                  clearUnsetFields: false,
-                ),
-          identidad: _model.textController3.text,
-          edad: isAdolescente ? _model.textFieldedadTextController.text : null,
-          genero: _model.dropDownGeneroValue,
-          fechaNacimiento: isAdolescente ? fechaNac : null,
-          colegio: isAdolescente ? _model.textFieldcolegioTextController.text : null,
-          eps: isAdolescente ? _model.textFieldepsTextController.text : null,
-          grado: isAdolescente ? _model.textFieldgradoTextController.text : null,
-          municipio: isAdolescente ? _model.textFieldmunicipioTextController.text : null,
-          barrio: isAdolescente ? _model.textFieldbarrioTextController.text : null,
-        ));
+            identidad: _model.textController3.text,
+            edad: isAdolescente ? _model.textFieldedadTextController.text : null,
+            genero: _model.dropDownGeneroValue,
+            fechaNacimiento: isAdolescente ? fechaNac : null,
+            colegio: isAdolescente ? _model.textFieldcolegioTextController.text : null,
+            eps: isAdolescente ? _model.textFieldepsTextController.text : null,
+            grado: isAdolescente ? _model.textFieldgradoTextController.text : null,
+            municipio: isAdolescente ? _model.textFieldmunicipioTextController.text : null,
+            barrio: isAdolescente ? _model.textFieldbarrioTextController.text : null,
+          ));
+    } catch (e) {
+      // Alta a medias: la cuenta Auth existe pero el perfil no se guardó.
+      // Se borra la cuenta para no dejar el correo bloqueado.
+      try {
+        await authUser.delete();
+      } catch (_) {}
+      await secondaryAuth.signOut();
+      if (!mounted) return;
+      await showDialog(
+        context: context,
+        builder: (alertDialogContext) => WebViewAware(
+          child: AlertDialog(
+            title: const Text('Error de registro',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: Text(
+                'No se pudo guardar el perfil del usuario, así que no se '
+                'creó la cuenta. Intenta de nuevo.\n\nDetalle: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(alertDialogContext),
+                child: const Text('Entendido'),
+              ),
+            ],
+          ),
+        ),
+      );
+      return;
+    }
 
     // Si es Acudiente, vincular la relación en el documento del Adolescente seleccionado
     if (isCreatingAcudiente && selectedAdolescenteDoc != null) {

@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -40,6 +41,40 @@ class _EliminarWidgetState extends State<EliminarWidget> {
     _model.maybeDispose();
 
     super.dispose();
+  }
+
+  /// Elimina al usuario con la Cloud Function `eliminarUsuario`, que borra
+  /// su cuenta de Firebase Auth (libera el correo) y su perfil, y lo
+  /// desvincula como acudiente. El cliente no puede borrar la cuenta Auth
+  /// de otra persona. Se llama directo (no con `makeCloudCall`) para poder
+  /// mostrar el error real.
+  Future<void> _eliminar() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final res = await FirebaseFunctions.instance
+          .httpsCallable('eliminarUsuario')
+          .call({'uid': widget.userreference!.id});
+      final data = res.data is Map ? res.data as Map : const {};
+      if (data['ok'] != true) {
+        throw Exception('Respuesta inesperada del servidor.');
+      }
+      if (!mounted) return;
+      Navigator.pop(context);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Usuario eliminado')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final motivo =
+          e is FirebaseFunctionsException ? (e.message ?? e.code) : '$e';
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('No se pudo eliminar el usuario: $motivo'),
+          backgroundColor: FlutterFlowTheme.of(context).error,
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    }
   }
 
   @override
@@ -123,10 +158,7 @@ class _EliminarWidgetState extends State<EliminarWidget> {
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
                     child: FFButtonWidget(
-                      onPressed: () async {
-                        await widget.userreference!.delete();
-                        Navigator.pop(context);
-                      },
+                      onPressed: _eliminar,
                       text: 'Continuar',
                       options: FFButtonOptions(
                         width: 245.0,

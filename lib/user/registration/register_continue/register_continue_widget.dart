@@ -12,6 +12,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'register_continue_model.dart';
+import '../revertir_alta.dart';
 export 'register_continue_model.dart';
 
 class RegisterContinueWidget extends StatefulWidget {
@@ -1068,16 +1069,22 @@ class _RegisterContinueWidgetState extends State<RegisterContinueWidget> {
 
                               // Fix: Avoid querying by email which fails due to Firestore delay.
                               // Update all fields directly using user.uid in a single call.
-                              await UsersRecord.collection
-                                  .doc(user.uid)
-                                  .set(createUsersRecordData(
-                                    createdTime: getCurrentTimestamp,
-                                    email: _model.correoTextController.text,
-                                    displayName: _model.textController1.text,
-                                    phoneNumber: _model.textController2.text,
-                                    rol: _model.dropDownTipoPersonaValue,
-                                    status: 1,
-                                  ));
+                              try {
+                                await UsersRecord.collection
+                                    .doc(user.uid)
+                                    .set(createUsersRecordData(
+                                      createdTime: getCurrentTimestamp,
+                                      email: _model.correoTextController.text,
+                                      displayName: _model.textController1.text,
+                                      phoneNumber: _model.textController2.text,
+                                      rol: _model.dropDownTipoPersonaValue,
+                                      status: 1,
+                                    ));
+                              } catch (e) {
+                                await revertirAltaIncompleta(
+                                    context, user, e);
+                                return;
+                              }
 
                               context.goNamedAuth(
                                   SuccessWidget.routeName, context.mounted);
