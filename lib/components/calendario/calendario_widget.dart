@@ -167,7 +167,7 @@ class _CalendarioWidgetState extends State<CalendarioWidget> {
                         ),
                         onPressed: () async {
                           _model.inputDate =
-                              functions.getNextMonthDateTime(_model.inputDate!);
+                              functions.getLastMonthDateTime(_model.inputDate!);
                           safeSetState(() {});
                         },
                       ),
@@ -184,7 +184,7 @@ class _CalendarioWidgetState extends State<CalendarioWidget> {
                           ),
                           onPressed: () async {
                             _model.inputDate = functions
-                                .getLastMonthDateTime(_model.inputDate!);
+                                .getNextMonthDateTime(_model.inputDate!);
                             safeSetState(() {});
                           },
                         ),
