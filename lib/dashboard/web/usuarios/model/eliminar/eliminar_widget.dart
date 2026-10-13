@@ -44,7 +44,8 @@ class _EliminarWidgetState extends State<EliminarWidget> {
   }
 
   /// Elimina al usuario con la Cloud Function `eliminarUsuario`, que borra
-  /// su cuenta de Firebase Auth (libera el correo) y su perfil, y lo
+  /// su cuenta de Firebase Auth (libera el correo), sus respuestas de
+  /// tamizajes y encuestas, su calendario de emociones y su perfil, y lo
   /// desvincula como acudiente. El cliente no puede borrar la cuenta Auth
   /// de otra persona. Se llama directo (no con `makeCloudCall`) para poder
   /// mostrar el error real.
@@ -58,10 +59,12 @@ class _EliminarWidgetState extends State<EliminarWidget> {
       if (data['ok'] != true) {
         throw Exception('Respuesta inesperada del servidor.');
       }
+      final borradas = data['respuestasBorradas'] ?? 0;
       if (!mounted) return;
       Navigator.pop(context);
       messenger.showSnackBar(
-        const SnackBar(content: Text('Usuario eliminado')),
+        SnackBar(
+            content: Text('Usuario eliminado ($borradas respuestas borradas)')),
       );
     } catch (e) {
       if (!mounted) return;
@@ -151,6 +154,23 @@ class _EliminarWidgetState extends State<EliminarWidget> {
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
+                          ),
+                    ),
+                  ),
+                  Padding(
+                    padding:
+                        EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
+                    child: Text(
+                      'Se borrarán de forma definitiva su cuenta de acceso, '
+                      'sus respuestas de tamizajes y encuestas y su '
+                      'calendario de emociones. Esta acción no se puede '
+                      'deshacer.',
+                      textAlign: TextAlign.center,
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            font: GoogleFonts.inter(),
+                            fontSize: 15.0,
+                            letterSpacing: 0.0,
+                            color: FlutterFlowTheme.of(context).error,
                           ),
                     ),
                   ),
