@@ -15,7 +15,6 @@ import 'data/substance_data.dart';
 import 'helpers/data_transformers.dart';
 import '/tamizajes/shared/assist_utils.dart' show esEncuestaAssist;
 import 'helpers/excel_export.dart';
-import 'widgets/table_header.dart';
 import 'widgets/table_row_widget.dart';
 
 class TamizajeDataTable extends StatefulWidget {
@@ -696,34 +695,6 @@ class _TamizajeDataTableState extends State<TamizajeDataTable> {
                     ),
                   ),
                 ),
-              ),
-            ),
-          if (!_cargando && datosMostrados.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Column(
-                children: [
-                  const Text(
-                    'El archivo Excel incluye todos los campos de riesgo con colores pastel según el nivel de alarma.',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 16,
-                    children: [
-                      buildLeyendaColor('Sin alarma', const Color(0xFFD3D3D3)),
-                      buildLeyendaColor('Bajo', const Color(0xFFC8E6C9)),
-                      buildLeyendaColor('Moderado', const Color(0xFFFFF9C4)),
-                      buildLeyendaColor('Alto', const Color(0xFFFFCDD2)),
-                    ],
-                  ),
-                ],
               ),
             ),
         ],

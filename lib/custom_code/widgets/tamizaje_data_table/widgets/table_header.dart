@@ -33,24 +33,6 @@ Widget buildBodyCell(String text) {
   );
 }
 
-Widget buildLeyendaColor(String texto, Color color) {
-  return Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(
-        width: 16,
-        height: 16,
-        color: color,
-      ),
-      const SizedBox(width: 4),
-      Text(
-        texto,
-        style: const TextStyle(fontSize: 10, color: Colors.grey),
-      ),
-    ],
-  );
-}
-
 Color obtenerColorRiesgoParaUI(String nivelRiesgo) {
   switch (nivelRiesgo.toLowerCase()) {
     case 'sin alarma':
