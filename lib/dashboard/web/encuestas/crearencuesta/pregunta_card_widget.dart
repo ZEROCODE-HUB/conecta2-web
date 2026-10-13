@@ -86,6 +86,61 @@ String labelForTipo(String tipo) {
   }
 }
 
+/// Pide confirmación antes de borrar una pregunta. Retorna `true` si el
+/// usuario confirma.
+Future<bool> _confirmarBorrarPregunta(BuildContext context) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      title: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 24.0),
+          const SizedBox(width: 8.0),
+          Text(
+            'Borrar pregunta',
+            style: GoogleFonts.inter(
+              fontSize: 17.0,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+      content: Text(
+        '¿Está seguro de borrar esta pregunta? '
+        'Esta acción no se puede deshacer.',
+        style: GoogleFonts.inter(fontSize: 14.0),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: Text(
+            'Cancelar',
+            style: GoogleFonts.inter(color: const Color(0xFF959595)),
+          ),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+          ),
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: Text(
+            'Borrar',
+            style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    ),
+  );
+  return ok == true;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // PreguntaCard: tarjeta visual de una pregunta guardada en Firestore
 // ─────────────────────────────────────────────────────────────────────────────
@@ -474,6 +529,7 @@ class _PreguntaCardState extends State<PreguntaCard> {
                   InkWell(
                     borderRadius: BorderRadius.circular(10.0),
                     onTap: () async {
+                      if (!await _confirmarBorrarPregunta(context)) return;
                       if (widget.onDelete != null) {
                         widget.onDelete!();
                         return;

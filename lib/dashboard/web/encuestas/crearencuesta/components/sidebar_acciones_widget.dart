@@ -63,6 +63,18 @@ class SidebarAccionesWidget extends StatelessWidget {
       );
       return null;
     }
+    // La categoría queda fija al guardar, así que debe elegirse antes.
+    if (tipo == 'Tamizajes' && (_model.categoriaValue ?? '').isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+              'Selecciona la categoría del tamizaje antes de guardar.'),
+          backgroundColor: FlutterFlowTheme.of(context).error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return null;
+    }
     final existing = _model.encuestaPersistedRef;
     final duplicado =
         await _tituloYaExiste(titulo: titulo, excludeRef: existing);
@@ -433,7 +445,9 @@ class SidebarAccionesWidget extends StatelessWidget {
                                     },
                                   );
                                 },
-                                text: 'Publicar encuesta',
+                                text: tipo == 'Tamizajes'
+                                    ? 'Publicar Tamizaje'
+                                    : 'Publicar encuesta',
                                 options: FFButtonOptions(
                                   width: MediaQuery.sizeOf(context).width * 1.0,
                                   height: 54.0,

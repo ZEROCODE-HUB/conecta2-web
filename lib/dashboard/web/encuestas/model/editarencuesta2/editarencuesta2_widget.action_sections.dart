@@ -713,7 +713,9 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
                 },
               );
             },
-            text: 'Publicar encuesta',
+            text: widget.tipo == 'Tamizajes'
+                ? 'Publicar Tamizaje'
+                : 'Publicar encuesta',
             options: FFButtonOptions(
               width: MediaQuery.sizeOf(context).width * 1.0,
               height: 54.0,

@@ -182,6 +182,7 @@ class _CrearencuestaWidgetState extends State<CrearencuestaWidget> {
                             children: [
                               DatosPrincipalesWidget(
                                 model: _model,
+                                tipo: widget.tipo,
                                 onUpdate: () => safeSetState(() {}),
                               ),
                               NuevaPreguntaWidget(

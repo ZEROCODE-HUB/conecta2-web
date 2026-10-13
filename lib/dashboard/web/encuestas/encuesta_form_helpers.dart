@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_radio_button.dart';
@@ -56,6 +57,68 @@ List<String> tiposPermitidos(String? categoria, List<String> todosLosTipos) {
   if (permitidos == null) return todosLosTipos;
   // Conserva el orden de [todosLosTipos] y filtra a los permitidos por categoria.
   return todosLosTipos.where((t) => permitidos.contains(t)).toList();
+}
+
+/// Caja de solo lectura con candado para la categoría de un tamizaje ya
+/// guardado (borrador o publicado): la categoría no se puede cambiar.
+class CategoriaBloqueada extends StatelessWidget {
+  const CategoriaBloqueada({super.key, required this.categoria});
+
+  final String categoria;
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = FlutterFlowTheme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(16.0, 14.0, 16.0, 14.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F2F7),
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(color: const Color(0xFFD9DEE7)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lock_outline, size: 18.0, color: Color(0xFF265294)),
+          const SizedBox(width: 10.0),
+          Expanded(
+            child: Text(
+              categoria.isEmpty
+                  ? 'Sin categoría'
+                  : categoria == 'CRQ'
+                      ? 'RQC'
+                      : categoria,
+              style: tema.bodyMedium.override(
+                font: GoogleFonts.inter(
+                  fontWeight: FontWeight.w600,
+                  fontStyle: tema.bodyMedium.fontStyle,
+                ),
+                color: const Color(0xFF265294),
+                fontSize: 16.0,
+                letterSpacing: 0.0,
+                fontWeight: FontWeight.w600,
+                fontStyle: tema.bodyMedium.fontStyle,
+              ),
+            ),
+          ),
+          Text(
+            'No editable',
+            style: tema.bodyMedium.override(
+              font: GoogleFonts.inter(
+                fontWeight: FontWeight.w500,
+                fontStyle: tema.bodyMedium.fontStyle,
+              ),
+              color: const Color(0xFF9E8888),
+              fontSize: 12.0,
+              letterSpacing: 0.0,
+              fontWeight: FontWeight.w500,
+              fontStyle: tema.bodyMedium.fontStyle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class EncuestaFormHelpers {

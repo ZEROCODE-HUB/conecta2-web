@@ -9,16 +9,19 @@ import '../../encuesta_form_helpers.dart';
 
 class DatosPrincipalesWidget extends StatelessWidget {
   final CrearencuestaModel model;
+  final String? tipo;
   final VoidCallback onUpdate;
 
   const DatosPrincipalesWidget({
     Key? key,
     required this.model,
+    this.tipo,
     required this.onUpdate,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final esTamizaje = tipo == 'Tamizajes';
     return Padding(
       padding: EdgeInsets.all(20.0),
       child: Column(
@@ -99,7 +102,9 @@ class DatosPrincipalesWidget extends StatelessWidget {
                                       .labelMedium
                                       .fontStyle,
                                 ),
-                            hintText: 'Nombre de la encuesta',
+                            hintText: esTamizaje
+                                ? 'Nombre del tamizaje'
+                                : 'Nombre de la encuesta',
                             hintStyle: FlutterFlowTheme.of(context)
                                 .labelMedium
                                 .override(
@@ -202,66 +207,80 @@ class DatosPrincipalesWidget extends StatelessWidget {
                       Padding(
                         padding:
                             EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                        child: FlutterFlowDropDown<String>(
-                          controller: model.categoriaValueController ??=
-                              FormFieldController<String>(null),
-                          options: [
-                            'Todas',
-                            'Consumo de SPA',
-                            'Escala autoestima',
-                            'Escala ansiedad',
-                            'CDI',
-                            'Depresión Beck',
-                            'RQC',
-                            'SRQ'
-                          ],
-                          onChanged: (val) async {
-                            onUpdate();
-                            model.categoriaValue = val;
-                            model.categoria = model.categoriaValue;
-                            // Rehidratar umbrales clínicos con los defaults de la
-                            // categoría elegida. No pisa los ya escritos si el
-                            // usuario vuelve a elegir la misma categoría.
-                            if (model.nivelesAlerta.isEmpty) {
-                              model.seedNivelesAlerta(val);
-                            } else {
-                              // Si cambia a otra categoría, re-seed con defaults.
-                              model.seedNivelesAlerta(val);
-                            }
-                            // Resetear tipo si ya no es valido para la nueva categoria.
-                            const _todosTipos = [
-                              'abiertas',
-                              'selección',
-                              'Selección única',
-                              'Verdadero o falso',
-                              'Condicionante',
-                              'Tamizaje',
-                              'Tamizaje (Sustancias)',
-                              'Tamizaje autoestima',
-                              'Tamizaje ansiedad',
-                              'Tamizaje CDI',
-                              'Tamizajes Depresion Beck',
-                              'Tamizaje CRQ',
-                              'Tamizaje RQC',
-                              'Tamizaje SRQ',
-                              'Tamizaje CRQ / SRQ',
-                              'Tamizaje RQC / SRQ',
-                              'Descriptiva'
-                            ];
-                            final _permitidos =
-                                tiposPermitidos(model.categoria, _todosTipos);
-                            if (model.tipoValue != null &&
-                                !_permitidos.contains(model.tipoValue)) {
-                              model.tipoValue = null;
-                              model.tipoValueController?.value = null;
-                            }
-                            onUpdate();
-                          },
-                          width: MediaQuery.sizeOf(context).width * 1.0,
-                          height: 48.0,
-                          textStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.inter(
+                        // Tras el primer guardado (p. ej. Vista Previa) el
+                        // tamizaje ya existe como borrador: categoría fija.
+                        child: esTamizaje && model.encuestaPersistedRef != null
+                            ? CategoriaBloqueada(
+                                categoria: model.categoriaValue ?? '')
+                            : FlutterFlowDropDown<String>(
+                                controller: model.categoriaValueController ??=
+                                    FormFieldController<String>(null),
+                                options: [
+                                  'Todas',
+                                  'Consumo de SPA',
+                                  'Escala autoestima',
+                                  'Escala ansiedad',
+                                  'CDI',
+                                  'Depresión Beck',
+                                  'RQC',
+                                  'SRQ'
+                                ],
+                                onChanged: (val) async {
+                                  onUpdate();
+                                  model.categoriaValue = val;
+                                  model.categoria = model.categoriaValue;
+                                  // Rehidratar umbrales clínicos con los defaults de la
+                                  // categoría elegida. No pisa los ya escritos si el
+                                  // usuario vuelve a elegir la misma categoría.
+                                  if (model.nivelesAlerta.isEmpty) {
+                                    model.seedNivelesAlerta(val);
+                                  } else {
+                                    // Si cambia a otra categoría, re-seed con defaults.
+                                    model.seedNivelesAlerta(val);
+                                  }
+                                  // Resetear tipo si ya no es valido para la nueva categoria.
+                                  const _todosTipos = [
+                                    'abiertas',
+                                    'selección',
+                                    'Selección única',
+                                    'Verdadero o falso',
+                                    'Condicionante',
+                                    'Tamizaje',
+                                    'Tamizaje (Sustancias)',
+                                    'Tamizaje autoestima',
+                                    'Tamizaje ansiedad',
+                                    'Tamizaje CDI',
+                                    'Tamizajes Depresion Beck',
+                                    'Tamizaje CRQ',
+                                    'Tamizaje RQC',
+                                    'Tamizaje SRQ',
+                                    'Tamizaje CRQ / SRQ',
+                                    'Tamizaje RQC / SRQ',
+                                    'Descriptiva'
+                                  ];
+                                  final _permitidos = tiposPermitidos(
+                                      model.categoria, _todosTipos);
+                                  if (model.tipoValue != null &&
+                                      !_permitidos.contains(model.tipoValue)) {
+                                    model.tipoValue = null;
+                                    model.tipoValueController?.value = null;
+                                  }
+                                  onUpdate();
+                                },
+                                width: MediaQuery.sizeOf(context).width * 1.0,
+                                height: 48.0,
+                                textStyle: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .override(
+                                      font: GoogleFonts.inter(
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                      letterSpacing: 0.0,
                                       fontWeight: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .fontWeight,
@@ -269,33 +288,26 @@ class DatosPrincipalesWidget extends StatelessWidget {
                                           .bodyMedium
                                           .fontStyle,
                                     ),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                          hintText: 'Selección...',
-                          icon: Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            color: FlutterFlowTheme.of(context).secondaryText,
-                            size: 24.0,
-                          ),
-                          fillColor:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          elevation: 2.0,
-                          borderColor: Colors.transparent,
-                          borderWidth: 0.0,
-                          borderRadius: 8.0,
-                          margin: EdgeInsetsDirectional.fromSTEB(
-                              12.0, 0.0, 12.0, 0.0),
-                          hidesUnderline: true,
-                          isOverButton: false,
-                          isSearchable: false,
-                          isMultiSelect: false,
-                        ),
+                                hintText: 'Selección...',
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText,
+                                  size: 24.0,
+                                ),
+                                fillColor: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                                elevation: 2.0,
+                                borderColor: Colors.transparent,
+                                borderWidth: 0.0,
+                                borderRadius: 8.0,
+                                margin: EdgeInsetsDirectional.fromSTEB(
+                                    12.0, 0.0, 12.0, 0.0),
+                                hidesUnderline: true,
+                                isOverButton: false,
+                                isSearchable: false,
+                                isMultiSelect: false,
+                              ),
                       ),
                     ],
                   ),
@@ -359,7 +371,9 @@ class DatosPrincipalesWidget extends StatelessWidget {
                                       .labelMedium
                                       .fontStyle,
                                 ),
-                            hintText: 'Descripcion de la encuesta',
+                            hintText: esTamizaje
+                                ? 'Descripción del tamizaje'
+                                : 'Descripción de la encuesta',
                             hintStyle: FlutterFlowTheme.of(context)
                                 .labelMedium
                                 .override(

@@ -920,7 +920,6 @@ extension _Editarencuesta2WidgetBuildSections1 on _Editarencuesta2WidgetState {
   Widget _buildCategoriaField(BuildContext context) {
     final tema = FlutterFlowTheme.of(context);
     final categoriaActual = widget.docencuestas2?.categoria ?? '';
-    final esPublicado = widget.docencuestas2?.publicado == true;
 
     const opciones = <String>[
       'Todas',
@@ -954,60 +953,10 @@ extension _Editarencuesta2WidgetBuildSections1 on _Editarencuesta2WidgetState {
             ),
           ),
           const SizedBox(height: 12.0),
-          if (esPublicado)
-            Container(
-              width: double.infinity,
-              padding:
-                  const EdgeInsetsDirectional.fromSTEB(16.0, 14.0, 16.0, 14.0),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0F2F7),
-                borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: const Color(0xFFD9DEE7)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.lock_outline,
-                      size: 18.0, color: Color(0xFF265294)),
-                  const SizedBox(width: 10.0),
-                  Expanded(
-                    child: Text(
-                      categoriaActual.isEmpty
-                          ? 'Sin categoría'
-                          : categoriaActual == "CRQ"
-                              ? "RQC"
-                              : categoriaActual == "SRQ"
-                                  ? "SRQ"
-                                  : categoriaActual,
-                      style: tema.bodyMedium.override(
-                        font: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
-                          fontStyle: tema.bodyMedium.fontStyle,
-                        ),
-                        color: const Color(0xFF265294),
-                        fontSize: 16.0,
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.w600,
-                        fontStyle: tema.bodyMedium.fontStyle,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    'No editable',
-                    style: tema.bodyMedium.override(
-                      font: GoogleFonts.inter(
-                        fontWeight: FontWeight.w500,
-                        fontStyle: tema.bodyMedium.fontStyle,
-                      ),
-                      color: const Color(0xFF9E8888),
-                      fontSize: 12.0,
-                      letterSpacing: 0.0,
-                      fontWeight: FontWeight.w500,
-                      fontStyle: tema.bodyMedium.fontStyle,
-                    ),
-                  ),
-                ],
-              ),
-            )
+          // Una vez guardado (borrador o publicado) la categoría queda fija.
+          // Solo se permite asignarla si un borrador antiguo quedó sin ella.
+          if (categoriaActual.isNotEmpty)
+            CategoriaBloqueada(categoria: categoriaActual)
           else
             FlutterFlowDropDown<String>(
               controller: _model.categoriaValueController ??=
