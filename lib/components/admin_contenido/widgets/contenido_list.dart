@@ -26,25 +26,30 @@ class ContenidoList extends StatelessWidget {
   final void Function(ContenidoRecord) onPreview;
   final void Function(ContenidoRecord) onEdit;
 
+  /// Aplica a la vez la búsqueda, "Filtrar por" (publicado) y "Dirigido
+  /// para" (roles). Un filtro sin valor no filtra. Se parte de [allRecords]
+  /// (stream en vivo) para que el estado mostrado sea siempre el actual.
   List<ContenidoRecord> _resolveList() {
-    // Default (no filters, full list)
-    if (isShowFullList &&
-        publishedFilter == null &&
-        (rolesFilter == null || rolesFilter!.isEmpty)) {
-      return allRecords;
+    Iterable<ContenidoRecord> lista = allRecords;
+
+    if (!isShowFullList) {
+      final ids = simpleSearchResults.map((r) => r.reference.path).toSet();
+      lista = lista.where((r) => ids.contains(r.reference.path));
     }
-    // Filter by published state
+
     if (publishedFilter != null) {
-      return allRecords.where((e) => e.publicado == publishedFilter).toList();
+      lista = lista.where((r) => r.publicado == publishedFilter);
     }
-    // Filter by roles (dirigido para)
-    if (rolesFilter != null && rolesFilter!.isNotEmpty) {
-      // Keep original behaviour (list is not filtered further, user selected
-      // roles via multiselect). Preserve full list.
-      return allRecords;
+
+    // '' es la opción "Todos".
+    final roles = (rolesFilter ?? const <String>[])
+        .where((r) => r.isNotEmpty)
+        .toSet();
+    if (roles.isNotEmpty) {
+      lista = lista.where((r) => r.roles.any(roles.contains));
     }
-    // Fallback: search results.
-    return simpleSearchResults;
+
+    return lista.toList();
   }
 
   @override
@@ -62,6 +67,19 @@ class ContenidoList extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           children: [
             _buildHeader(context, theme, screenWidth),
+            if (list.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40.0),
+                child: Text(
+                  'No hay contenidos que coincidan con los filtros.',
+                  style: theme.bodyMedium.override(
+                    font: GoogleFonts.inter(),
+                    color: theme.secondaryText,
+                    fontSize: 16.0,
+                    letterSpacing: 0.0,
+                  ),
+                ),
+              ),
             ListView.builder(
               padding: EdgeInsets.zero,
               shrinkWrap: true,

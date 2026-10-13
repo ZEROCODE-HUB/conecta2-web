@@ -82,6 +82,13 @@ class ContenidoFilters extends StatelessWidget {
           '_model.searchTextController',
           const Duration(milliseconds: 2000),
           () async {
+            // Texto vacío = sin búsqueda (mostrar todo con los demás filtros).
+            if (model.searchTextController!.text.trim().isEmpty) {
+              model.simpleSearchResults = [];
+              model.isShowFullList = true;
+              onChanged();
+              return;
+            }
             try {
               final records = await queryContenidoRecordOnce();
               model.simpleSearchResults = TextSearch(
@@ -202,13 +209,16 @@ class ContenidoFilters extends StatelessWidget {
             ),
           ),
           Flexible(
-            child: FlutterFlowDropDown<bool>(
+            child: FlutterFlowDropDown<String>(
               controller: model.dropDownValueController1 ??=
-                  FormFieldController<bool>(null),
-              options: const [true, false],
-              optionLabels: const ['PUBLICADO', 'BORRADOR'],
+                  FormFieldController<String>(null),
+              options: const ['TODOS', 'PUBLICADO', 'BORRADOR'],
               onChanged: (val) {
-                model.dropDownValue1 = val;
+                model.dropDownValue1 = switch (val) {
+                  'PUBLICADO' => true,
+                  'BORRADOR' => false,
+                  _ => null,
+                };
                 onChanged();
               },
               width: screenWidth * 0.2,
@@ -222,7 +232,7 @@ class ContenidoFilters extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 fontStyle: theme.bodyMedium.fontStyle,
               ),
-              hintText: 'Please select...',
+              hintText: 'Seleccionar',
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
                 color: Color(0xFF265294),
@@ -276,7 +286,7 @@ class ContenidoFilters extends StatelessWidget {
                   FormListFieldController<String>(null),
               options: const ['', 'Adolescente', 'Acudiente', 'Profesional'],
               optionLabels: const [
-                'All',
+                'Todos',
                 'Adolescente',
                 'Acudiente',
                 'Profesional',
@@ -292,7 +302,7 @@ class ContenidoFilters extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 fontStyle: theme.bodyMedium.fontStyle,
               ),
-              hintText: 'Please select...',
+              hintText: 'Seleccionar',
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
                 color: Color(0xFF265294),

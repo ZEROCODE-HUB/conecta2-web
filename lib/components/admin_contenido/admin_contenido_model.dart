@@ -28,7 +28,8 @@ class AdminContenido2Model extends FlutterFlowModel<AdminContenido2Widget> {
   bool isShowFullList = true;
   // State field(s) for "Publicado/Borrador" DropDown.
   bool? dropDownValue1;
-  FormFieldController<bool>? dropDownValueController1;
+  // Opciones TODOS / PUBLICADO / BORRADOR; se traduce a dropDownValue1.
+  FormFieldController<String>? dropDownValueController1;
   // State field(s) for "Dirigido para" DropDown.
   List<String>? dropDownValue2;
   FormFieldController<List<String>>? dropDownValueController2;
