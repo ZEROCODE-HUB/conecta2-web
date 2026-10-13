@@ -542,13 +542,14 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
       : FFAppState().listaAlertasEnvio;
 
   /// Guarda lo editado (incluidas preguntas y roles, que en Editar solo viven
-  /// en memoria) conservando el estado de publicación actual del doc.
-  /// Devuelve el `publicado` con el que quedó.
-  Future<bool> _guardarEdicion() async {
-    final actual = await EncuestasRecord.getDocumentOnce(widget.encuestaID!);
+  /// en memoria). Sin [publicado] conserva el estado actual del doc; "Publicar"
+  /// pasa `true`. Devuelve el `publicado` con el que quedó.
+  Future<bool> _guardarEdicion({bool? publicado}) async {
+    final estado = publicado ??
+        (await EncuestasRecord.getDocumentOnce(widget.encuestaID!)).publicado;
     await widget.encuestaID!.update({
       ..._payloadEncuestaRecord(
-        publicado: actual.publicado,
+        publicado: estado,
         titulo: _model.textController1.text,
         descripcion: _model.descTextController.text,
       ),
@@ -567,7 +568,7 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
         },
       ),
     });
-    return actual.publicado;
+    return estado;
   }
 
   List<Widget> _buildActionButtons(BuildContext context) {
@@ -685,27 +686,12 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
               if (!okTitulo) {
                 return;
               }
+              if (!_alertasAssistValidas(context)) {
+                return;
+              }
+              await _guardarEdicion(publicado: true);
               FFAppState().selectUser = '';
-              safeSetState(() {
-                widget.encuestaID!.update({
-                  ..._payloadEncuestaRecord(
-                    publicado: true,
-                    titulo: _model.textController1.text,
-                    descripcion: _model.descTextController.text,
-                  ),
-                  ...mapToFirestore({
-                    'Preguntas': _model.preguntas
-                        .map((p) => getPreguntasEncuestaFirestoreData(p, true))
-                        .toList(),
-                    'Roles': _model.roleValue,
-                    'alertas': getAlertaListFirestoreData(
-                        FFAppState().listaAlertasEnvio),
-                    'alertasEspeciales': _model.alertasEspeciales
-                        .map((a) => getAlertaEspecialFirestoreData(a, true))
-                        .toList(),
-                  }),
-                });
-              });
+              safeSetState(() {});
 
               await showDialog(
                 context: context,
