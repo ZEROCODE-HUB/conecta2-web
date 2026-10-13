@@ -10,6 +10,17 @@ import 'package:provider/provider.dart';
 import 'vista_previa_copy_model.dart';
 export 'vista_previa_copy_model.dart';
 
+const _kAzul = Color(0xFF265294);
+const _kBorde = Color(0xFF6E98D7);
+
+const _kTiposCRQ = {
+  'Tamizaje CRQ',
+  'Tamizaje RQC',
+  'Tamizaje SRQ',
+  'Tamizaje CRQ / SRQ',
+  'Tamizaje RQC / SRQ',
+};
+
 class VistaPreviaCopyWidget extends StatefulWidget {
   const VistaPreviaCopyWidget({
     super.key,
@@ -53,7 +64,6 @@ class _VistaPreviaCopyWidgetState extends State<VistaPreviaCopyWidget> {
     return StreamBuilder<EncuestasRecord>(
       stream: EncuestasRecord.getDocument(widget.encuestaID!),
       builder: (context, snapshot) {
-        // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
           return Center(
             child: SizedBox(
@@ -68,854 +78,315 @@ class _VistaPreviaCopyWidgetState extends State<VistaPreviaCopyWidget> {
           );
         }
 
-        final containerEncuestasRecord = snapshot.data!;
+        final encuesta = snapshot.data!;
+        final preguntas = encuesta.preguntas.toList();
 
         return Container(
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondaryBackground,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Flexible(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: Container(
-                          height: MediaQuery.sizeOf(context).height * 1.0,
-                          decoration: BoxDecoration(),
-                          child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                40.0, 20.0, 40.0, 20.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const PreviewHeader(),
-                                Flexible(
-                                  child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 45.0, 0.0, 0.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Flexible(
-                                          child: Container(
-                                            height: MediaQuery.sizeOf(context)
-                                                    .height *
-                                                1.0,
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  blurRadius: 50.0,
-                                                  color: Color(0x26000000),
-                                                  offset: Offset(
-                                                    20.0,
-                                                    20.0,
-                                                  ),
-                                                )
-                                              ],
-                                              borderRadius:
-                                                  BorderRadius.circular(20.0),
-                                            ),
-                                            child: SingleChildScrollView(
-                                              primary: false,
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Flexible(
-                                                    child: Padding(
-                                                      padding:
-                                                          EdgeInsets.all(20.0),
-                                                      child: Column(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            containerEncuestasRecord
-                                                                .titulo,
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  fontSize:
-                                                                      30.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0.0,
-                                                                        20.0,
-                                                                        0.0,
-                                                                        0.0),
-                                                            child: Text(
-                                                              containerEncuestasRecord
-                                                                  .descripcion,
-                                                              style: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .bodyMedium
-                                                                  .override(
-                                                                    font: GoogleFonts
-                                                                        .inter(
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodyMedium
-                                                                          .fontStyle,
-                                                                    ),
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                            ),
-                                                          ),
-                                                          Builder(
-                                                            builder: (context) {
-                                                              final vistapreviaa =
-                                                                  containerEncuestasRecord
-                                                                      .preguntas
-                                                                      .toList();
-
-                                                              return Column(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .max,
-                                                                children: List.generate(
-                                                                    vistapreviaa
-                                                                        .length,
-                                                                    (vistapreviaaIndex) {
-                                                                  final vistapreviaaItem =
-                                                                      vistapreviaa[
-                                                                          vistapreviaaIndex];
-                                                                  return Column(
-                                                                    mainAxisSize:
-                                                                        MainAxisSize
-                                                                            .max,
-                                                                    children: [
-                                                                      if (vistapreviaaItem
-                                                                              .tipo ==
-                                                                          'Condicionante')
-                                                                        Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              0.0,
-                                                                              20.0,
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Column(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.max,
-                                                                            crossAxisAlignment:
-                                                                                CrossAxisAlignment.start,
-                                                                            children: [
-                                                                              Padding(
-                                                                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 20.0),
-                                                                                child: Text(
-                                                                                  valueOrDefault<String>(
-                                                                                    vistapreviaaItem.pregunta,
-                                                                                    'Sin pregunta',
-                                                                                  ),
-                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                        font: GoogleFonts.inter(
-                                                                                          fontWeight: FontWeight.w600,
-                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                        ),
-                                                                                        letterSpacing: 0.0,
-                                                                                        fontWeight: FontWeight.w600,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                      ),
-                                                                                ),
-                                                                              ),
-                                                                              Builder(
-                                                                                builder: (context) {
-                                                                                  final tipoList = vistapreviaaItem.respuestaCondicionante.toList();
-
-                                                                                  return Column(
-                                                                                    mainAxisSize: MainAxisSize.max,
-                                                                                    children: List.generate(tipoList.length, (tipoListIndex) {
-                                                                                      final tipoListItem = tipoList[tipoListIndex];
-                                                                                      return Padding(
-                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 20.0),
-                                                                                        child: Container(
-                                                                                          width: MediaQuery.sizeOf(context).width * 1.0,
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: FlutterFlowTheme.of(context).primaryBackground,
-                                                                                            boxShadow: [
-                                                                                              BoxShadow(
-                                                                                                blurRadius: 20.0,
-                                                                                                color: Color(0x27000000),
-                                                                                                offset: Offset(
-                                                                                                  5.0,
-                                                                                                  5.0,
-                                                                                                ),
-                                                                                              )
-                                                                                            ],
-                                                                                            borderRadius: BorderRadius.circular(8.0),
-                                                                                            border: Border.all(
-                                                                                              color: Color(0xFF6E98D7),
-                                                                                              width: 1.0,
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(10.0),
-                                                                                            child: Row(
-                                                                                              mainAxisSize: MainAxisSize.max,
-                                                                                              children: [
-                                                                                                Theme(
-                                                                                                  data: ThemeData(
-                                                                                                    checkboxTheme: CheckboxThemeData(
-                                                                                                      visualDensity: VisualDensity.compact,
-                                                                                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                                                                      shape: RoundedRectangleBorder(
-                                                                                                        borderRadius: BorderRadius.circular(4.0),
-                                                                                                      ),
-                                                                                                    ),
-                                                                                                    unselectedWidgetColor: FlutterFlowTheme.of(context).secondaryText,
-                                                                                                  ),
-                                                                                                  child: Checkbox(
-                                                                                                    value: _model.checkboxValueMap9[tipoListItem] ??= true,
-                                                                                                    onChanged: null,
-                                                                                                    side: BorderSide(
-                                                                                                            width: 2,
-                                                                                                            color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                                          ),
-                                                                                                    activeColor: Color(0xFF265294),
-                                                                                                    checkColor: null,
-                                                                                                  ),
-                                                                                                ),
-                                                                                                Text(
-                                                                                                  '${tipoListItem.etiqueta} (${tipoListItem.sustanciaValor})',
-                                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                        font: GoogleFonts.inter(
-                                                                                                          fontWeight: FontWeight.w600,
-                                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                        ),
-                                                                                                        fontSize: 18.0,
-                                                                                                        letterSpacing: 0.0,
-                                                                                                        fontWeight: FontWeight.w600,
-                                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                      ),
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      );
-                                                                                    }),
-                                                                                  );
-                                                                                },
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                      if (vistapreviaaItem
-                                                                              .tipo ==
-                                                                          'Tamizaje')
-                                                                        Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              0.0,
-                                                                              20.0,
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Column(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.max,
-                                                                            crossAxisAlignment:
-                                                                                CrossAxisAlignment.start,
-                                                                            children: [
-                                                                              Padding(
-                                                                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 20.0),
-                                                                                child: Text(
-                                                                                  valueOrDefault<String>(
-                                                                                    vistapreviaaItem.pregunta,
-                                                                                    'Sin pregunta',
-                                                                                  ),
-                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                        font: GoogleFonts.inter(
-                                                                                          fontWeight: FontWeight.w600,
-                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                        ),
-                                                                                        letterSpacing: 0.0,
-                                                                                        fontWeight: FontWeight.w600,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                      ),
-                                                                                ),
-                                                                              ),
-                                                                              Builder(
-                                                                                builder: (context) {
-                                                                                  final tipoList = vistapreviaaItem.respuestaTamizaje.toList();
-
-                                                                                  return Column(
-                                                                                    mainAxisSize: MainAxisSize.max,
-                                                                                    children: List.generate(tipoList.length, (tipoListIndex) {
-                                                                                      final tipoListItem = tipoList[tipoListIndex];
-                                                                                      return Padding(
-                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 20.0),
-                                                                                        child: Container(
-                                                                                          width: MediaQuery.sizeOf(context).width * 1.0,
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: FlutterFlowTheme.of(context).primaryBackground,
-                                                                                            boxShadow: [
-                                                                                              BoxShadow(
-                                                                                                blurRadius: 20.0,
-                                                                                                color: Color(0x27000000),
-                                                                                                offset: Offset(
-                                                                                                  5.0,
-                                                                                                  5.0,
-                                                                                                ),
-                                                                                              )
-                                                                                            ],
-                                                                                            borderRadius: BorderRadius.circular(8.0),
-                                                                                            border: Border.all(
-                                                                                              color: Color(0xFF6E98D7),
-                                                                                              width: 1.0,
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(10.0),
-                                                                                            child: Row(
-                                                                                              mainAxisSize: MainAxisSize.max,
-                                                                                              children: [
-                                                                                                Theme(
-                                                                                                  data: ThemeData(
-                                                                                                    checkboxTheme: CheckboxThemeData(
-                                                                                                      visualDensity: VisualDensity.compact,
-                                                                                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                                                                      shape: RoundedRectangleBorder(
-                                                                                                        borderRadius: BorderRadius.circular(4.0),
-                                                                                                      ),
-                                                                                                    ),
-                                                                                                    unselectedWidgetColor: FlutterFlowTheme.of(context).secondaryText,
-                                                                                                  ),
-                                                                                                  child: Checkbox(
-                                                                                                    value: _model.checkboxValueMap10[tipoListItem] ??= true,
-                                                                                                    onChanged: null,
-                                                                                                    side: BorderSide(
-                                                                                                            width: 2,
-                                                                                                            color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                                          ),
-                                                                                                    activeColor: Color(0xFF265294),
-                                                                                                    checkColor: null,
-                                                                                                  ),
-                                                                                                ),
-                                                                                                Text(
-                                                                                                  '${tipoListItem.etiqueta} (${tipoListItem.valor.toString()})',
-                                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                        font: GoogleFonts.inter(
-                                                                                                          fontWeight: FontWeight.w600,
-                                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                        ),
-                                                                                                        fontSize: 18.0,
-                                                                                                        letterSpacing: 0.0,
-                                                                                                        fontWeight: FontWeight.w600,
-                                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                      ),
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      );
-                                                                                    }),
-                                                                                  );
-                                                                                },
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                      if (vistapreviaaItem
-                                                                              .tipo ==
-                                                                          'selección')
-                                                                        Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              0.0,
-                                                                              20.0,
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Column(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.max,
-                                                                            crossAxisAlignment:
-                                                                                CrossAxisAlignment.start,
-                                                                            children: [
-                                                                              Padding(
-                                                                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 20.0),
-                                                                                child: Text(
-                                                                                  valueOrDefault<String>(
-                                                                                    vistapreviaaItem.pregunta,
-                                                                                    'Sin pregunta',
-                                                                                  ),
-                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                        font: GoogleFonts.inter(
-                                                                                          fontWeight: FontWeight.w600,
-                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                        ),
-                                                                                        letterSpacing: 0.0,
-                                                                                        fontWeight: FontWeight.w600,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                      ),
-                                                                                ),
-                                                                              ),
-                                                                              Builder(
-                                                                                builder: (context) {
-                                                                                  final tipoList = vistapreviaaItem.respuestaSelection.toList();
-
-                                                                                  return Column(
-                                                                                    mainAxisSize: MainAxisSize.max,
-                                                                                    children: List.generate(tipoList.length, (tipoListIndex) {
-                                                                                      final tipoListItem = tipoList[tipoListIndex];
-                                                                                      return Padding(
-                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 20.0),
-                                                                                        child: Container(
-                                                                                          width: MediaQuery.sizeOf(context).width * 1.0,
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: FlutterFlowTheme.of(context).primaryBackground,
-                                                                                            boxShadow: [
-                                                                                              BoxShadow(
-                                                                                                blurRadius: 20.0,
-                                                                                                color: Color(0x27000000),
-                                                                                                offset: Offset(
-                                                                                                  5.0,
-                                                                                                  5.0,
-                                                                                                ),
-                                                                                              )
-                                                                                            ],
-                                                                                            borderRadius: BorderRadius.circular(8.0),
-                                                                                            border: Border.all(
-                                                                                              color: Color(0xFF6E98D7),
-                                                                                              width: 1.0,
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.all(10.0),
-                                                                                            child: Row(
-                                                                                              mainAxisSize: MainAxisSize.max,
-                                                                                              children: [
-                                                                                                Theme(
-                                                                                                  data: ThemeData(
-                                                                                                    checkboxTheme: CheckboxThemeData(
-                                                                                                      visualDensity: VisualDensity.compact,
-                                                                                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                                                                      shape: RoundedRectangleBorder(
-                                                                                                        borderRadius: BorderRadius.circular(4.0),
-                                                                                                      ),
-                                                                                                    ),
-                                                                                                    unselectedWidgetColor: FlutterFlowTheme.of(context).secondaryText,
-                                                                                                  ),
-                                                                                                  child: Checkbox(
-                                                                                                    value: _model.checkboxValueMap11[tipoListItem] ??= true,
-                                                                                                    onChanged: (tipoListItem != '')
-                                                                                                        ? null
-                                                                                                        : (newValue) async {
-                                                                                                            safeSetState(() => _model.checkboxValueMap11[tipoListItem] = newValue!);
-                                                                                                          },
-                                                                                                    side: BorderSide(
-                                                                                                            width: 2,
-                                                                                                            color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                                          ),
-                                                                                                    activeColor: Color(0xFF265294),
-                                                                                                    checkColor: (tipoListItem != '') ? null : FlutterFlowTheme.of(context).info,
-                                                                                                  ),
-                                                                                                ),
-                                                                                                Text(
-                                                                                                  tipoListItem,
-                                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                        font: GoogleFonts.inter(
-                                                                                                          fontWeight: FontWeight.w600,
-                                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                        ),
-                                                                                                        fontSize: 18.0,
-                                                                                                        letterSpacing: 0.0,
-                                                                                                        fontWeight: FontWeight.w600,
-                                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                      ),
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      );
-                                                                                    }),
-                                                                                  );
-                                                                                },
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                      if (vistapreviaaItem
-                                                                              .tipo ==
-                                                                          'Selección única')
-                                                                        Align(
-                                                                          alignment: AlignmentDirectional(
-                                                                              -1.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                0.0,
-                                                                                20.0,
-                                                                                0.0,
-                                                                                0.0),
-                                                                            child:
-                                                                                Column(
-                                                                              mainAxisSize: MainAxisSize.max,
-                                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                                              children: [
-                                                                                Padding(
-                                                                                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 20.0),
-                                                                                  child: Text(
-                                                                                    valueOrDefault<String>(
-                                                                                      vistapreviaaItem.pregunta,
-                                                                                      'Sin pregunta',
-                                                                                    ),
-                                                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                          font: GoogleFonts.inter(
-                                                                                            fontWeight: FontWeight.w600,
-                                                                                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                          ),
-                                                                                          letterSpacing: 0.0,
-                                                                                          fontWeight: FontWeight.w600,
-                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                        ),
-                                                                                  ),
-                                                                                ),
-                                                                                RadiosButtonVistaPreviaWidget(
-                                                                                  key: Key('Keyngy_${vistapreviaaIndex}_of_${vistapreviaa.length}'),
-                                                                                  parameter1: vistapreviaaItem.respuestaSUnicaCorrecta,
-                                                                                  parameter2: vistapreviaaItem.respuestasSeleccionUnica,
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      if (vistapreviaaItem
-                                                                              .tipo ==
-                                                                          'Verdadero o falso')
-                                                                        Column(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.start,
-                                                                          children: [
-                                                                            Column(
-                                                                              mainAxisSize: MainAxisSize.max,
-                                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                                              children: [
-                                                                                Padding(
-                                                                                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 40.0, 0.0),
-                                                                                  child: Text(
-                                                                                    valueOrDefault<String>(
-                                                                                      vistapreviaaItem.pregunta,
-                                                                                      'Sin pregunta',
-                                                                                    ),
-                                                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                          font: GoogleFonts.inter(
-                                                                                            fontWeight: FontWeight.w600,
-                                                                                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                          ),
-                                                                                          letterSpacing: 0.0,
-                                                                                          fontWeight: FontWeight.w600,
-                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                        ),
-                                                                                  ),
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                            Row(
-                                                                              mainAxisSize: MainAxisSize.max,
-                                                                              children: [
-                                                                                Padding(
-                                                                                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 10.0, 0.0),
-                                                                                  child: Container(
-                                                                                    decoration: BoxDecoration(
-                                                                                      color: FlutterFlowTheme.of(context).primaryBackground,
-                                                                                      boxShadow: [
-                                                                                        BoxShadow(
-                                                                                          blurRadius: 20.0,
-                                                                                          color: Color(0x27000000),
-                                                                                          offset: Offset(
-                                                                                            5.0,
-                                                                                            5.0,
-                                                                                          ),
-                                                                                        )
-                                                                                      ],
-                                                                                      borderRadius: BorderRadius.circular(8.0),
-                                                                                      border: Border.all(
-                                                                                        color: Color(0xFF6E98D7),
-                                                                                        width: 1.0,
-                                                                                      ),
-                                                                                    ),
-                                                                                    child: Padding(
-                                                                                      padding: EdgeInsets.all(10.0),
-                                                                                      child: Row(
-                                                                                        mainAxisSize: MainAxisSize.max,
-                                                                                        children: [
-                                                                                          Theme(
-                                                                                            data: ThemeData(
-                                                                                              checkboxTheme: CheckboxThemeData(
-                                                                                                visualDensity: VisualDensity.compact,
-                                                                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                                                                shape: RoundedRectangleBorder(
-                                                                                                  borderRadius: BorderRadius.circular(4.0),
-                                                                                                ),
-                                                                                              ),
-                                                                                              unselectedWidgetColor: FlutterFlowTheme.of(context).secondaryText,
-                                                                                            ),
-                                                                                            child: Checkbox(
-                                                                                              value: _model.checkboxValueMap12[vistapreviaaItem] ??= true,
-                                                                                              onChanged: (newValue) async {
-                                                                                                safeSetState(() => _model.checkboxValueMap12[vistapreviaaItem] = newValue!);
-                                                                                              },
-                                                                                              side: BorderSide(
-                                                                                                      width: 2,
-                                                                                                      color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                                    ),
-                                                                                              activeColor: Color(0xFF265294),
-                                                                                              checkColor: FlutterFlowTheme.of(context).info,
-                                                                                            ),
-                                                                                          ),
-                                                                                          Text(
-                                                                                            'Verdadero',
-                                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                  font: GoogleFonts.inter(
-                                                                                                    fontWeight: FontWeight.w600,
-                                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                  ),
-                                                                                                  fontSize: 18.0,
-                                                                                                  letterSpacing: 0.0,
-                                                                                                  fontWeight: FontWeight.w600,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                          ),
-                                                                                        ],
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                                Padding(
-                                                                                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                                                                                  child: Container(
-                                                                                    decoration: BoxDecoration(
-                                                                                      color: FlutterFlowTheme.of(context).primaryBackground,
-                                                                                      boxShadow: [
-                                                                                        BoxShadow(
-                                                                                          blurRadius: 20.0,
-                                                                                          color: Color(0x27000000),
-                                                                                          offset: Offset(
-                                                                                            5.0,
-                                                                                            5.0,
-                                                                                          ),
-                                                                                        )
-                                                                                      ],
-                                                                                      borderRadius: BorderRadius.circular(8.0),
-                                                                                      border: Border.all(
-                                                                                        color: Color(0xFF6E98D7),
-                                                                                        width: 1.0,
-                                                                                      ),
-                                                                                    ),
-                                                                                    child: Padding(
-                                                                                      padding: EdgeInsets.all(10.0),
-                                                                                      child: Row(
-                                                                                        mainAxisSize: MainAxisSize.max,
-                                                                                        children: [
-                                                                                          Theme(
-                                                                                            data: ThemeData(
-                                                                                              checkboxTheme: CheckboxThemeData(
-                                                                                                visualDensity: VisualDensity.compact,
-                                                                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                                                                shape: RoundedRectangleBorder(
-                                                                                                  borderRadius: BorderRadius.circular(4.0),
-                                                                                                ),
-                                                                                              ),
-                                                                                              unselectedWidgetColor: FlutterFlowTheme.of(context).secondaryText,
-                                                                                            ),
-                                                                                            child: Checkbox(
-                                                                                              value: _model.checkboxValueMap13[vistapreviaaItem] ??= true,
-                                                                                              onChanged: (newValue) async {
-                                                                                                safeSetState(() => _model.checkboxValueMap13[vistapreviaaItem] = newValue!);
-                                                                                              },
-                                                                                              side: BorderSide(
-                                                                                                      width: 2,
-                                                                                                      color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                                    ),
-                                                                                              activeColor: Color(0xFF265294),
-                                                                                              checkColor: FlutterFlowTheme.of(context).info,
-                                                                                            ),
-                                                                                          ),
-                                                                                          Text(
-                                                                                            'falso',
-                                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                  font: GoogleFonts.inter(
-                                                                                                    fontWeight: FontWeight.w600,
-                                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                  ),
-                                                                                                  fontSize: 18.0,
-                                                                                                  letterSpacing: 0.0,
-                                                                                                  fontWeight: FontWeight.w600,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                          ),
-                                                                                        ],
-                                                                                      ),
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      if (vistapreviaaItem
-                                                                              .tipo ==
-                                                                          'abiertas')
-                                                                        Column(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.start,
-                                                                          children: [
-                                                                            Padding(
-                                                                              padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                                                                              child: Text(
-                                                                                valueOrDefault<String>(
-                                                                                  vistapreviaaItem.pregunta,
-                                                                                  'Sin pregunta',
-                                                                                ),
-                                                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                      font: GoogleFonts.inter(
-                                                                                        fontWeight: FontWeight.w600,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                      ),
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FontWeight.w600,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                            ),
-                                                                            Padding(
-                                                                              padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                                                                              child: Container(
-                                                                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                                                                decoration: BoxDecoration(
-                                                                                  color: FlutterFlowTheme.of(context).primaryBackground,
-                                                                                  boxShadow: [
-                                                                                    BoxShadow(
-                                                                                      blurRadius: 20.0,
-                                                                                      color: Color(0x27000000),
-                                                                                      offset: Offset(
-                                                                                        5.0,
-                                                                                        5.0,
-                                                                                      ),
-                                                                                    )
-                                                                                  ],
-                                                                                  borderRadius: BorderRadius.circular(8.0),
-                                                                                ),
-                                                                                child: Padding(
-                                                                                  padding: EdgeInsets.all(10.0),
-                                                                                  child: Text(
-                                                                                    valueOrDefault<String>(
-                                                                                      vistapreviaaItem.respuestaLarga,
-                                                                                      'Sin respuesta',
-                                                                                    ),
-                                                                                    style: FlutterFlowTheme.of(context).labelMedium.override(
-                                                                                          font: GoogleFonts.inter(
-                                                                                            fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                            fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                          ),
-                                                                                          letterSpacing: 0.0,
-                                                                                          fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                          fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                        ),
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                    ],
-                                                                  );
-                                                                }),
-                                                              );
-                                                            },
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  PreviewSubmitButton(
-                                                    encuestaID: widget.encuestaID!,
-                                                    onSubmitted: () => safeSetState(() {}),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+          width: double.infinity,
+          height: double.infinity,
+          color: FlutterFlowTheme.of(context).secondaryBackground,
+          padding: const EdgeInsets.fromLTRB(40.0, 20.0, 40.0, 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const PreviewHeader(),
+              const SizedBox(height: 30.0),
+              Expanded(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 900.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 50.0,
+                            color: Color(0x26000000),
+                            offset: Offset(20.0, 20.0),
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20.0),
+                        child: SingleChildScrollView(
+                          primary: false,
+                          padding: const EdgeInsets.all(30.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                encuesta.titulo,
+                                style: _estilo(context, 30.0),
+                              ),
+                              if (encuesta.descripcion.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16.0),
+                                  child: Text(
+                                    encuesta.descripcion,
+                                    style: _estilo(context, null,
+                                        weight: FontWeight.w500),
                                   ),
                                 ),
+                              const SizedBox(height: 12.0),
+                              if (preguntas.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 30.0),
+                                  child: Text(
+                                    'Aún no hay preguntas para mostrar.',
+                                    style: _nota(context),
+                                  ),
+                                ),
+                              for (var i = 0; i < preguntas.length; i++) ...[
+                                const Divider(height: 40.0),
+                                _buildPregunta(context, preguntas[i], i),
                               ],
-                            ),
+                              const SizedBox(height: 30.0),
+                              PreviewSubmitButton(
+                                encuestaID: widget.encuestaID!,
+                                esTamizaje: encuesta.tipo == 'Tamizajes',
+                                onSubmitted: () => safeSetState(() {}),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
     );
   }
+
+  /// Dibuja una pregunta según su `tipo`. Todos los tipos de tamizaje
+  /// (autoestima, ansiedad, CDI, Beck, CRQ/RQC/SRQ, Sustancias) guardan sus
+  /// opciones en `respuestaTamizaje` y se responden con una sola opción.
+  Widget _buildPregunta(
+      BuildContext context, PreguntasEncuestaStruct p, int index) {
+    final tipo = p.tipo;
+    final numero = index + 1;
+
+    if (tipo == 'Descriptiva') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _titulo(context, valueOrDefault<String>(p.pregunta, 'Sin texto')),
+          if (p.respuestaLarga.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Text(p.respuestaLarga, style: _nota(context)),
+            ),
+        ],
+      );
+    }
+
+    if (tipo.startsWith('Tamizaje')) {
+      final esCRQ = _kTiposCRQ.contains(tipo);
+      final texto = esCRQ && p.numeroPregunta > 0
+          ? '${p.numeroPregunta}. ${p.pregunta}'
+          : '$numero. ${p.pregunta}';
+      final chips = <String>[
+        if (tipo == 'Tamizaje (Sustancias)' && p.sustancia.isNotEmpty)
+          'Sustancia: ${p.sustancia}',
+        if ((tipo == 'Tamizaje CDI' || tipo == 'Tamizajes Depresion Beck') &&
+            p.variable.isNotEmpty)
+          'Variable: ${p.variable}',
+      ];
+      return _bloque(
+        context,
+        titulo: texto,
+        chips: chips,
+        vacio: p.respuestaTamizaje.isEmpty,
+        opciones: [
+          for (final o in p.respuestaTamizaje)
+            _opcion(context, Icons.radio_button_unchecked, o.etiqueta,
+                chip: 'Puntaje: ${o.valor}'),
+        ],
+      );
+    }
+
+    if (tipo == 'Condicionante') {
+      return _bloque(
+        context,
+        titulo: '$numero. ${p.pregunta}',
+        vacio: p.respuestaCondicionante.isEmpty,
+        opciones: [
+          for (final o in p.respuestaCondicionante)
+            _opcion(context, Icons.radio_button_unchecked, o.etiqueta,
+                chip: o.sustanciaValor.isEmpty ? null : o.sustanciaValor),
+        ],
+      );
+    }
+
+    if (tipo == 'selección') {
+      return _bloque(
+        context,
+        titulo: '$numero. ${p.pregunta}',
+        vacio: p.respuestaSelection.isEmpty,
+        opciones: [
+          for (final o in p.respuestaSelection)
+            _opcion(context, Icons.check_box_outline_blank, o),
+        ],
+      );
+    }
+
+    if (tipo == 'Selección única') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _titulo(context, '$numero. ${p.pregunta}'),
+          const SizedBox(height: 12.0),
+          RadiosButtonVistaPreviaWidget(
+            key: Key('preview_unica_${index}_${p.pregunta.hashCode}'),
+            parameter1: p.respuestaSUnicaCorrecta,
+            parameter2: p.respuestasSeleccionUnica,
+          ),
+        ],
+      );
+    }
+
+    if (tipo == 'Verdadero o falso') {
+      return _bloque(
+        context,
+        titulo: '$numero. ${p.pregunta}',
+        opciones: [
+          _opcion(context, Icons.radio_button_unchecked, 'Verdadero'),
+          _opcion(context, Icons.radio_button_unchecked, 'Falso'),
+        ],
+      );
+    }
+
+    if (tipo == 'abiertas') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _titulo(context, '$numero. ${p.pregunta}'),
+          const SizedBox(height: 12.0),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14.0),
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).primaryBackground,
+              borderRadius: BorderRadius.circular(8.0),
+              border: Border.all(color: _kBorde),
+            ),
+            child: Text('Respuesta abierta del usuario',
+                style: _nota(context)),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _titulo(context, '$numero. ${p.pregunta}'),
+        const SizedBox(height: 8.0),
+        Text('Tipo no soportado en vista previa: "$tipo"',
+            style: _nota(context)),
+      ],
+    );
+  }
+
+  Widget _bloque(
+    BuildContext context, {
+    required String titulo,
+    required List<Widget> opciones,
+    List<String> chips = const [],
+    bool vacio = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _titulo(context, titulo),
+        if (chips.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: [for (final c in chips) _chip(context, c)],
+            ),
+          ),
+        const SizedBox(height: 12.0),
+        if (vacio)
+          Text('Esta pregunta no tiene opciones configuradas.',
+              style: _nota(context))
+        else
+          ...opciones,
+      ],
+    );
+  }
+
+  Widget _opcion(BuildContext context, IconData icono, String texto,
+      {String? chip}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).primaryBackground,
+          borderRadius: BorderRadius.circular(8.0),
+          border: Border.all(color: _kBorde),
+        ),
+        child: Row(
+          children: [
+            Icon(icono,
+                color: FlutterFlowTheme.of(context).secondaryText, size: 22.0),
+            const SizedBox(width: 10.0),
+            Expanded(
+              child: Text(texto,
+                  style: _estilo(context, 16.0, weight: FontWeight.w500)),
+            ),
+            if (chip != null) ...[
+              const SizedBox(width: 10.0),
+              _chip(context, chip),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _titulo(BuildContext context, String texto) =>
+      Text(texto, style: _estilo(context, 18.0));
+
+  Widget _chip(BuildContext context, String texto) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+      decoration: BoxDecoration(
+        color: const Color(0x14265294),
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      child: Text(
+        texto,
+        style: _estilo(context, 12.0, weight: FontWeight.w600)
+            .copyWith(color: _kAzul),
+      ),
+    );
+  }
+
+  TextStyle _estilo(BuildContext context, double? size,
+      {FontWeight weight = FontWeight.w600}) {
+    final base = FlutterFlowTheme.of(context).bodyMedium;
+    return base.override(
+      font: GoogleFonts.inter(fontWeight: weight, fontStyle: base.fontStyle),
+      fontSize: size,
+      letterSpacing: 0.0,
+      fontWeight: weight,
+      fontStyle: base.fontStyle,
+    );
+  }
+
+  TextStyle _nota(BuildContext context) =>
+      _estilo(context, 14.0, weight: FontWeight.w400).copyWith(
+        color: FlutterFlowTheme.of(context).secondaryText,
+        fontStyle: FontStyle.italic,
+      );
 }

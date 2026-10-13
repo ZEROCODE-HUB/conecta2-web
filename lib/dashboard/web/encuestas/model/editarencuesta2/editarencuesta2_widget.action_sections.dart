@@ -554,9 +554,12 @@ extension _Editarencuesta2WidgetBuildSections2 on _Editarencuesta2WidgetState {
             if (!_alertasAssistValidas(context)) {
               return;
             }
+            // Previsualizar no cambia el estado de publicación.
+            final actual =
+                await EncuestasRecord.getDocumentOnce(widget.encuestaID!);
             await widget.encuestaID!.update({
               ..._payloadEncuestaRecord(
-                publicado: true,
+                publicado: actual.publicado,
                 titulo: _model.textController1.text,
                 descripcion: _model.descTextController.text,
               ),

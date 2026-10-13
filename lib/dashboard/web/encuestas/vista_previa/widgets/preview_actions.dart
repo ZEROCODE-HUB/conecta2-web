@@ -9,14 +9,18 @@ import 'package:google_fonts/google_fonts.dart';
 ///
 /// When pressed it flips the `publicado` flag of the current encuesta to true
 /// and clears the selected-user state (returning the admin to the listing).
+/// For tamizajes ([esTamizaje]) it becomes "Volver a editar" and only
+/// navigates back to the editor, without writing to Firestore.
 class PreviewSubmitButton extends StatelessWidget {
   const PreviewSubmitButton({
     super.key,
     required this.encuestaID,
+    this.esTamizaje = false,
     this.onSubmitted,
   });
 
   final DocumentReference encuestaID;
+  final bool esTamizaje;
   final VoidCallback? onSubmitted;
 
   @override
@@ -29,13 +33,20 @@ class PreviewSubmitButton extends StatelessWidget {
         children: [
           FFButtonWidget(
             onPressed: () async {
+              if (esTamizaje) {
+                FFAppState().selectUser = FFAppState().createEncuesta == true
+                    ? 'Crearencuesta'
+                    : 'Editar Encuesta';
+                FFAppState().update(() {});
+                return;
+              }
               await encuestaID.update(createEncuestasRecordData(
                 publicado: true,
               ));
               FFAppState().selectUser = '';
               onSubmitted?.call();
             },
-            text: 'Enviar Repuestas',
+            text: esTamizaje ? 'Volver a editar' : 'Enviar Repuestas',
             options: FFButtonOptions(
               height: 54.0,
               padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
