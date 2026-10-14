@@ -463,6 +463,10 @@ class _MapaInstitucionesEducativasState
       print('📋 Buscando respuestas para ${patientRefs.length} usuarios en ${chunks.length} lotes...');
 
       Set<String> validTamizajeTitles = {};
+      // Ids de las Encuestas de tipo tamizaje: una respuesta que cuelga de
+      // otra Encuesta (p. ej. tipo 'Encuestas') no cuenta aunque comparta
+      // título con un tamizaje.
+      Set<String> validTamizajeIds = {};
 
       if (patientRefs.isNotEmpty) {
         // 1. Obtener títulos válidos (para filtrar respuestas a cuestionarios generales)
@@ -470,11 +474,13 @@ class _MapaInstitucionesEducativasState
             .collection('Encuestas')
             .get();
             
-        validTamizajeTitles = tamizajesSnap.docs.where((doc) {
+        final tamizajeDocs = tamizajesSnap.docs.where((doc) {
           final data = doc.data();
           final tipo = data['tipo']?.toString().toLowerCase() ?? '';
           return tipo.contains('tamizaje');
-        }).map((doc) {
+        }).toList();
+        validTamizajeIds = tamizajeDocs.map((doc) => doc.id).toSet();
+        validTamizajeTitles = tamizajeDocs.map((doc) {
           final data = doc.data();
           return (data['titulo'] ?? data['Titulo'] ?? '').toString().trim().toLowerCase();
         }).where((t) => t.isNotEmpty).toSet();
@@ -505,6 +511,12 @@ class _MapaInstitucionesEducativasState
 
         // Ignorar encuestas/cuestionarios que no son 'Tamizajes'
         if (!validTamizajeTitles.contains(tituloRaw.toLowerCase())) continue;
+        final padre = respuestaDoc.reference.parent.parent;
+        if (padre != null &&
+            padre.parent.id == 'Encuestas' &&
+            !validTamizajeIds.contains(padre.id)) {
+          continue;
+        }
 
         // Normalizar el título a mayúsculas para evitar duplicados por case
         final titulo = tituloRaw.toUpperCase();

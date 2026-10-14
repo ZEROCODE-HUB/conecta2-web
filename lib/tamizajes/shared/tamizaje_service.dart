@@ -29,11 +29,42 @@ class TamizajeService {
   }
 
 
-  /// Stream de todas las respuestas (collectionGroup).
-  static Stream<List<RespuestasRecord>> todasLasRespuestas() {
-    return queryRespuestasRecord(
+  /// Ids de las Encuestas con `tipo == 'Tamizajes'`, o null si no se pudo
+  /// leer el catálogo.
+  static Future<Set<String>?> idsEncuestasTamizaje() async {
+    try {
+      final encuestas = await queryEncuestasRecordOnce(
+        queryBuilder: (q) => q.where('tipo', isEqualTo: 'Tamizajes'),
+      );
+      return {for (final e in encuestas) e.reference.id};
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// true si la respuesta cuelga de una Encuesta de tipo Tamizajes.
+  /// Con [idsTamizaje] null (catálogo no disponible) no descarta nada.
+  static bool esRespuestaDeTamizaje(
+    RespuestasRecord r,
+    Set<String>? idsTamizaje,
+  ) {
+    if (idsTamizaje == null) return true;
+    final padre = r.reference.parent.parent;
+    return padre != null &&
+        padre.parent.id == 'Encuestas' &&
+        idsTamizaje.contains(padre.id);
+  }
+
+  /// Stream de las respuestas a tamizajes (collectionGroup). Excluye las
+  /// respuestas a encuestas (`tipo == 'Encuestas'`), que tienen su propio
+  /// Listado de Encuestas.
+  static Stream<List<RespuestasRecord>> todasLasRespuestas() async* {
+    final idsTamizaje = await idsEncuestasTamizaje();
+    yield* queryRespuestasRecord(
       queryBuilder: (q) => q,
-    );
+    ).map((respuestas) => respuestas
+        .where((r) => esRespuestaDeTamizaje(r, idsTamizaje))
+        .toList());
   }
 
   /// Filtra respuestas para quedarse solo con tamizajes (test no vacío) cuyos

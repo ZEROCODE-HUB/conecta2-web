@@ -34,6 +34,10 @@ class _ListadoTamizajesWidgetState extends State<ListadoTamizajesWidget> {
   /// encuesta y no solo por palabras del título.
   Map<String, String>? _categoriaPorEncuesta;
 
+  /// true si no se pudo leer el catálogo de tamizajes; entonces se muestra
+  /// lo que se pueda en vez de un indicador de carga infinito.
+  bool _categoriasFallaron = false;
+
   Future<void> _cargarCategorias() async {
     try {
       final encuestas = await queryEncuestasRecordOnce(
@@ -47,6 +51,7 @@ class _ListadoTamizajesWidgetState extends State<ListadoTamizajesWidget> {
       });
     } catch (_) {
       // Sin el mapa se mantiene el filtro por título.
+      if (mounted) setState(() => _categoriasFallaron = true);
     }
   }
 
@@ -230,7 +235,8 @@ class _ListadoTamizajesWidgetState extends State<ListadoTamizajesWidget> {
                 queryBuilder: (q) => q,
               ),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
+                if (!snapshot.hasData ||
+                    (_categoriaPorEncuesta == null && !_categoriasFallaron)) {
                   return const Center(
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(kNavy),
@@ -238,10 +244,16 @@ class _ListadoTamizajesWidgetState extends State<ListadoTamizajesWidget> {
                   );
                 }
 
-                // Solo tamizajes con test
-                var tamizajes = snapshot.data!
-                    .where((r) => r.hasTest() && r.test.isNotEmpty)
-                    .toList();
+                // Solo respuestas de tamizajes (Encuesta padre con
+                // tipo 'Tamizajes'); las de encuestas van al Listado de
+                // Encuestas.
+                final categorias = _categoriaPorEncuesta;
+                var tamizajes = snapshot.data!.where((r) {
+                  if (!r.hasTest() || r.test.isEmpty) return false;
+                  if (categorias == null) return true;
+                  final padre = r.reference.parent.parent;
+                  return padre != null && categorias.containsKey(padre.id);
+                }).toList();
 
                 // Filtros categoría + estado
                 tamizajes = TamizajeService.filtrarPorCategoriaYEstado(

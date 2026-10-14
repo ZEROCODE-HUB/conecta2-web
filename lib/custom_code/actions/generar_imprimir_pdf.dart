@@ -400,6 +400,8 @@ Future<_TamizajeImprimir?> _procesarDocTamizaje(
     if (encuestaRef != null && encuestaRef.parent.id == 'Encuestas') {
       encuesta = await _leerDocCacheado(encuestaRef, cache);
     }
+    // Las respuestas a encuestas no van en el informe: solo tamizajes.
+    if (encuesta?['tipo'] == 'Encuestas') return null;
     final preguntasRaw = (encuesta?['Preguntas'] as List?) ?? const [];
     final preguntas = [
       for (final p in preguntasRaw)

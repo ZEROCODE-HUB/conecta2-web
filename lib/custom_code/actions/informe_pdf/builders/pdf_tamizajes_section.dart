@@ -152,6 +152,8 @@ Future<ResultadoTamizaje?> _resultadoDeDocumento(
     if (encuestaRef != null && encuestaRef.parent.id == 'Encuestas') {
       encuesta = await _encuestaDe(encuestaRef, encuestasCache);
     }
+    // Las respuestas a encuestas no van en el informe: solo tamizajes.
+    if (encuesta?['tipo'] == 'Encuestas') return null;
 
     final titulo =
         (data['Titlo'] ?? data['titlo'] ?? encuesta?['titulo'] ?? '')
