@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
+import '/user/registration/sesion_app.dart';
 import 'splash_home_model.dart';
 export 'splash_home_model.dart';
 
@@ -35,69 +35,104 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
+  /// Mensaje de error visible bajo el logo; null mientras carga.
+  String? _error;
+
+  /// Si el error permite reintentar (red/lectura) o solo cerrar sesión.
+  bool _puedeReintentar = true;
+
+  /// Evita navegar dos veces si Firebase emite el mismo usuario de nuevo.
+  bool _redirigido = false;
+
   Future<void> _signOutAndRedirect() async {
     _timeoutTimer?.cancel();
     _authSub?.cancel();
     try {
       await FirebaseAuth.instance.signOut();
     } catch (_) {}
+    limpiarSesionApp();
     if (mounted) {
       context.goNamed(SplashWidget.routeName);
     }
   }
 
+  void _mostrarError(String mensaje, {bool puedeReintentar = true}) {
+    _timeoutTimer?.cancel();
+    if (!mounted || _redirigido) return;
+    safeSetState(() {
+      _error = mensaje;
+      _puedeReintentar = puedeReintentar;
+    });
+  }
+
+  /// Espera la sesión de Firebase y carga el perfil (`users/{uid}`).
+  /// Solo cierra sesión si el perfil no existe; ante errores de red o una
+  /// carga lenta muestra "Reintentar" en vez de expulsar al usuario.
   void _startAuthListener() {
     _authSub?.cancel();
     _timeoutTimer?.cancel();
+    if (_error != null) safeSetState(() => _error = null);
 
-    _timeoutTimer = Timer(const Duration(seconds: 10), () {
-      if (mounted) {
-        _signOutAndRedirect();
-      }
+    _timeoutTimer = Timer(const Duration(seconds: 15), () {
+      _mostrarError(
+          'No pudimos cargar tu perfil. Revisa tu conexión e inténtalo de nuevo.');
     });
 
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      UsersRecord.getDocumentOnce(UsersRecord.collection.doc(currentUser.uid))
-          .then((userDoc) {
-        // El documento se cargó con éxito. No hacemos nada extra.
-      }).catchError((error) {
-        // En caso de fallar, simplemente enviamos al login.
-        _signOutAndRedirect();
-      });
-    }
-
-    _authSub = authenticatedUserStream.listen(
-      (userDoc) {
-        if (userDoc == null) {
-          // Si no estamos autenticados en Firebase Auth, enviamos al splash/login
-          if (FirebaseAuth.instance.currentUser == null) {
-            _timeoutTimer?.cancel();
-            if (mounted) {
-              context.goNamed(SplashWidget.routeName);
-            }
-          } else {
-            // Si estamos autenticados pero no hay documento (nulo),
-            // cerramos sesión y vamos al login.
-            _signOutAndRedirect();
+    _authSub = FirebaseAuth.instance.authStateChanges().listen(
+      (user) {
+        if (user == null) {
+          // Sin sesión: al splash/login.
+          _timeoutTimer?.cancel();
+          _authSub?.cancel();
+          if (mounted && !_redirigido) {
+            _redirigido = true;
+            context.goNamed(SplashWidget.routeName);
           }
           return;
         }
-
-        _timeoutTimer?.cancel();
-        _authSub?.cancel();
-        _redirectBasedOnRole(userDoc);
+        _cargarPerfil(user.uid);
       },
-      onError: (error) {
-        // En caso de cualquier error en el stream, cerramos sesión y redirigimos.
-        _signOutAndRedirect();
-      },
+      onError: (_) => _mostrarError(
+          'No pudimos verificar tu sesión. Revisa tu conexión e inténtalo de nuevo.'),
     );
   }
 
+  Future<void> _cargarPerfil(String uid) async {
+    try {
+      final snap = await UsersRecord.collection.doc(uid).get();
+      if (!mounted || _redirigido) return;
+      if (!snap.exists) {
+        // Cuenta de acceso sin perfil: no hay a dónde llevarla.
+        await _signOutAndRedirect();
+        return;
+      }
+      _timeoutTimer?.cancel();
+      _authSub?.cancel();
+      _redirectBasedOnRole(UsersRecord.fromSnapshot(snap));
+    } catch (_) {
+      _mostrarError(
+          'No pudimos cargar tu perfil. Revisa tu conexión e inténtalo de nuevo.');
+    }
+  }
+
   void _redirectBasedOnRole(UsersRecord userDoc) async {
-    if (!mounted) return;
+    if (!mounted || _redirigido) return;
     final rol = userDoc.rol;
+    // Roles válidos; con otro rol se ofrece cerrar sesión en vez de saltar
+    // en silencio al login con la sesión abierta.
+    const rolesConocidos = [
+      'Adolescente',
+      'Acudiente',
+      'Padre',
+      'Profesional',
+      'Administrador',
+    ];
+    if (!rolesConocidos.contains(rol)) {
+      _mostrarError('Tu cuenta no tiene un rol válido. Contacta al equipo.',
+          puedeReintentar: false);
+      return;
+    }
+    _redirigido = true;
 
     if (rol ==
         valueOrDefault<String>(
@@ -115,10 +150,11 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
         },
       );
     } else if (rol ==
-        valueOrDefault<String>(
-          FFAppConstants.acudiente,
-          'Acudiente',
-        )) {
+            valueOrDefault<String>(
+              FFAppConstants.acudiente,
+              'Acudiente',
+            ) ||
+        rol == 'Padre') {
       context.goNamed(
         HomeParentsWidget.routeName,
         extra: <String, dynamic>{
@@ -162,13 +198,61 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
         },
       );
     } else {
-      context.goNamed(SplashWidget.routeName);
+      _redirigido = false;
+      _mostrarError('Tu cuenta no tiene un rol válido. Contacta al equipo.',
+          puedeReintentar: false);
       return;
     }
 
     await userDoc.reference.update(createUsersRecordData(
       lastconnectedday: getCurrentTimestamp,
     ));
+  }
+
+  Widget _buildError(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            _error!,
+            textAlign: TextAlign.center,
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  color: Colors.white,
+                  fontSize: 15.0,
+                  letterSpacing: 0.0,
+                ),
+          ),
+          const SizedBox(height: 16.0),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12.0,
+            runSpacing: 8.0,
+            children: [
+              if (_puedeReintentar)
+                ElevatedButton(
+                  onPressed: _startAuthListener,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: FlutterFlowTheme.of(context).primary,
+                    elevation: 0,
+                  ),
+                  child: const Text('Reintentar'),
+                ),
+              OutlinedButton(
+                onPressed: _signOutAndRedirect,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.white),
+                ),
+                child: const Text('Cerrar sesión'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -217,14 +301,18 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
                       ),
                     ),
                     const SizedBox(height: 24.0),
-                    const SizedBox(
-                      width: 24.0,
-                      height: 24.0,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        strokeWidth: 2.5,
-                      ),
-                    ),
+                    if (_error == null)
+                      const SizedBox(
+                        width: 24.0,
+                        height: 24.0,
+                        child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    else
+                      _buildError(context),
                   ],
                 ),
               ),
