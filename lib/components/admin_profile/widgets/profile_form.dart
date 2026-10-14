@@ -100,7 +100,7 @@ class ProfileForm extends StatelessWidget {
           ),
           _row(
             left: _FieldBlock(
-              label: 'Tipo de usuario',
+              label: 'Correo electrónico',
               hint: 'john@gmail.com',
               controller: emailController,
               focusNode: emailFocusNode,
