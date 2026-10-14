@@ -225,6 +225,11 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
                                         .text
                                         .trim(),
                                     clearUnsetFields: false,
+                                    // Con .set() hay que crear el mapa
+                                    // anidado: sin `create` se guardan campos
+                                    // sueltos "Acudiente.correo" y la
+                                    // búsqueda por Acudiente.correo no los ve.
+                                    create: true,
                                   ),
                                   fechaNacimiento: FFAppState()
                                       .detalleUsuarioTemp
