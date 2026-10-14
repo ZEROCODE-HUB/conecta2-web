@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/dashboard/web/encuestas/crearencuesta/crearencuesta_widget.dart';
+import '/dashboard/web/encuestas/encuesta_form_helpers.dart';
 import '/dashboard/web/encuestas/model/editarencuesta2/editarencuesta2_widget.dart';
 import '/dashboard/web/encuestas/resultados/resultados_widget.dart';
 import '/dashboard/web/tamizajes/resultados_tami/resultados_tami_v2_widget.dart';
@@ -230,8 +231,12 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
         cm.alertasEspeciales.clear();
         cm.roleValue = null;
         cm.roleValueController?.value = null;
-        cm.categoriaValue = null;
-        cm.categoriaValueController?.value = null;
+        // Encuestas: categoría fija "Encuesta"; Tamizajes: se elige.
+        cm.categoriaValue =
+            widget.tipo == 'Tamizajes' ? null : kCategoriaEncuesta;
+        cm.categoria = cm.categoriaValue;
+        cm.categoriaValueController?.value = cm.categoriaValue;
+        cm.nivelesAlerta = [];
         cm.tipoValue = null;
         cm.tipoValueController?.value = null;
         cm.textController1?.clear();

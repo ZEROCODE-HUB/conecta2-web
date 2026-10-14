@@ -10,6 +10,7 @@ import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../crearencuesta_model.dart';
+import '../../encuesta_form_helpers.dart' show kCategoriaEncuesta;
 import '/components/successpopup_widget.dart';
 import '/components/text_field_alerta_widget.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
@@ -52,11 +53,18 @@ class SidebarAccionesWidget extends StatelessWidget {
   }) async {
     final _model = model;
     final titulo = _model.textController1?.text.trim() ?? '';
+    final esTamizaje = tipo == 'Tamizajes';
+    // Las encuestas siempre se guardan con la categoría fija "Encuesta".
+    if (!esTamizaje) {
+      _model.categoriaValue = kCategoriaEncuesta;
+      _model.categoria = kCategoriaEncuesta;
+    }
     if (titulo.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-              'Ingresa un título para el tamizaje antes de continuar.'),
+          content: Text(esTamizaje
+              ? 'Ingresa un título para el tamizaje antes de continuar.'
+              : 'Ingresa un título para la encuesta antes de continuar.'),
           backgroundColor: FlutterFlowTheme.of(context).error,
           duration: const Duration(seconds: 3),
         ),
@@ -117,7 +125,10 @@ class SidebarAccionesWidget extends StatelessWidget {
     AlertaStruct? bajo;
     AlertaStruct? moderado;
     AlertaStruct? alto;
-    if (cat == 'Consumo de SPA') {
+    if (cat == kCategoriaEncuesta) {
+      // Encuesta: sin niveles ni alertas (sus preguntas no puntúan).
+      alertasFS = [];
+    } else if (cat == 'Consumo de SPA') {
       final errores = validarAlertasAssist(FFAppState().listaAlertasEnvio);
       if (errores.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(

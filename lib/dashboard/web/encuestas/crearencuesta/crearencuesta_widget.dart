@@ -1,4 +1,6 @@
 import '/tamizajes/shared/assist_utils.dart' show limpiarAlertasAssist;
+import '/dashboard/web/encuestas/encuesta_form_helpers.dart'
+    show kCategoriaEncuesta;
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -42,6 +44,11 @@ class _CrearencuestaWidgetState extends State<CrearencuestaWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => CrearencuestaModel());
+    // Encuestas: categoría fija "Encuesta" (limita los tipos de pregunta).
+    if (widget.tipo != 'Tamizajes') {
+      _model.categoriaValue = kCategoriaEncuesta;
+      _model.categoria = kCategoriaEncuesta;
+    }
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {

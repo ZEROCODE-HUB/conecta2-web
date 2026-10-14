@@ -209,7 +209,12 @@ class DatosPrincipalesWidget extends StatelessWidget {
                             EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                         // Tras el primer guardado (p. ej. Vista Previa) el
                         // tamizaje ya existe como borrador: categoría fija.
-                        child: esTamizaje && model.encuestaPersistedRef != null
+                        // Las encuestas siempre llevan la categoría fija
+                        // "Encuesta".
+                        child: !esTamizaje
+                            ? const CategoriaBloqueada(
+                                categoria: kCategoriaEncuesta)
+                            : model.encuestaPersistedRef != null
                             ? CategoriaBloqueada(
                                 categoria: model.categoriaValue ?? '')
                             : FlutterFlowDropDown<String>(

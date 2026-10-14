@@ -30,7 +30,8 @@ class EncuestaRow extends StatelessWidget {
     ).then((s) => s.firstOrNull);
 
     if (model.check1?.reference != null) {
-      FFAppState().selectUser = encuesta.categoria.isNotEmpty
+      // Decide por tipo: las encuestas también llevan categoría ("Encuesta").
+      FFAppState().selectUser = encuesta.tipo == 'Tamizajes'
           ? 'ResultadosTamizaje'
           : 'Resultados';
       model.documentID = encuesta.reference;

@@ -6,9 +6,19 @@ import '/flutter_flow/flutter_flow_radio_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/form_field_controller.dart';
 
+/// Categoría fija de los documentos creados desde la sección Encuestas
+/// (`tipo == 'Encuestas'`). No es clínica: sus preguntas no puntúan.
+const String kCategoriaEncuesta = 'Encuesta';
+
 /// Mapa de categoria -> tipos de pregunta permitidos.
 /// Si la categoria no esta en el mapa, retorna todos los tipos (comportamiento default).
 const Map<String, List<String>> kTiposPorCategoria = {
+  kCategoriaEncuesta: [
+    'abiertas',
+    'selección',
+    'Selección única',
+    'Verdadero o falso',
+  ],
   'Consumo de SPA': ['Tamizaje (Sustancias)', 'Condicionante', 'Descriptiva'],
   'Escala autoestima': ['Tamizaje autoestima', 'Descriptiva'],
   'CDI': ['Tamizaje CDI', 'Descriptiva'],
