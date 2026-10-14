@@ -45,7 +45,7 @@ extension _RegisterContinue3Form2 on _RegisterContinue3WidgetState {
                   ),
             ),
             Container(
-              height: 47.0,
+              constraints: const BoxConstraints(minHeight: 47.0),
               decoration: BoxDecoration(),
               child: TextFormField(
                 controller: _model
@@ -56,7 +56,7 @@ extension _RegisterContinue3Form2 on _RegisterContinue3WidgetState {
                 obscureText: false,
                 decoration: InputDecoration(
                   alignLabelWithHint: false,
-                  hintText: 'Ingresa tu teléfono',
+                  hintText: 'Teléfono del acudiente',
                   hintStyle: FlutterFlowTheme.of(
                           context)
                       .bodyMedium
@@ -148,6 +148,7 @@ extension _RegisterContinue3Form2 on _RegisterContinue3WidgetState {
                               .fontStyle,
                     ),
                 textAlign: TextAlign.start,
+                keyboardType: TextInputType.phone,
                 validator: _model
                     .textFieldTelefonoParentescoTextControllerValidator
                     .asValidator(context),

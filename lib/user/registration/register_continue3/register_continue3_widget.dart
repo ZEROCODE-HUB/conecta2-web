@@ -1,18 +1,16 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/form_field_controller.dart';
 import '/index.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'register_continue3_model.dart';
 import '../revertir_alta.dart';
+import '../sesion_app.dart';
 export 'register_continue3_model.dart';
 
 part 'register_continue3_form.dart';
@@ -34,18 +32,9 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  late Future<List<UsersRecord>> _parentsFuture;
-
   @override
   void initState() {
     super.initState();
-    _parentsFuture = queryUsersRecordOnce(
-      queryBuilder: (usersRecord) =>
-          usersRecord.where('rol', isEqualTo: 'Acudiente'),
-    ).catchError((err) {
-      print('Error querying parents: $err');
-      return <UsersRecord>[];
-    });
     _model = createModel(context, () => RegisterContinue3Model());
 
     _model.textFieldNombreParentescoTextController ??= TextEditingController();
@@ -121,7 +110,7 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
                               ),
                             ),
                             Text(
-                              'Datos del contacto',
+                              'Datos del acudiente',
                               style: FlutterFlowTheme.of(context)
                                   .titleLarge
                                   .override(
@@ -174,6 +163,10 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
                               !_model.formKey.currentState!.validate()) {
                             return;
                           }
+                          // El parche de nav.dart cierra la sesión si no
+                          // está marcada: marcarla antes de crear la cuenta.
+                          marcarSesionApp(
+                              FFAppState().detalleUsuarioTemp.email);
                           GoRouter.of(context).prepareAuthEvent();
 
                           // B7: Si el correo ya existe (registro previo incompleto), intentar login
@@ -190,6 +183,7 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
                               FFAppState().detalleUsuarioTemp.password,
                             );
                             if (authUser == null) {
+                              limpiarSesionApp();
                               return;
                             }
                           }
@@ -201,22 +195,35 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
                                 .doc(authUser.uid)
                                 .set(createUsersRecordData(
                                   createdTime: getCurrentTimestamp,
-                                  email: FFAppState().detalleUsuarioTemp.email,
+                                  email: FFAppState()
+                                      .detalleUsuarioTemp
+                                      .email
+                                      .trim()
+                                      .toLowerCase(),
                                   displayName: FFAppState().detalleUsuarioTemp.nombre,
                                   phoneNumber: FFAppState().detalleUsuarioTemp.phone,
                                   rol: FFAppState().detalleUsuarioTemp.tipo,
+                                  // El vínculo con la cuenta del acudiente se
+                                  // hace después por correo (Acudiente.correo
+                                  // == correo de acceso del acudiente).
                                   acudiente: createAcudienteStruct(
-                                    nombre: _model.matchedParentUser != null
-                                        ? _model.matchedParentUser!.displayName
-                                        : (_model.selectParentsValue ?? _model.textFieldNombreParentescoTextController.text),
-                                    ref: _model.matchedParentUser?.reference,
-                                    parentesco:
-                                        _model.textFieldParentescoTextController.text,
-                                    correo:
-                                        _model.correoParentescoTextController.text,
+                                    nombre: _model
+                                        .textFieldNombreParentescoTextController!
+                                        .text
+                                        .trim(),
+                                    parentesco: _model
+                                        .textFieldParentescoTextController!
+                                        .text
+                                        .trim(),
+                                    correo: _model
+                                        .correoParentescoTextController!
+                                        .text
+                                        .trim()
+                                        .toLowerCase(),
                                     telefono: _model
-                                        .textFieldTelefonoParentescoTextController
-                                        .text,
+                                        .textFieldTelefonoParentescoTextController!
+                                        .text
+                                        .trim(),
                                     clearUnsetFields: false,
                                   ),
                                   fechaNacimiento: FFAppState()

@@ -472,6 +472,7 @@ extension _EditProfileProffFormSections2 on _EditProfileProffWidgetState {
                                   GoRouter.of(context)
                                       .prepareAuthEvent();
                                   await authManager.signOut();
+                                  limpiarSesionApp();
                                   GoRouter.of(context)
                                       .clearRedirectLocation();
 

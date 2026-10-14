@@ -1,6 +1,5 @@
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/form_field_controller.dart';
 import '/index.dart';
 import 'register_continue3_widget.dart' show RegisterContinue3Widget;
 import 'package:flutter/material.dart';
@@ -10,15 +9,20 @@ class RegisterContinue3Model extends FlutterFlowModel<RegisterContinue3Widget> {
 
   final formKey = GlobalKey<FormState>();
   DateTime? datePicked1;
-  // State field(s) for selectParents widget.
-  String? selectParentsValue;
-  FormFieldController<String>? selectParentsValueController;
   DateTime? datePicked2;
   // State field(s) for TextFieldNombreParentesco widget.
   FocusNode? textFieldNombreParentescoFocusNode;
   TextEditingController? textFieldNombreParentescoTextController;
   String? Function(BuildContext, String?)?
       textFieldNombreParentescoTextControllerValidator;
+  String? _textFieldNombreParentescoTextControllerValidator(
+      BuildContext context, String? val) {
+    if (val == null || val.trim().isEmpty) {
+      return 'Ingresa el nombre del acudiente';
+    }
+
+    return null;
+  }
   // State field(s) for TextFieldParentesco widget.
   FocusNode? textFieldParentescoFocusNode;
   TextEditingController? textFieldParentescoTextController;
@@ -27,7 +31,7 @@ class RegisterContinue3Model extends FlutterFlowModel<RegisterContinue3Widget> {
   String? _textFieldParentescoTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
-      return 'Parentesco is required';
+      return 'Ingresa el parentesco';
     }
 
     return null;
@@ -40,8 +44,12 @@ class RegisterContinue3Model extends FlutterFlowModel<RegisterContinue3Widget> {
       correoParentescoTextControllerValidator;
   String? _correoParentescoTextControllerValidator(
       BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Ingresa tu correo electrónico is required';
+    final correo = val?.trim() ?? '';
+    if (correo.isEmpty) {
+      return 'Ingresa el correo del acudiente';
+    }
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(correo)) {
+      return 'Ingresa un correo válido';
     }
 
     return null;
@@ -55,7 +63,7 @@ class RegisterContinue3Model extends FlutterFlowModel<RegisterContinue3Widget> {
   String? _textFieldTelefonoParentescoTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
-      return 'Ingresa tu teléfono is required';
+      return 'Ingresa el teléfono del acudiente';
     }
 
     return null;
@@ -64,14 +72,10 @@ class RegisterContinue3Model extends FlutterFlowModel<RegisterContinue3Widget> {
   // Stores action output result for [Firestore Query - Query a collection] action in Button widget.
   UsersRecord? usuarioCreado;
 
-  // Stores the matched parent user found by email lookup.
-  UsersRecord? matchedParentUser;
-
-  // Whether a parent was found by email auto-link.
-  bool parentLinked = false;
-
   @override
   void initState(BuildContext context) {
+    textFieldNombreParentescoTextControllerValidator =
+        _textFieldNombreParentescoTextControllerValidator;
     textFieldParentescoTextControllerValidator =
         _textFieldParentescoTextControllerValidator;
     correoParentescoTextControllerValidator =

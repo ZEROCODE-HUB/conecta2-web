@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import 'sesion_app.dart';
 import 'package:flutter/material.dart';
 
 /// Alta a medias: la cuenta de Firebase Auth se creó pero falló el `set()`
@@ -15,6 +16,7 @@ Future<void> revertirAltaIncompleta(
   try {
     await authManager.signOut();
   } catch (_) {}
+  limpiarSesionApp();
   if (!context.mounted) return;
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(

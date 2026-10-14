@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/user/registration/sesion_app.dart';
 import '/backend/backend.dart';
 import '/components/registartion_button/registartion_button_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -1044,7 +1045,7 @@ class _RegisterContinueWidgetState extends State<RegisterContinueWidget> {
                                 (e) => e
                                   ..nombre = _model.textController1.text
                                   ..tipo = _model.dropDownTipoPersonaValue
-                                  ..email = _model.correoTextController.text
+                                  ..email = correo
                                   ..password =
                                       _model.passwordTextController.text
                                   ..phone = _model.textController2.text,
@@ -1055,15 +1056,19 @@ class _RegisterContinueWidgetState extends State<RegisterContinueWidget> {
                                   RegisterContinue2Widget.routeName,
                                   context.mounted);
                             } else {
+                              // El parche de nav.dart cierra la sesión si no
+                              // está marcada: marcarla antes de crear la cuenta.
+                              marcarSesionApp(correo);
                               GoRouter.of(context).prepareAuthEvent();
 
                               final user =
                                   await authManager.createAccountWithEmail(
                                 context,
-                                _model.correoTextController.text,
+                                correo,
                                 _model.passwordTextController.text,
                               );
                               if (user == null) {
+                                limpiarSesionApp();
                                 return;
                               }
 
@@ -1074,7 +1079,9 @@ class _RegisterContinueWidgetState extends State<RegisterContinueWidget> {
                                     .doc(user.uid)
                                     .set(createUsersRecordData(
                                       createdTime: getCurrentTimestamp,
-                                      email: _model.correoTextController.text,
+                                      // Correo normalizado: así coincide con
+                                      // Acudiente.correo y con Firebase Auth.
+                                      email: correo.toLowerCase(),
                                       displayName: _model.textController1.text,
                                       phoneNumber: _model.textController2.text,
                                       rol: _model.dropDownTipoPersonaValue,

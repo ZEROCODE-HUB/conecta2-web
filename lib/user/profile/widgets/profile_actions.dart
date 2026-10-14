@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/user/registration/sesion_app.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
@@ -34,6 +35,7 @@ class ProfileLogoutButton extends StatelessWidget {
                 onTap: () async {
                   GoRouter.of(context).prepareAuthEvent();
                   await authManager.signOut();
+                  limpiarSesionApp();
                   GoRouter.of(context).clearRedirectLocation();
                   if (!context.mounted) return;
                   context.goNamedAuth(SplashWidget.routeName, context.mounted);
