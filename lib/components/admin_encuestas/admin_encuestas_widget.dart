@@ -6,6 +6,7 @@ import '/dashboard/web/encuestas/model/editarencuesta2/editarencuesta2_widget.da
 import '/dashboard/web/encuestas/resultados/resultados_widget.dart';
 import '/dashboard/web/tamizajes/resultados_tami/resultados_tami_v2_widget.dart';
 import '/dashboard/web/tamizajes/listado_tamizajes/listado_tamizajes_widget.dart';
+import '/dashboard/web/encuestas/listado_encuestas/listado_encuestas_widget.dart';
 import '/dashboard/web/encuestas/model/vista_previa_copy/vista_previa_copy_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -102,6 +103,13 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
       }
     } else if (selectUser == 'ListadoTamizajes') {
       return ListadoTamizajesWidget(
+        onVolver: () {
+          FFAppState().selectUser = '';
+          safeSetState(() {});
+        },
+      );
+    } else if (selectUser == 'ListadoEncuestas') {
+      return ListadoEncuestasWidget(
         onVolver: () {
           FFAppState().selectUser = '';
           safeSetState(() {});
@@ -211,7 +219,17 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
             children: [
               _buildCrearNuevoButton(context),
               if (widget.tipo == 'Tamizajes')
-                _buildListadoTamizajesButton(context),
+                _buildListadoButton(
+                  context,
+                  texto: 'Listado de Tamizajes',
+                  destino: 'ListadoTamizajes',
+                )
+              else
+                _buildListadoButton(
+                  context,
+                  texto: 'Listado de Encuestas',
+                  destino: 'ListadoEncuestas',
+                ),
               _buildUserBadge(context),
             ],
           ),
@@ -264,13 +282,17 @@ class _AdminEncuestasWidgetState extends State<AdminEncuestasWidget> {
     );
   }
 
-  Widget _buildListadoTamizajesButton(BuildContext context) {
+  Widget _buildListadoButton(
+    BuildContext context, {
+    required String texto,
+    required String destino,
+  }) {
     return FFButtonWidget(
       onPressed: () {
-        FFAppState().selectUser = 'ListadoTamizajes';
+        FFAppState().selectUser = destino;
         safeSetState(() {});
       },
-      text: 'Listado de Tamizajes',
+      text: texto,
       icon: const Icon(
         Icons.assignment_outlined,
         size: 18.0,
