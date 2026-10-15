@@ -97,7 +97,7 @@ class _EncuestaPreguntasWidgetState extends State<EncuestaPreguntasWidget> {
                           child: TextFormField(
                             controller: _model.textController,
                             focusNode: _model.textFieldFocusNode,
-                            autofocus: true,
+                            autofocus: false,
                             obscureText: false,
                             decoration: InputDecoration(
                               isDense: true,

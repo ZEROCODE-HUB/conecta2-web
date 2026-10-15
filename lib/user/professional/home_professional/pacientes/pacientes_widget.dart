@@ -172,7 +172,7 @@ class _PacientesWidgetState extends State<PacientesWidget> {
                                                             safeSetState(
                                                                 () {}));
                                                   },
-                                                  autofocus: true,
+                                                  autofocus: false,
                                                   obscureText: false,
                                                   decoration: InputDecoration(
                                                     hintText:

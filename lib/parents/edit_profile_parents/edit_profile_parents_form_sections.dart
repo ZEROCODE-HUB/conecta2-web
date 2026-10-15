@@ -59,7 +59,7 @@ extension _EditProfileParentsFormSections on _EditProfileParentsWidgetState {
                                     .textFieldnameTextController,
                                 focusNode:
                                     _model.textFieldnameFocusNode,
-                                autofocus: true,
+                                autofocus: false,
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   labelStyle: FlutterFlowTheme.of(
@@ -271,7 +271,7 @@ extension _EditProfileParentsFormSections on _EditProfileParentsWidgetState {
                                     .textFieldemailTextController,
                                 focusNode: _model
                                     .textFieldemailFocusNode,
-                                autofocus: true,
+                                autofocus: false,
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   labelStyle: FlutterFlowTheme.of(
@@ -483,7 +483,7 @@ extension _EditProfileParentsFormSections on _EditProfileParentsWidgetState {
                                     .textFieldcelularTextController,
                                 focusNode: _model
                                     .textFieldcelularFocusNode,
-                                autofocus: true,
+                                autofocus: false,
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   labelStyle: FlutterFlowTheme.of(

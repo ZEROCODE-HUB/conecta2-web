@@ -61,7 +61,7 @@ extension _EditProfileProffFormSections on _EditProfileProffWidgetState {
                                       .textFieldnameTextController,
                                   focusNode: _model
                                       .textFieldnameFocusNode,
-                                  autofocus: true,
+                                  autofocus: false,
                                   obscureText: false,
                                   decoration: InputDecoration(
                                     labelStyle: FlutterFlowTheme
@@ -282,7 +282,7 @@ extension _EditProfileProffFormSections on _EditProfileProffWidgetState {
                                     .textFieldemailTextController,
                                 focusNode: _model
                                     .textFieldemailFocusNode,
-                                autofocus: true,
+                                autofocus: false,
                                 readOnly: true,
                                 obscureText: false,
                                 decoration: InputDecoration(
@@ -497,7 +497,7 @@ extension _EditProfileProffFormSections on _EditProfileProffWidgetState {
                                       .textFieldphoneTextController,
                                   focusNode: _model
                                       .textFieldphoneFocusNode,
-                                  autofocus: true,
+                                  autofocus: false,
                                   obscureText: false,
                                   decoration: InputDecoration(
                                     labelStyle: FlutterFlowTheme

@@ -127,7 +127,7 @@ class _RecordatoriosAddWidgetState extends State<RecordatoriosAddWidget> {
                                                   _model.textController1,
                                               focusNode:
                                                   _model.textFieldFocusNode1,
-                                              autofocus: true,
+                                              autofocus: false,
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 labelStyle: FlutterFlowTheme.of(
@@ -333,7 +333,7 @@ class _RecordatoriosAddWidgetState extends State<RecordatoriosAddWidget> {
                                                   _model.textController2,
                                               focusNode:
                                                   _model.textFieldFocusNode2,
-                                              autofocus: true,
+                                              autofocus: false,
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 labelStyle: FlutterFlowTheme.of(

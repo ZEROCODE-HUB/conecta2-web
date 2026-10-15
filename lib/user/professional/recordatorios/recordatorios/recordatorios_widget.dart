@@ -168,7 +168,7 @@ class _RecordatoriosWidgetState extends State<RecordatoriosWidget> {
                                                     .whenComplete(() =>
                                                         safeSetState(() {}));
                                               },
-                                              autofocus: true,
+                                              autofocus: false,
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 hintText: 'Buscar notas',

@@ -137,7 +137,7 @@ class _RecordatoriosEditorWidgetState extends State<RecordatoriosEditorWidget> {
                                             superHolderRecordatorRecord.titulo,
                                       ),
                                       focusNode: _model.textFieldFocusNode1,
-                                      autofocus: true,
+                                      autofocus: false,
                                       obscureText: false,
                                       decoration: InputDecoration(
                                         labelStyle: FlutterFlowTheme.of(context)
@@ -313,7 +313,7 @@ class _RecordatoriosEditorWidgetState extends State<RecordatoriosEditorWidget> {
                                             .descripcion,
                                       ),
                                       focusNode: _model.textFieldFocusNode2,
-                                      autofocus: true,
+                                      autofocus: false,
                                       obscureText: false,
                                       decoration: InputDecoration(
                                         labelStyle: FlutterFlowTheme.of(context)

@@ -59,7 +59,7 @@ extension _EditProfileFormSections2 on _EditProfileWidgetState {
                                     _model.textController4,
                                 focusNode:
                                     _model.textFieldFocusNode4,
-                                autofocus: true,
+                                autofocus: false,
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   labelStyle: FlutterFlowTheme.of(
@@ -271,7 +271,7 @@ extension _EditProfileFormSections2 on _EditProfileWidgetState {
                                     _model.textController5,
                                 focusNode:
                                     _model.textFieldFocusNode5,
-                                autofocus: true,
+                                autofocus: false,
                                 obscureText: false,
                                 decoration: InputDecoration(
                                   labelStyle: FlutterFlowTheme.of(
