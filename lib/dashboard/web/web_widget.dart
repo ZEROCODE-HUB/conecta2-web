@@ -13,6 +13,7 @@ import '/components/instituciones_widget.dart';
 import '/components/menu_pc_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/user/home/splash_home/splash_home_widget.dart';
 import 'package:flutter/material.dart';
 import 'web_model.dart';
 import 'web_section.dart';
@@ -55,6 +56,12 @@ class _WebWidgetState extends State<WebWidget> {
     _syncMenuSelect();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // El panel es solo para la web. En la app instalada, SplashHome
+      // decide según el rol (profesional → Pacientes; administrador → aviso).
+      if (!isWeb) {
+        if (mounted) context.goNamed(SplashHomeWidget.routeName);
+        return;
+      }
       // If the user landed on bare `/web`, push them into the default
       // section so the URL always reflects the visible content.
       if (widget.section == null && widget.child == null && mounted) {
@@ -97,6 +104,18 @@ class _WebWidgetState extends State<WebWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (!isWeb) {
+      return Scaffold(
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        body: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              FlutterFlowTheme.of(context).primary,
+            ),
+          ),
+        ),
+      );
+    }
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();

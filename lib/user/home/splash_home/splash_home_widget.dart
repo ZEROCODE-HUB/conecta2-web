@@ -132,6 +132,16 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
           puedeReintentar: false);
       return;
     }
+    // El administrador solo entra por la web. En la app instalada se avisa
+    // y se ofrece cerrar sesión (si se cerrara ya, el router volvería al
+    // login sin mostrar el mensaje).
+    if (rol == 'Administrador' && !isWeb) {
+      _mostrarError(
+          'La cuenta de administrador solo se puede usar en la versión web. '
+          'Ingresa desde un computador.',
+          puedeReintentar: false);
+      return;
+    }
     _redirigido = true;
     // Solo "Crear usuario" (web, admin/profesional) usa la contraseña
     // guardada; para los demás roles no se conserva en el dispositivo.
