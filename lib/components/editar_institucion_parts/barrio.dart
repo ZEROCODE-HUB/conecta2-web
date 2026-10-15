@@ -153,7 +153,7 @@ extension EIBarrio on _EditarInstitucionWidgetState {
                                                         ),
                                                 hintText:
                                                     'Seleccione el barrio',
-                                                searchHintText: 'Search...',
+                                                searchHintText: 'Buscar...',
                                                 icon: Icon(
                                                   Icons
                                                       .keyboard_arrow_down_rounded,

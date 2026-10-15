@@ -284,7 +284,7 @@ extension _RegisterContinue2Form on _RegisterContinue2WidgetState {
                                 .bodyMedium
                                 .fontStyle,
                       ),
-                  hintText: 'Select...',
+                  hintText: 'Selecciona...',
                   icon: Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: FlutterFlowTheme.of(context)
@@ -471,8 +471,8 @@ extension _RegisterContinue2Form on _RegisterContinue2WidgetState {
                                           .bodyMedium
                                           .fontStyle,
                                 ),
-                        hintText: 'Select...',
-                        searchHintText: 'Search...',
+                        hintText: 'Selecciona...',
+                        searchHintText: 'Buscar...',
                         icon: Icon(
                           Icons
                               .keyboard_arrow_down_rounded,

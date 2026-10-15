@@ -109,14 +109,14 @@ class _EditProfileParentsWidgetState extends State<EditProfileParentsWidget> {
                               model: _model.buttonVazadoModel,
                               updateCallback: () => safeSetState(() {}),
                               child: ButtonVazadoWidget(
-                                btnText: 'Restaurar contrasena',
+                                btnText: 'Restaurar contraseña',
                                 btnAction: () async {
                                   if (_model.textFieldemailTextController.text
                                       .isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          'Email required!',
+                                          'No se encontró tu correo de acceso.',
                                         ),
                                       ),
                                     );

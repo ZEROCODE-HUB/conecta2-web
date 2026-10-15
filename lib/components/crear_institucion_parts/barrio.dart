@@ -143,7 +143,7 @@ extension CIBarrio on _CrearInstitucionWidgetState {
                                                               .fontStyle,
                                                     ),
                                             hintText: 'Seleccione el barrio',
-                                            searchHintText: 'Search...',
+                                            searchHintText: 'Buscar...',
                                             icon: Icon(
                                               Icons.keyboard_arrow_down_rounded,
                                               color:

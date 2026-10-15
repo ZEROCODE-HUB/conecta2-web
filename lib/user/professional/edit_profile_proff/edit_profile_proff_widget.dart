@@ -241,7 +241,7 @@ class _EditProfileProffWidgetState extends State<EditProfileProffWidget> {
                               model: _model.buttonVazadoModel,
                               updateCallback: () => safeSetState(() {}),
                               child: ButtonVazadoWidget(
-                                btnText: 'Restaurar contrasena',
+                                btnText: 'Restaurar contraseña',
                                 btnAction: () async {
                                   if (correoDeAcceso.isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(

@@ -256,7 +256,7 @@ class EncuestasFilters extends StatelessWidget {
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w500,
                 ),
-            hintText: 'Please select...',
+            hintText: 'Selecciona...',
             icon: const Icon(
               Icons.keyboard_arrow_down_rounded,
               color: Color(0xFF265294),

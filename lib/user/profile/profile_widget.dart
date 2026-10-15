@@ -232,7 +232,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                             model: _model.buttonVazadoModel,
                             updateCallback: () => safeSetState(() {}),
                             child: ButtonVazadoWidget(
-                              btnText: 'Restaurar contrasena',
+                              btnText: 'Restaurar contraseña',
                               btnAction: _onResetPassword,
                             ),
                           ),

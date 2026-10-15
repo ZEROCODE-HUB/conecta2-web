@@ -66,7 +66,7 @@ extension _RegisterContinue2Form2 on _RegisterContinue2WidgetState {
                         fontStyle:
                             FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                       ),
-                  hintText: 'Select...',
+                  hintText: 'Selecciona...',
                   icon: Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: FlutterFlowTheme.of(context).secondaryText,
@@ -162,7 +162,7 @@ extension _RegisterContinue2Form2 on _RegisterContinue2WidgetState {
                         fontStyle:
                             FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                       ),
-                  hintText: 'Select...',
+                  hintText: 'Selecciona...',
                   icon: Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: FlutterFlowTheme.of(context).secondaryText,

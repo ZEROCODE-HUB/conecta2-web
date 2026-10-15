@@ -102,7 +102,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                             model: _model.buttonVazadoModel,
                             updateCallback: () => safeSetState(() {}),
                             child: ButtonVazadoWidget(
-                              btnText: 'Restaurar contrasena',
+                              btnText: 'Restaurar contraseña',
                               btnAction: () async {},
                             ),
                           ),
