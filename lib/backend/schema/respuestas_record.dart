@@ -85,6 +85,12 @@ class RespuestasRecord extends FirestoreRecord {
   String get tipoTamizaje => _tipoTamizaje ?? 'app';
   bool hasTipoTamizaje() => _tipoTamizaje != null;
 
+  // "nivelAlerta" field: nivel calculado al guardar (calcularNivelRespuesta).
+  // Lo lee la Cloud Function de alertas a acudientes.
+  String? _nivelAlerta;
+  String get nivelAlerta => _nivelAlerta ?? '';
+  bool hasNivelAlerta() => _nivelAlerta != null;
+
   // "motivoInvalidacion" field.
   String? _motivoInvalidacion;
   String get motivoInvalidacion => _motivoInvalidacion ?? '';
@@ -123,6 +129,7 @@ class RespuestasRecord extends FirestoreRecord {
     _alertasEspeciales = getDataList(snapshotData['alertasEspeciales']);
     _realizadoPor = snapshotData['realizadoPor'] as DocumentReference?;
     _tipoTamizaje = snapshotData['tipoTamizaje'] as String?;
+    _nivelAlerta = snapshotData['nivelAlerta'] as String?;
     _motivoInvalidacion =
         snapshotData['motivoInvalidacion'] as String?;
     _invalidadoPor =
@@ -185,6 +192,7 @@ Map<String, dynamic> createRespuestasRecordData({
   String? motivoInvalidacion,
   DocumentReference? invalidadoPor,
   DateTime? bloqueadoHasta,
+  String? nivelAlerta,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -203,6 +211,7 @@ Map<String, dynamic> createRespuestasRecordData({
       'motivoInvalidacion': motivoInvalidacion,
       'invalidadoPor': invalidadoPor,
       'bloqueadoHasta': bloqueadoHasta,
+      'nivelAlerta': nivelAlerta,
     }.withoutNulls,
   );
 

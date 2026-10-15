@@ -97,15 +97,13 @@ class _PasoResultadosState extends State<_PasoResultados> {
       : null;
 
   String _nivelCalculado() {
-    final assist = _assist;
-    if (assist != null) return assist.nivelGlobal;
-    final categoria = widget.encuesta?.categoria ?? '';
-    if (categoria.isEmpty) return '';
-    final alertas = widget.encuesta?.alertas.toList() ?? const [];
-    return calcularNivelAlerta(
-      categoria: categoria,
-      puntaje: widget.puntajeTotal,
-      alertas: alertas,
+    final e = widget.encuesta;
+    if (e == null) return '';
+    // Misma regla que el detalle y que lo que se guarda en nivelAlerta.
+    return calcularNivelRespuesta(
+      encuesta: e,
+      puntajeTotal: widget.puntajeTotal,
+      test: widget.respuestas,
     );
   }
 

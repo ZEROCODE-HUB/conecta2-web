@@ -1,6 +1,6 @@
+import '/tamizajes/shared/nivel_respuesta.dart';
 import '/backend/backend.dart';
 import '/components/rich_text_notas/rich_text_notas_widget.dart';
-import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/tamizajes/shared/assist_utils.dart';
 import '/tamizajes/shared/tamizajes_constants.dart';
@@ -264,15 +264,13 @@ class _PasoResultadosState extends State<PasoResultados> {
       : null;
 
   String _nivelCalculado() {
-    final assist = _assist;
-    if (assist != null) return assist.nivelGlobal;
-    final categoria = widget.encuesta?.categoria ?? '';
-    if (categoria.isEmpty) return '';
-    final alertas = widget.encuesta?.alertas.toList() ?? const [];
-    return calcularNivelAlerta(
-      categoria: categoria,
-      puntaje: widget.puntajeTotal,
-      alertas: alertas,
+    final e = widget.encuesta;
+    if (e == null) return '';
+    // Misma regla que el detalle y que lo que se guarda en nivelAlerta.
+    return calcularNivelRespuesta(
+      encuesta: e,
+      puntajeTotal: widget.puntajeTotal,
+      test: widget.respuestas,
     );
   }
 }

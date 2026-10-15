@@ -2,6 +2,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/custom_code/actions/evaluar_alertas_especiales.dart';
 import '/tamizajes/shared/assist_utils.dart';
+import '/tamizajes/shared/nivel_respuesta.dart';
 import '/components/lista_respuestas_cond_widget.dart';
 import '/components/lista_respuestas_widget.dart';
 import '/components/r_seleccion_unica_radious_tamizaje_widget.dart';
@@ -1419,6 +1420,29 @@ class _EncuestasAdolescenteOpen2WidgetState
                                           }
                                         }
 
+                                        final respuestasEnc =
+                                            FFAppState().RespuestaEnc;
+                                        final puntajeTotalEnc =
+                                            respuestasEnc.fold<int>(
+                                          0,
+                                          (sum, r) =>
+                                              sum +
+                                              (r.respuestaTamizaje.isNotEmpty
+                                                  ? r.respuestaTamizaje.first.valor
+                                                  : 0),
+                                        );
+                                        // Ideación: igual que la pantalla de encuestas y los
+                                        // wizards (antes este flujo no la marcaba y el acudiente
+                                        // no recibía la alerta urgente).
+                                        final alertasEnc = <String>[
+                                          if (respuestasEnc.any((r) => r.respuestaTamizaje
+                                              .any((a) => a.ideacionSuicida)))
+                                            'ALERTA: Ideación Suicida detectada',
+                                          ...evaluarAlertasEspeciales(
+                                            columnEncuestasRecord.alertasEspeciales,
+                                            respuestasEnc,
+                                          ),
+                                        ];
                                         await RespuestasRecord.createDoc(
                                                 widget.encuesta!)
                                             .set({
@@ -1427,23 +1451,13 @@ class _EncuestasAdolescenteOpen2WidgetState
                                             fecha: getCurrentTimestamp,
                                             titlo: widget.text,
                                             desc: widget.desc,
-                                            puntajeTotal: FFAppState()
-                                                .RespuestaEnc
-                                                .fold<int>(
-                                                  0,
-                                                  (sum, r) =>
-                                                      sum +
-                                                      (r.respuestaTamizaje
-                                                              .isNotEmpty
-                                                          ? r.respuestaTamizaje
-                                                              .first.valor
-                                                          : 0),
-                                                ),
-                                            alertasEspeciales:
-                                                evaluarAlertasEspeciales(
-                                              columnEncuestasRecord
-                                                  .alertasEspeciales,
-                                              FFAppState().RespuestaEnc,
+                                            puntajeTotal: puntajeTotalEnc,
+                                            alertasEspeciales: alertasEnc,
+                                            // Nivel que lee la Cloud Function de alertas a acudientes.
+                                            nivelAlerta: calcularNivelRespuesta(
+                                              encuesta: columnEncuestasRecord,
+                                              puntajeTotal: puntajeTotalEnc,
+                                              test: respuestasEnc,
                                             ),
                                           ),
                                           ...mapToFirestore(

@@ -3,9 +3,9 @@ import '/backend/backend.dart';
 import '/backend/schema/shared/listas_fijas.dart';
 import '/components/rich_text_notas/rich_text_notas_widget.dart';
 import '/custom_code/actions/evaluar_alertas_especiales.dart';
-import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/tamizajes/shared/assist_utils.dart';
+import '/tamizajes/shared/nivel_respuesta.dart';
 import '/tamizajes/shared/widgets/agendar_recordatorio_dialog.dart';
 import '/tamizajes/shared/widgets/riesgo_sustancias_card.dart';
 import '/user/professional/tamizajes_manuales/wizard/state/respuesta_state.dart'
@@ -230,6 +230,12 @@ class _WizardTamizajeManualWidgetState
         alertasEspeciales: specialAlerts,
         realizadoPor: currentUserReference,
         tipoTamizaje: 'manual',
+        // Nivel que lee la Cloud Function de alertas a acudientes.
+        nivelAlerta: calcularNivelRespuesta(
+          encuesta: _tamizajeSeleccionado!,
+          puntajeTotal: _puntajeTotal,
+          test: _respuestas,
+        ),
       );
       data['test'] = _respuestas.map((e) => e.toMap()).toList();
       await docRef.set(data);

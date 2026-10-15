@@ -1,3 +1,4 @@
+import '/tamizajes/shared/nivel_respuesta.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/custom_code/actions/evaluar_alertas_especiales.dart';
@@ -170,6 +171,12 @@ class _WizardTamizajeProWidgetState extends State<WizardTamizajeProWidget> {
         alertasEspeciales: specialAlerts,
         realizadoPor: currentUserReference,
         tipoTamizaje: 'manual',
+        // Nivel que lee la Cloud Function de alertas a acudientes.
+        nivelAlerta: calcularNivelRespuesta(
+          encuesta: _tamizajeSeleccionado!,
+          puntajeTotal: _puntajeTotal,
+          test: _respuestas,
+        ),
       );
       data['test'] = _respuestas.map((e) => e.toMap()).toList();
       await docRef.set(data);

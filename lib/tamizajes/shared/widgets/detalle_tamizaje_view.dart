@@ -1,9 +1,8 @@
 import '/backend/backend.dart';
-import '/components/admin_estadsticas/helpers/classification.dart';
 import '/components/rich_text_notas/rich_text_notas_widget.dart';
-import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/tamizajes/shared/assist_utils.dart';
+import '/tamizajes/shared/nivel_respuesta.dart';
 import '/tamizajes/shared/tamizaje_utils.dart';
 import '/tamizajes/shared/tamizajes_constants.dart';
 import '/tamizajes/shared/widgets/agendar_recordatorio_dialog.dart';
@@ -113,72 +112,14 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
     );
   }
 
+  /// Nivel de la respuesta (fuente única: `calcularNivelRespuesta`).
   String _nivelCalculado() {
     if (_encuesta == null) return '';
-    // ASSIST: las alertas son por sustancia; compararlas contra el puntaje
-    // total daba un nivel arbitrario.
-    final assist = _assist;
-    if (assist != null) return assist.nivelGlobal;
-    final categoria = _encuesta!.categoria;
-    if (categoria.isEmpty) return '';
-
-    // Para categorías con umbrales globales (Autoestima / CDI / Beck),
-    // usamos classifyNivel con los umbrales del doc (si existen) o los
-    // defaults clínicos como fallback. Esto cubre tamizajes antiguos sin
-    // umbrales configurados y evita que el bloque de nivel quede oculto.
-    if (usaNivelesGlobales(categoria) || categoria == 'Depresión Beck') {
-      String titulo;
-      switch (categoria) {
-        case 'Escala autoestima':
-          titulo = 'autoestima';
-          break;
-        case 'CDI':
-          titulo = 'cdi';
-          break;
-        case 'Depresión Beck':
-          titulo = 'beck';
-          break;
-        case 'Escala ansiedad':
-          titulo = 'ansiedad';
-          break;
-        default:
-          titulo = _encuesta!.titulo;
-      }
-      return classifyNivel(
-        titulo,
-        const [],
-        puntajeTotal: widget.respuesta.puntajeTotal,
-        umbrales: _umbralesFrom(_encuesta!),
-      );
-    }
-
-    // Categorías sin niveles globales (CRQ/SRQ, Consumo SPA) usan la ruta
-    // por array alertas con labels específicos.
-    return calcularNivelAlerta(
-      categoria: categoria,
-      puntaje: widget.respuesta.puntajeTotal,
-      alertas: _encuesta!.alertas.toList(),
+    return calcularNivelRespuesta(
+      encuesta: _encuesta!,
+      puntajeTotal: widget.respuesta.puntajeTotal,
+      test: widget.respuesta.test,
     );
-  }
-
-  // Proyecta los umbrales configurados al crear el tamizaje en la struct
-  // reutilizable por classifyNivel. Devuelve null si el doc no tiene
-  // umbrales — en ese caso classifyNivel usará defaults clínicos.
-  UmbralesConfig? _umbralesFrom(EncuestasRecord e) {
-    final cat = e.categoria;
-    if (cat == 'Escala autoestima' ||
-        cat == 'CDI' ||
-        cat == 'Escala ansiedad') {
-      return umbralesTripleteDesdeEncuesta(e);
-    }
-    if (cat == 'Depresión Beck' && e.alertas.length >= 4) {
-      return UmbralesConfig(
-        beckMinimaMax: e.alertas[0].max,
-        beckLeveMax: e.alertas[1].max,
-        beckModeradaMax: e.alertas[2].max,
-      );
-    }
-    return null;
   }
 
   Color _colorNivel(String nivel) {
