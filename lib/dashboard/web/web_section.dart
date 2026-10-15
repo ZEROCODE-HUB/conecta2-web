@@ -14,7 +14,7 @@ enum WebSection {
   excel('excel', 'Excel'),
   instituciones('instituciones', 'Instituciones'),
   barrios('barrios', 'Barrios'),
-  recordatorios('recordatorios', 'Recordatarios'),
+  recordatorios('recordatorios', 'Recordatorios'),
   perfil('perfil', 'Ajustes de perfil');
 
   const WebSection(this.path, this.legacySelect);
