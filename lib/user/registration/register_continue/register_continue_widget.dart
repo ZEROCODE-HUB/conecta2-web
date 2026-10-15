@@ -16,6 +16,14 @@ import 'register_continue_model.dart';
 import '../revertir_alta.dart';
 export 'register_continue_model.dart';
 
+/// Tipos de cuenta del registro público. Profesional y Administrador
+/// solo los crea el administrador desde la web (Usuarios → Crear usuario).
+const List<String> kTiposRegistroPublico = ['Adolescente', 'Acudiente'];
+
+/// El tipo recordado si es válido para el registro público; si no, null.
+String? _tipoRegistroValido(String? tipo) =>
+    kTiposRegistroPublico.contains(tipo) ? tipo : null;
+
 class RegisterContinueWidget extends StatefulWidget {
   const RegisterContinueWidget({super.key});
 
@@ -223,25 +231,20 @@ class _RegisterContinueWidgetState extends State<RegisterContinueWidget> {
                                                     .dropDownTipoPersonaValueController ??=
                                                 FormFieldController<String>(
                                               _model.dropDownTipoPersonaValue ??=
-                                                  FFAppState()
+                                                  _tipoRegistroValido(FFAppState()
                                                       .detalleUsuarioTemp
-                                                      .tipo,
+                                                      .tipo),
                                             ),
                                             // "Padre" y "Acudiente" se
                                             // tratan como equivalentes en
                                             // el resto del codigo, por eso
                                             // solo exponemos "Acudiente" en
-                                            // el registro publico.
-                                            options: List<String>.from([
-                                              'Adolescente',
-                                              'Acudiente',
-                                              'Profesional',
-                                            ]),
-                                            optionLabels: const [
-                                              'Adolescente',
-                                              'Acudiente',
-                                              'Profesional',
-                                            ],
+                                            // el registro publico. Las
+                                            // cuentas de Profesional solo
+                                            // las crea el administrador.
+                                            options: List<String>.from(
+                                                kTiposRegistroPublico),
+                                            optionLabels: kTiposRegistroPublico,
                                             onChanged: (val) => safeSetState(() =>
                                                 _model.dropDownTipoPersonaValue =
                                                     val),
@@ -1021,6 +1024,11 @@ class _RegisterContinueWidgetState extends State<RegisterContinueWidget> {
                             String? error;
                             if (tipo == null || tipo.isEmpty) {
                               error = 'Selecciona el tipo de usuario';
+                            } else if (!kTiposRegistroPublico.contains(tipo)) {
+                              // Defensa: el tipo recordado de un intento
+                              // anterior podría ser "Profesional".
+                              error =
+                                  'Las cuentas de profesional las crea el administrador.';
                             } else if (nombre.isEmpty) {
                               error = 'Ingresa tu nombre';
                             } else if (!correo.contains('@') ||

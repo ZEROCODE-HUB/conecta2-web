@@ -487,8 +487,6 @@ extension _LoginDesktop on _LoginWidgetState {
                     onPressed: () async {
                       FFAppState().EmailAdmin =
                           _model.emailTextController.text;
-                      FFAppState().PasswordAdmin = _model
-                          .passwordTextController.text;
 
                       GoRouter.of(context)
                           .prepareAuthEvent();

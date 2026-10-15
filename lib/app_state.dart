@@ -65,8 +65,10 @@ class FFAppState extends ChangeNotifier {
     _safeInit(() {
       _EmailAdmin = prefs.getString('ff_EmailAdmin') ?? _EmailAdmin;
     });
+    // La contraseña ya no se guarda en el dispositivo (2026-10-15). Se
+    // borra la que hubiera quedado de versiones anteriores.
     _safeInit(() {
-      _PasswordAdmin = prefs.getString('ff_PasswordAdmin') ?? _PasswordAdmin;
+      prefs.remove('ff_PasswordAdmin');
     });
     _safeInit(() {
       _dateEmocion = prefs.containsKey('ff_dateEmocion')
@@ -285,9 +287,9 @@ class FFAppState extends ChangeNotifier {
 
   String _PasswordAdmin = '';
   String get PasswordAdmin => _PasswordAdmin;
+  // Solo en memoria: nunca se escribe en SharedPreferences.
   set PasswordAdmin(String value) {
     _PasswordAdmin = value;
-    prefs.setString('ff_PasswordAdmin', value);
   }
 
   DateTime? _dateEmocion = DateTime.fromMillisecondsSinceEpoch(1719194940000);

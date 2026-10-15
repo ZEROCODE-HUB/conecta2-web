@@ -500,11 +500,8 @@ extension _LoginMobile on _LoginWidgetState {
                 }
 
                 // El parche de nav.dart exige la sesión marcada. La
-                // contraseña solo la necesita "Crear usuario" (web) para
-                // volver a entrar como admin; SplashHome la borra para
-                // adolescentes y acudientes.
+                // contraseña no se guarda en el dispositivo.
                 marcarSesionApp(correo);
-                FFAppState().PasswordAdmin = contrasena;
 
                 GoRouter.of(context).prepareAuthEvent();
 

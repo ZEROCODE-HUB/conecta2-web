@@ -234,7 +234,6 @@ final parametersBuilderMap =
           'desc': getParameter<String>(data, 'desc'),
         },
       ),
-  'aaa': ParameterData.none(),
   'Estadisticas': ParameterData.none(),
   'registerContinue2': ParameterData.none(),
   'SeleccionarBarrio': ParameterData.none(),

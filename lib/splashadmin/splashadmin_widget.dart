@@ -1,4 +1,3 @@
-import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -42,18 +41,9 @@ class _SplashadminWidgetState extends State<SplashadminWidget> {
         },
       );
 
-      if (currentUserEmail != FFAppState().EmailAdmin) {
-        GoRouter.of(context).prepareAuthEvent();
-
-        final user = await authManager.signInWithEmail(
-          context,
-          FFAppState().EmailAdmin,
-          FFAppState().PasswordAdmin,
-        );
-        if (user == null) {
-          return;
-        }
-      }
+      // "Crear usuario" crea la cuenta con una instancia secundaria de
+      // Firebase: la sesión del administrador no se pierde, así que ya
+      // no se vuelve a iniciar sesión (ni se guarda la contraseña).
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));

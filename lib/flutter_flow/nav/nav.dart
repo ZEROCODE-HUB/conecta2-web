@@ -590,11 +590,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         FFRoute(
-          name: AaaWidget.routeName,
-          path: AaaWidget.routePath,
-          builder: (context, params) => AaaWidget(),
-        ),
-        FFRoute(
           name: EstadisticasWidget.routeName,
           path: EstadisticasWidget.routePath,
           builder: (context, params) => EstadisticasWidget(),

@@ -98,15 +98,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 20.0, 0.0, 20.0),
-                                child: InkWell(
-                                  splashColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  onTap: () async {
-                                    context.pushNamed(AaaWidget.routeName);
-                                  },
-                                  child: Text(
+                                child: Text(
                                     'Calendario de las emociones\n\n¡Bienvenido a tu calendario de emociones de la APP de  Niños de Papel! Estamos emocionados de acompañarte en este viaje hacia el autoconocimiento y el bienestar emocional.',
                                     textAlign: TextAlign.justify,
                                     style: FlutterFlowTheme.of(context)
@@ -128,7 +120,6 @@ class _HomeWidgetState extends State<HomeWidget> {
                                                   .fontStyle,
                                         ),
                                   ),
-                                ),
                               ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
