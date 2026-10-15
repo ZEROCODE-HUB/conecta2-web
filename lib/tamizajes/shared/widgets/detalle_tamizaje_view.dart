@@ -330,7 +330,8 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
           // ── Contenido scrolleable ─────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(
+                  MediaQuery.sizeOf(context).width < 600 ? 16.0 : 24.0),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 800),
@@ -343,6 +344,10 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
                         fecha: formatDate(respuesta.fecha),
                         genero: genero.isEmpty ? '—' : genero,
                         edad: edad == null ? '—' : '$edad',
+                        identificacion:
+                            (adolescente?.identidad ?? '').trim().isEmpty
+                                ? '—'
+                                : adolescente!.identidad.trim(),
                         puntaje: respuesta.puntajeTotal,
                         invalidado: respuesta.invalidado,
                         theme: theme,
@@ -684,6 +689,7 @@ class _InfoCard extends StatelessWidget {
     required this.fecha,
     required this.genero,
     required this.edad,
+    required this.identificacion,
     required this.puntaje,
     required this.invalidado,
     required this.theme,
@@ -693,6 +699,7 @@ class _InfoCard extends StatelessWidget {
   final String fecha;
   final String genero;
   final String edad;
+  final String identificacion;
   final int puntaje;
   final bool invalidado;
   final FlutterFlowTheme theme;
@@ -701,7 +708,6 @@ class _InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.0),
@@ -714,73 +720,194 @@ class _InfoCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          // Avatar
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: kNavy.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              nombre.isNotEmpty ? nombre[0].toUpperCase() : '?',
-              style: GoogleFonts.inter(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: kNavy,
+      // En pantallas estrechas (teléfono) los datos se apilan en 3 bloques;
+      // en pantallas anchas se mantienen en una fila.
+      child: LayoutBuilder(
+        builder: (context, constraints) =>
+            constraints.maxWidth < 560 ? _apilada() : _enFila(),
+      ),
+    );
+  }
+
+  String get _edadTexto => edad == '—' ? edad : '$edad años';
+
+  Widget _avatar() => Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: kNavy.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          nombre.isNotEmpty ? nombre[0].toUpperCase() : '?',
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: kNavy,
+          ),
+        ),
+      );
+
+  Widget _estado() => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: invalidado ? const Color(0xFFFFC4C4) : const Color(0xFFE5F9F1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: invalidado ? kDanger : kSuccess,
+            width: 0.8,
+          ),
+        ),
+        child: Text(
+          invalidado ? 'Invalidado' : 'Completado',
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: invalidado ? kDanger : kSuccess,
+          ),
+        ),
+      );
+
+  Widget _nombre() => Text(
+        nombre,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: theme.primaryText,
+        ),
+      );
+
+  /// Fila "icono · etiqueta · valor" del bloque de datos (teléfono).
+  Widget _dato(IconData icono, String etiqueta, String valor) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Row(
+          children: [
+            Icon(icono, size: 16, color: theme.secondaryText),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 110,
+              child: Text(
+                etiqueta,
+                style:
+                    GoogleFonts.inter(fontSize: 13, color: theme.secondaryText),
               ),
             ),
+            Expanded(
+              child: Text(
+                valor,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: theme.primaryText,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _apilada() {
+    final divisor = Divider(height: 1, thickness: 1, color: theme.alternate);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 1. Nombre + estado
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              _avatar(),
+              const SizedBox(width: 12),
+              Expanded(child: _nombre()),
+              const SizedBox(width: 8),
+              _estado(),
+            ],
           ),
+        ),
+        divisor,
+        // 2. Datos
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Column(
+            children: [
+              _dato(Icons.calendar_today_outlined, 'Fecha', fecha),
+              _dato(Icons.person_outline, 'Género', genero),
+              _dato(Icons.cake_outlined, 'Edad', _edadTexto),
+              _dato(Icons.badge_outlined, 'Identificación', identificacion),
+            ],
+          ),
+        ),
+        // 3. Puntaje
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: kNavy.withValues(alpha: 0.06),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(14),
+              bottomRight: Radius.circular(14),
+            ),
+          ),
+          child: Row(
+            children: [
+              Text(
+                'Puntaje',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: kNavy,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$puntaje',
+                style: GoogleFonts.inter(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: kNavy,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _enFila() {
+    TextStyle secundario() =>
+        GoogleFonts.inter(fontSize: 13, color: theme.secondaryText);
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Row(
+        children: [
+          _avatar(),
           const SizedBox(width: 16),
-          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  nombre,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: theme.primaryText,
-                  ),
-                ),
+                _nombre(),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Icon(Icons.calendar_today_outlined,
                         size: 13, color: theme.secondaryText),
                     const SizedBox(width: 4),
-                    Text(
-                      fecha,
-                      style: GoogleFonts.inter(
-                          fontSize: 13, color: theme.secondaryText),
-                    ),
+                    Text(fecha, style: secundario()),
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  'Género: $genero',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: theme.secondaryText,
-                  ),
-                ),
+                Text('Género: $genero', style: secundario()),
                 const SizedBox(height: 2),
-                Text(
-                  'Edad: $edad',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: theme.secondaryText,
-                  ),
-                ),
+                Text('Edad: $_edadTexto', style: secundario()),
+                const SizedBox(height: 2),
+                Text('Identificación: $identificacion', style: secundario()),
               ],
             ),
           ),
-          // Puntaje
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
@@ -805,28 +932,7 @@ class _InfoCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          // Estado
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: invalidado
-                  ? const Color(0xFFFFC4C4)
-                  : const Color(0xFFE5F9F1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: invalidado ? kDanger : kSuccess,
-                width: 0.8,
-              ),
-            ),
-            child: Text(
-              invalidado ? 'Invalidado' : 'Completado',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: invalidado ? kDanger : kSuccess,
-              ),
-            ),
-          ),
+          _estado(),
         ],
       ),
     );
