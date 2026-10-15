@@ -5,13 +5,16 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/index.dart';
+import '/dashboard/web/encuestas/listado_encuestas/widgets/detalle_encuesta_view.dart';
+import '/tamizajes/shared/widgets/detalle_tamizaje_view.dart';
+import '/tamizajes/shared/widgets/tamizaje_empty_state.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Choice-chip selector between "Encuestas" and "Tamizajes" plus the resulting
-/// list of surveys/screenings for the given patient.
+/// Choice-chip selector between "Encuestas" and "Tamizajes" plus one card
+/// per answer of the given patient.
 class PacienteTamizajesSection extends StatelessWidget {
   const PacienteTamizajesSection({
     super.key,
@@ -105,14 +108,11 @@ class PacienteTamizajesSection extends StatelessWidget {
                 ),
               );
             }
-            final records = snapshot.data!;
-            return ListView.builder(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              scrollDirection: Axis.vertical,
-              itemCount: records.length,
-              itemBuilder: (context, index) =>
-                  _EncuestaTile(record: records[index], pacienteRef: pacienteRef, choice: _currentChoice),
+            return _RespuestasPaciente(
+              encuestas: snapshot.data!,
+              user: user,
+              pacienteRef: pacienteRef,
+              choice: _currentChoice,
             );
           },
         ),
@@ -121,124 +121,295 @@ class PacienteTamizajesSection extends StatelessWidget {
   }
 }
 
-class _EncuestaTile extends StatelessWidget {
-  const _EncuestaTile({
-    required this.record,
+/// Una tarjeta por cada respuesta del paciente a los cuestionarios
+/// [encuestas], de la más reciente a la más antigua.
+class _RespuestasPaciente extends StatefulWidget {
+  const _RespuestasPaciente({
+    required this.encuestas,
+    required this.user,
     required this.pacienteRef,
     required this.choice,
   });
 
-  final EncuestasRecord record;
+  final List<EncuestasRecord> encuestas;
+  final UsersRecord user;
   final DocumentReference pacienteRef;
   final String? choice;
 
   @override
+  State<_RespuestasPaciente> createState() => _RespuestasPacienteState();
+}
+
+class _RespuestasPacienteState extends State<_RespuestasPaciente> {
+  late Future<List<(EncuestasRecord, RespuestasRecord)>> _respuestas;
+
+  @override
+  void initState() {
+    super.initState();
+    _respuestas = _cargar();
+  }
+
+  @override
+  void didUpdateWidget(covariant _RespuestasPaciente oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final antes = oldWidget.encuestas.map((e) => e.reference.path).toList();
+    final ahora = widget.encuestas.map((e) => e.reference.path).toList();
+    if (oldWidget.pacienteRef != widget.pacienteRef ||
+        !const ListEquality<String>().equals(antes, ahora)) {
+      _respuestas = _cargar();
+    }
+  }
+
+  Future<List<(EncuestasRecord, RespuestasRecord)>> _cargar() async {
+    final porEncuesta = await Future.wait(widget.encuestas.map(
+      (e) async => (await queryRespuestasRecordOnce(
+        parent: e.reference,
+        queryBuilder: (r) =>
+            r.where('User_respuesta', isEqualTo: widget.pacienteRef),
+      ))
+          .map((r) => (e, r)),
+    ));
+    final todas = porEncuesta.expand((l) => l).toList();
+    // Más reciente primero; sin fecha al final.
+    todas.sort((a, b) {
+      final fa = a.$2.fecha;
+      final fb = b.$2.fecha;
+      if (fa == null && fb == null) return 0;
+      if (fa == null) return 1;
+      if (fb == null) return -1;
+      return fb.compareTo(fa);
+    });
+    return todas;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bodyMedium = FlutterFlowTheme.of(context).bodyMedium;
+    return FutureBuilder<List<(EncuestasRecord, RespuestasRecord)>>(
+      future: _respuestas,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return Center(
+            child: SizedBox(
+              width: 50.0,
+              height: 50.0,
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  FlutterFlowTheme.of(context).primary,
+                ),
+              ),
+            ),
+          );
+        }
+        if (snapshot.hasError) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24.0),
+            child: TamizajeEmptyState(
+              icon: Icons.error_outline,
+              mensaje: 'No se pudieron cargar las respuestas',
+            ),
+          );
+        }
+        final respuestas = snapshot.data ?? const [];
+        if (respuestas.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24.0),
+            child: TamizajeEmptyState(
+              icon: Icons.assignment_outlined,
+              mensaje: 'Sin respuestas',
+            ),
+          );
+        }
+        return ListView.builder(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          scrollDirection: Axis.vertical,
+          itemCount: respuestas.length,
+          itemBuilder: (context, index) => _RespuestaTile(
+            encuesta: respuestas[index].$1,
+            respuesta: respuestas[index].$2,
+            user: widget.user,
+            choice: widget.choice,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _RespuestaTile extends StatelessWidget {
+  const _RespuestaTile({
+    required this.encuesta,
+    required this.respuesta,
+    required this.user,
+    required this.choice,
+  });
+
+  final EncuestasRecord encuesta;
+  final RespuestasRecord respuesta;
+  final UsersRecord user;
+  final String? choice;
+
+  void _abrirDetalle(BuildContext context) {
+    // Respuestas antiguas guardadas solo en `Respusta`: la pantalla anterior
+    // sabe mostrarlas.
+    if (respuesta.test.isEmpty && respuesta.respusta.isNotEmpty) {
+      context.pushNamed(
+        PacientRespuestaWidget.routeName,
+        queryParameters: {
+          'choice': serializeParam(choice, ParamType.String),
+          'encuesta': serializeParam(respuesta, ParamType.Document),
+        }.withoutNulls,
+        extra: <String, dynamic>{'encuesta': respuesta},
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (ctx) => Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: choice == 'Tamizajes'
+                ? DetalleTamizajeView(
+                    respuesta: respuesta,
+                    adolescente: user,
+                    onVolver: () => Navigator.of(ctx).pop(),
+                  )
+                : DetalleEncuestaView(
+                    respuesta: respuesta,
+                    usuario: user,
+                    onVolver: () => Navigator.of(ctx).pop(),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final bodyMedium = theme.bodyMedium;
+    final titulo =
+        encuesta.titulo.isNotEmpty ? encuesta.titulo : respuesta.titlo;
+    final fecha = respuesta.fecha;
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    const FaIcon(
-                      FontAwesomeIcons.solidFileLines,
-                      color: Color(0xFF265294),
-                      size: 24.0,
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                            15.0, 0.0, 15.0, 0.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              record.titulo,
-                              overflow: TextOverflow.ellipsis,
-                              style: bodyMedium.override(
-                                font: GoogleFonts.inter(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10.0),
+        onTap: () => _abrirDetalle(context),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: theme.secondaryBackground,
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const FaIcon(
+                        FontAwesomeIcons.solidFileLines,
+                        color: Color(0xFF265294),
+                        size: 24.0,
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              15.0, 0.0, 15.0, 0.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                titulo,
+                                overflow: TextOverflow.ellipsis,
+                                style: bodyMedium.override(
+                                  font: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w600,
+                                    fontStyle: bodyMedium.fontStyle,
+                                  ),
+                                  fontSize: 14.0,
+                                  letterSpacing: 0.0,
                                   fontWeight: FontWeight.w600,
                                   fontStyle: bodyMedium.fontStyle,
                                 ),
-                                fontSize: 14.0,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w600,
-                                fontStyle: bodyMedium.fontStyle,
                               ),
-                            ),
-                            Text(
-                              dateTimeFormat(
-                                "yMMMd",
-                                record.createAt!,
-                                locale:
-                                    FFLocalizations.of(context).languageCode,
+                              Row(
+                                children: [
+                                  Text(
+                                    fecha != null
+                                        ? dateTimeFormat(
+                                            "yMMMd",
+                                            fecha,
+                                            locale: FFLocalizations.of(context)
+                                                .languageCode,
+                                          )
+                                        : 'Sin fecha',
+                                    style: bodyMedium.override(
+                                      font: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w500,
+                                        fontStyle: bodyMedium.fontStyle,
+                                      ),
+                                      fontSize: 12.0,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w500,
+                                      fontStyle: bodyMedium.fontStyle,
+                                    ),
+                                  ),
+                                  if (respuesta.invalidado) ...[
+                                    const SizedBox(width: 8.0),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0, vertical: 2.0),
+                                      decoration: BoxDecoration(
+                                        color: theme.alternate,
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
+                                      ),
+                                      child: Text(
+                                        'Invalidada',
+                                        style: bodyMedium.override(
+                                          font: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          color: theme.secondaryText,
+                                          fontSize: 11.0,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                              style: bodyMedium.override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w500,
-                                  fontStyle: bodyMedium.fontStyle,
-                                ),
-                                fontSize: 12.0,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w500,
-                                fontStyle: bodyMedium.fontStyle,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              FlutterFlowIconButton(
-                borderColor: Colors.transparent,
-                borderRadius: 20.0,
-                borderWidth: 1.0,
-                buttonSize: 40.0,
-                icon: const Icon(
-                  Icons.arrow_forward_ios,
-                  color: Color(0xFF265294),
-                  size: 24.0,
+                FlutterFlowIconButton(
+                  borderColor: Colors.transparent,
+                  borderRadius: 20.0,
+                  borderWidth: 1.0,
+                  buttonSize: 40.0,
+                  icon: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Color(0xFF265294),
+                    size: 24.0,
+                  ),
+                  onPressed: () => _abrirDetalle(context),
                 ),
-                onPressed: () async {
-                  final getEncuestas = await queryRespuestasRecordOnce(
-                    parent: record.reference,
-                    queryBuilder: (r) => r.where(
-                      'User_respuesta',
-                      isEqualTo: pacienteRef,
-                    ),
-                    singleRecord: true,
-                  ).then((s) => s.firstOrNull);
-
-                  if (!context.mounted) return;
-
-                  context.pushNamed(
-                    PacientRespuestaWidget.routeName,
-                    queryParameters: {
-                      'choice': serializeParam(choice, ParamType.String),
-                      'encuesta':
-                          serializeParam(getEncuestas, ParamType.Document),
-                    }.withoutNulls,
-                    extra: <String, dynamic>{'encuesta': getEncuestas},
-                  );
-                },
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
