@@ -4,7 +4,7 @@ import '/components/admin_estadsticas/admin_estadsticas_widget.dart';
 import '/components/admin_mapa_widget.dart';
 import '/components/admin_notificaciones_widget.dart';
 import '/components/admin_profile_widget.dart';
-import '/components/admin_recordatorios_widget.dart';
+import '/dashboard/web/recordatorios/seguimientos_widget.dart';
 import '/components/admin_usuarioss_widget.dart';
 import '/components/barrios_widget.dart';
 import '/dashboard/web/tamizajes_manuales/tamizajes_manuales_widget.dart';
@@ -194,11 +194,9 @@ class _WebWidgetState extends State<WebWidget> {
           child: BarriosWidget(),
         );
       case WebSection.recordatorios:
-        return wrapWithModel(
-          model: _model.adminRecordatoriosModel,
-          updateCallback: () => safeSetState(() {}),
-          child: AdminRecordatoriosWidget(),
-        );
+        // Seguimientos programados desde Tamizajes manuales (`reminders`).
+        // La libreta anterior (`Recordator`) ya no se muestra en web.
+        return const SeguimientosWidget();
       case WebSection.perfil:
         return wrapWithModel(
           model: _model.adminProfileModel,

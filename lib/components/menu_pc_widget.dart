@@ -152,7 +152,7 @@ class _MenuPcWidgetState extends State<MenuPcWidget> {
                             color: FlutterFlowTheme.of(context).accent1,
                             size: 18.0,
                           ),
-                          text: 'Recordatarios',
+                          text: 'Recordatorios',
                           select: _model.select,
                         ),
                       ),
