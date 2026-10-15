@@ -1,6 +1,7 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
+import '/components/oculto_con_teclado.dart';
 import 'package:flutter/material.dart';
 import 'footer_model.dart';
 export 'footer_model.dart';
@@ -45,9 +46,10 @@ class _FooterWidgetState extends State<FooterWidget> {
   Widget build(BuildContext context) {
     // Con el teclado abierto el menú queda detrás, en su sitio: no se
     // muestra encima del teclado. Vuelve al cerrarlo.
-    if (MediaQuery.viewInsetsOf(context).bottom > 0) {
-      return const SizedBox.shrink();
-    }
+    return OcultoConTeclado(child: _barra(context));
+  }
+
+  Widget _barra(BuildContext context) {
     return Container(
       width: double.infinity,
       height: 75.0,
