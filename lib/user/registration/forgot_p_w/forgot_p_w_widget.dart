@@ -21,6 +21,9 @@ class ForgotPWWidget extends StatefulWidget {
 class _ForgotPWWidgetState extends State<ForgotPWWidget> {
   late ForgotPWModel _model;
 
+  // Evita enviar el correo dos veces por toques repetidos.
+  bool _enviando = false;
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -307,21 +310,34 @@ class _ForgotPWWidgetState extends State<ForgotPWWidget> {
                         child: RegistartionButtonWidget(
                           btnText: 'Siguiente',
                           btnAction: () async {
-                            if (_model
-                                .correoelectronicTextController.text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Email required!',
-                                  ),
-                                ),
-                              );
+                            if (_enviando) return;
+                            final correo = _model
+                                .correoelectronicTextController.text
+                                .trim()
+                                .toLowerCase();
+                            final error = correo.isEmpty
+                                ? 'Escribe tu correo electrónico.'
+                                : !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                                        .hasMatch(correo)
+                                    ? 'El correo no es válido.'
+                                    : null;
+                            if (error != null) {
+                              ScaffoldMessenger.of(context)
+                                ..hideCurrentSnackBar()
+                                ..showSnackBar(
+                                    SnackBar(content: Text(error)));
                               return;
                             }
-                            await authManager.resetPassword(
-                              email: _model.correoelectronicTextController.text,
+                            _enviando = true;
+                            final enviado = await authManager.resetPassword(
+                              email: correo,
                               context: context,
                             );
+                            _enviando = false;
+                            // Enviado: vuelve al login (el aviso sigue visible).
+                            if (enviado == true && context.mounted) {
+                              context.safePop();
+                            }
                           },
                         ),
                       ),

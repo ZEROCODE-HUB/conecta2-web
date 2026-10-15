@@ -124,18 +124,29 @@ class FirebaseAuthManager extends AuthManager
     required String email,
     required BuildContext context,
   }) async {
+    // Devuelve true si Firebase aceptó el envío.
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: email.trim().toLowerCase());
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message!}')),
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(content: Text(mensajeErrorAuth(e.code))),
       );
-      return null;
+      return false;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Password reset email sent')),
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Si el correo está registrado, te enviamos un enlace para '
+          'restablecer la contraseña. Revisa también la carpeta de spam.',
+        ),
+        duration: Duration(seconds: 6),
+      ),
     );
+    return true;
   }
 
   @override
@@ -305,28 +316,31 @@ class FirebaseAuthManager extends AuthManager
           ? null
           : Conecta2FirebaseUser.fromUserCredential(userCredential);
     } on FirebaseAuthException catch (e) {
-      final errorMsg = switch (e.code) {
-        'email-already-in-use' =>
-          'Este correo ya está registrado. Inicia sesión o usa otro correo.',
-        'INVALID_LOGIN_CREDENTIALS' ||
-        'invalid-credential' ||
-        'wrong-password' ||
-        'user-not-found' =>
-          'Correo o contraseña incorrectos.',
-        'invalid-email' => 'El correo no es válido.',
-        'user-disabled' => 'Esta cuenta está deshabilitada.',
-        'weak-password' => 'La contraseña debe tener al menos 6 caracteres.',
-        'too-many-requests' =>
-          'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
-        'network-request-failed' =>
-          'Sin conexión. Revisa tu internet e inténtalo de nuevo.',
-        _ => 'No se pudo completar la operación (${e.code}).',
-      };
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
+        SnackBar(content: Text(mensajeErrorAuth(e.code))),
       );
       return null;
     }
   }
 }
+
+/// Mensaje en español para un código de error de Firebase Auth.
+String mensajeErrorAuth(String code) => switch (code) {
+      'email-already-in-use' =>
+        'Este correo ya está registrado. Inicia sesión o usa otro correo.',
+      'INVALID_LOGIN_CREDENTIALS' ||
+      'invalid-credential' ||
+      'wrong-password' ||
+      'user-not-found' =>
+        'Correo o contraseña incorrectos.',
+      'invalid-email' => 'El correo no es válido.',
+      'missing-email' => 'Escribe tu correo electrónico.',
+      'user-disabled' => 'Esta cuenta está deshabilitada.',
+      'weak-password' => 'La contraseña debe tener al menos 6 caracteres.',
+      'too-many-requests' =>
+        'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
+      'network-request-failed' =>
+        'Sin conexión. Revisa tu internet e inténtalo de nuevo.',
+      _ => 'No se pudo completar la operación ($code).',
+    };

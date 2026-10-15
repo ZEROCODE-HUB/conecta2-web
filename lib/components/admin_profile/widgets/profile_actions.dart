@@ -31,11 +31,12 @@ class ProfileResetPasswordButton extends StatelessWidget {
             );
             return;
           }
-          await authManager.resetPassword(
+          final enviado = await authManager.resetPassword(
             email: correoDeAcceso,
             context: context,
           );
-          if (!context.mounted) return;
+          // Si falló, ya se mostró el error; no se confirma el envío.
+          if (enviado != true || !context.mounted) return;
           await _showSuccess(context);
         },
         text: 'Restaurar contraseña',

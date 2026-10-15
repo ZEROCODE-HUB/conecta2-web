@@ -422,21 +422,23 @@ extension _LoginDesktop on _LoginWidgetState {
                 children: [
                   FFButtonWidget(
                     onPressed: () async {
-                      if (_model.emailTextController.text
-                          .isEmpty) {
+                      final correo = _model.emailTextController.text
+                          .trim()
+                          .toLowerCase();
+                      if (correo.isEmpty) {
                         ScaffoldMessenger.of(context)
-                            .showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Email required!',
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Escribe tu correo electrónico para restablecer la contraseña.',
+                              ),
                             ),
-                          ),
-                        );
+                          );
                         return;
                       }
                       await authManager.resetPassword(
-                        email:
-                            _model.emailTextController.text,
+                        email: correo,
                         context: context,
                       );
                     },
