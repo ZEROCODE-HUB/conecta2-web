@@ -1,5 +1,3 @@
-import '/components/button_vazado/button_vazado_widget.dart';
-import '/components/registartion_button/registartion_button_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'profile_widget.dart' show ProfileWidget;
@@ -36,16 +34,9 @@ class ProfileModel extends FlutterFlowModel<ProfileWidget> {
   TextEditingController? textFieldaddressTextController;
   String? Function(BuildContext, String?)?
       textFieldaddressTextControllerValidator;
-  // Model for buttonVazado component.
-  late ButtonVazadoModel buttonVazadoModel;
-  // Model for registartionButton component.
-  late RegistartionButtonModel registartionButtonModel;
 
   @override
   void initState(BuildContext context) {
-    buttonVazadoModel = createModel(context, () => ButtonVazadoModel());
-    registartionButtonModel =
-        createModel(context, () => RegistartionButtonModel());
   }
 
   @override
@@ -64,8 +55,5 @@ class ProfileModel extends FlutterFlowModel<ProfileWidget> {
 
     textFieldaddressFocusNode?.dispose();
     textFieldaddressTextController?.dispose();
-
-    buttonVazadoModel.dispose();
-    registartionButtonModel.dispose();
   }
 }

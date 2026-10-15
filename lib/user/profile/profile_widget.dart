@@ -1,8 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/user/registration/sesion_app.dart';
-import '/components/button_vazado/button_vazado_widget.dart';
-import '/components/registartion_button/registartion_button_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +8,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'profile_model.dart';
+import 'widgets/perfil_acciones.dart';
 import 'widgets/profile_actions.dart';
 import 'widgets/profile_header.dart';
 import 'widgets/profile_stats.dart';
@@ -222,32 +221,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                   .textFieldaddressTextControllerValidator,
                             ),
                             _buildGeneroYFecha(context),
-                            const ProfileLogoutButton(),
                           ],
                         ),
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 32.0, 0.0, 12.0),
-                          child: wrapWithModel(
-                            model: _model.buttonVazadoModel,
-                            updateCallback: () => safeSetState(() {}),
-                            child: ButtonVazadoWidget(
-                              btnText: 'Restaurar contraseña',
-                              btnAction: _onResetPassword,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 5.0, 0.0, 20.0),
-                          child: wrapWithModel(
-                            model: _model.registartionButtonModel,
-                            updateCallback: () => safeSetState(() {}),
-                            child: RegistartionButtonWidget(
-                              btnText: 'Enviar',
-                              btnAction: _onSubmit,
-                            ),
-                          ),
+                        PerfilAcciones(
+                          onGuardar: _onSubmit,
+                          onRestaurar: _onResetPassword,
                         ),
                       ],
                     ),

@@ -1,6 +1,4 @@
-import '/components/button_vazado/button_vazado_widget.dart';
 import '/components/header_prof_back/header_prof_back_widget.dart';
-import '/components/registartion_button/registartion_button_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'edit_profile_proff_widget.dart' show EditProfileProffWidget;
@@ -37,18 +35,11 @@ class EditProfileProffModel extends FlutterFlowModel<EditProfileProffWidget> {
   TextEditingController? textFieldaddressTextController;
   String? Function(BuildContext, String?)?
       textFieldaddressTextControllerValidator;
-  // Model for buttonVazado component.
-  late ButtonVazadoModel buttonVazadoModel;
-  // Model for registartionButton component.
-  late RegistartionButtonModel registartionButtonModel;
   // Model for HeaderProfBack component.
   late HeaderProfBackModel headerProfBackModel;
 
   @override
   void initState(BuildContext context) {
-    buttonVazadoModel = createModel(context, () => ButtonVazadoModel());
-    registartionButtonModel =
-        createModel(context, () => RegistartionButtonModel());
     headerProfBackModel = createModel(context, () => HeaderProfBackModel());
   }
 
@@ -69,8 +60,6 @@ class EditProfileProffModel extends FlutterFlowModel<EditProfileProffWidget> {
     textFieldaddressFocusNode?.dispose();
     textFieldaddressTextController?.dispose();
 
-    buttonVazadoModel.dispose();
-    registartionButtonModel.dispose();
     headerProfBackModel.dispose();
   }
 }

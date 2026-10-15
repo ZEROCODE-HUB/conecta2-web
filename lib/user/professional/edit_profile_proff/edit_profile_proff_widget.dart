@@ -2,16 +2,13 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/user/registration/sesion_app.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
-import '/components/button_vazado/button_vazado_widget.dart';
 import '/components/header_prof_back/header_prof_back_widget.dart';
-import '/components/registartion_button/registartion_button_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/upload_data.dart';
-import '/index.dart';
+import '/user/profile/widgets/perfil_acciones.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'edit_profile_proff_model.dart';
 export 'edit_profile_proff_model.dart';
@@ -76,6 +73,52 @@ class _EditProfileProffWidgetState extends State<EditProfileProffWidget> {
     _model.dispose();
 
     super.dispose();
+  }
+
+  Future<void> _onRestaurar() async {
+    if (correoDeAcceso.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se encontró tu correo de acceso.')),
+      );
+      return;
+    }
+    await authManager.resetPassword(
+      email: correoDeAcceso,
+      context: context,
+    );
+  }
+
+  Future<void> _onGuardar() async {
+    await currentUserReference!.update(createUsersRecordData(
+      // El correo no se edita: es el de acceso.
+      displayName: _model.textFieldnameTextController.text,
+      address: _model.textFieldaddressTextController.text,
+      phoneNumber: _model.textFieldphoneTextController.text,
+      genero: _generoSeleccionado ?? '',
+      fechaNacimiento: _fechaNacimiento,
+      photoUrl: valueOrDefault<String>(
+        _model.uploadedFileUrl_uploadDataB3e != ''
+            ? _model.uploadedFileUrl_uploadDataB3e
+            : valueOrDefault<String>(
+                currentUserPhoto,
+                'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/9yllj3p8hz5o/User.png',
+              ),
+        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/9yllj3p8hz5o/User.png',
+      ),
+    ));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Datos guardados con éxito',
+          style: TextStyle(
+            color: FlutterFlowTheme.of(context).primaryBackground,
+          ),
+        ),
+        duration: Duration(milliseconds: 4000),
+        backgroundColor: FlutterFlowTheme.of(context).menuWeb,
+      ),
+    );
   }
 
   @override
@@ -234,81 +277,9 @@ class _EditProfileProffWidgetState extends State<EditProfileProffWidget> {
                               ...buildFormSections(context),
                             ],
                           ),
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 32.0, 0.0, 12.0),
-                            child: wrapWithModel(
-                              model: _model.buttonVazadoModel,
-                              updateCallback: () => safeSetState(() {}),
-                              child: ButtonVazadoWidget(
-                                btnText: 'Restaurar contraseña',
-                                btnAction: () async {
-                                  if (correoDeAcceso.isEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'No se encontró tu correo de acceso.',
-                                        ),
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  await authManager.resetPassword(
-                                    email: correoDeAcceso,
-                                    context: context,
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 5.0, 0.0, 20.0),
-                            child: wrapWithModel(
-                              model: _model.registartionButtonModel,
-                              updateCallback: () => safeSetState(() {}),
-                              child: RegistartionButtonWidget(
-                                btnText: 'Enviar',
-                                btnAction: () async {
-                                  await currentUserReference!
-                                      .update(createUsersRecordData(
-                                    // El correo no se edita: es el de acceso.
-                                    displayName:
-                                        _model.textFieldnameTextController.text,
-                                    address: _model
-                                        .textFieldaddressTextController.text,
-                                    phoneNumber: _model
-                                        .textFieldphoneTextController.text,
-                                    genero: _generoSeleccionado ?? '',
-                                    fechaNacimiento: _fechaNacimiento,
-                                    photoUrl: valueOrDefault<String>(
-                                      _model.uploadedFileUrl_uploadDataB3e !=
-                                                  ''
-                                          ? _model.uploadedFileUrl_uploadDataB3e
-                                          : valueOrDefault<String>(
-                                              currentUserPhoto,
-                                              'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/9yllj3p8hz5o/User.png',
-                                            ),
-                                      'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/conecta2-wtnr9n/assets/9yllj3p8hz5o/User.png',
-                                    ),
-                                  ));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Datos guardados con éxito',
-                                        style: TextStyle(
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryBackground,
-                                        ),
-                                      ),
-                                      duration: Duration(milliseconds: 4000),
-                                      backgroundColor:
-                                          FlutterFlowTheme.of(context).menuWeb,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
+                          PerfilAcciones(
+                            onGuardar: _onGuardar,
+                            onRestaurar: _onRestaurar,
                           ),
                         ],
                       ),

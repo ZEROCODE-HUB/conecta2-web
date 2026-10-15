@@ -1,96 +1,12 @@
 import '/auth/firebase_auth/auth_util.dart';
-import '/user/registration/sesion_app.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
-import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'profile_header.dart' show kDefaultProfileAvatar;
-
-/// "Cerrar Sesión" logout button shown at the bottom of the profile form.
-class ProfileLogoutButton extends StatelessWidget {
-  const ProfileLogoutButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final bodyMedium = FlutterFlowTheme.of(context).bodyMedium;
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Expanded(
-            child: Padding(
-              padding:
-                  const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
-              child: InkWell(
-                splashColor: Colors.transparent,
-                focusColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: () async {
-                  GoRouter.of(context).prepareAuthEvent();
-                  await authManager.signOut();
-                  limpiarSesionApp();
-                  GoRouter.of(context).clearRedirectLocation();
-                  if (!context.mounted) return;
-                  context.goNamedAuth(SplashWidget.routeName, context.mounted);
-                },
-                child: Container(
-                  height: 47.0,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                            24.0, 0.0, 0.0, 0.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: SvgPicture.asset(
-                            'assets/images/Logout.svg',
-                            width: 24.0,
-                            height: 24.0,
-                            fit: BoxFit.none,
-                            alignment: const Alignment(-1.0, 0.0),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                            12.0, 0.0, 0.0, 0.0),
-                        child: Text(
-                          'Cerrar Sesión',
-                          style: bodyMedium.override(
-                            font: GoogleFonts.outfit(
-                              fontWeight: bodyMedium.fontWeight,
-                              fontStyle: bodyMedium.fontStyle,
-                            ),
-                            fontSize: 14.0,
-                            letterSpacing: 0.0,
-                            fontWeight: bodyMedium.fontWeight,
-                            fontStyle: bodyMedium.fontStyle,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /// Bottom status/navigation bar at the foot of the profile screen. Shows a
 /// back chevron, happy-day counter, and a small avatar linking back to the
