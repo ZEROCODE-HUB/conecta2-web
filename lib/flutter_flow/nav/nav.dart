@@ -600,11 +600,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => RegisterContinue2Widget(),
         ),
         FFRoute(
-          name: SeleccionarBarrioWidget.routeName,
-          path: SeleccionarBarrioWidget.routePath,
-          builder: (context, params) => SeleccionarBarrioWidget(),
-        ),
-        FFRoute(
           name: RegisterContinue3Widget.routeName,
           path: RegisterContinue3Widget.routePath,
           builder: (context, params) => RegisterContinue3Widget(),

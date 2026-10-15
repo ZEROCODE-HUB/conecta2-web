@@ -77,8 +77,6 @@ export '/user/surveys/encuestas_adolescente_open/encuestas_adolescente_open_widg
 export '/estadisticas/estadisticas_widget.dart' show EstadisticasWidget;
 export '/user/registration/register_continue2/register_continue2_widget.dart'
     show RegisterContinue2Widget;
-export '/seleccionar_barrio/seleccionar_barrio_widget.dart'
-    show SeleccionarBarrioWidget;
 export '/user/registration/register_continue3/register_continue3_widget.dart'
     show RegisterContinue3Widget;
 export '/user/surveys/encuestas_adolescente_open2/encuestas_adolescente_open2_widget.dart'
