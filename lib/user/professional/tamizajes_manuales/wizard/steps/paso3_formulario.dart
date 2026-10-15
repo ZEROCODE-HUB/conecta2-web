@@ -24,7 +24,9 @@ class PasoFormulario extends StatefulWidget {
 
   final EncuestasRecord encuesta;
   final UsersRecord? adolescente;
-  final void Function(
+  /// Devuelve true si se guardó; si es false, el formulario se reactiva
+  /// para reintentar.
+  final Future<bool> Function(
     List<RespuestaTestStruct> respuestas,
     int puntajeTotal,
     bool tieneIdeacion,
@@ -91,7 +93,7 @@ class _PasoFormularioState extends State<PasoFormulario> {
     setState(() => _enConsumo = false);
   }
 
-  void _enviar() {
+  Future<void> _enviar() async {
     final vis = _visibilidad;
     for (var i = 0; i < _estados.length; i++) {
       final s = _estados[i];
@@ -118,7 +120,8 @@ class _PasoFormularioState extends State<PasoFormulario> {
         if (atr.ideacionSuicida) ideacion = true;
       }
     }
-    widget.onFinalizado(respuestas, puntaje, ideacion);
+    final ok = await widget.onFinalizado(respuestas, puntaje, ideacion);
+    if (!ok && mounted) setState(() => _enviando = false);
   }
 
   @override

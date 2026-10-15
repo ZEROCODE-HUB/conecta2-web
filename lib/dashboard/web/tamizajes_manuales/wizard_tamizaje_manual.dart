@@ -112,7 +112,7 @@ class _WizardTamizajeManualWidgetState
                           _tieneIdeacion = ideacion;
                           _invalidadoDuranteDesarrollo = false;
                         });
-                        _guardarYAvanzar();
+                        return _guardarYAvanzar();
                       },
                       onAtras: _retroceder,
                       onInvalidar: () {
@@ -181,16 +181,21 @@ class _WizardTamizajeManualWidgetState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al registrar invalidación: $e')),
+          const SnackBar(
+              content: Text(
+                  'No se pudo registrar la invalidación. Revisa tu conexión e inténtalo de nuevo.')),
         );
+        setState(() => _invalidadoDuranteDesarrollo = false);
       }
+      return;
     }
     if (mounted) setState(() => _paso = 3);
   }
 
-  Future<void> _guardarYAvanzar() async {
+  /// Guarda la respuesta y pasa a Resultados solo si se guardó.
+  Future<bool> _guardarYAvanzar() async {
     if (_adolescenteSeleccionado == null || _tamizajeSeleccionado == null) {
-      return;
+      return false;
     }
     try {
       // Guardar bajo /Encuestas/{encuestaId}/Respuestas/{newId} (mismo
@@ -231,11 +236,15 @@ class _WizardTamizajeManualWidgetState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al guardar el tamizaje: $e')),
+          const SnackBar(
+              content: Text(
+                  'No se pudo guardar el tamizaje. Revisa tu conexión e inténtalo de nuevo.')),
         );
       }
+      return false;
     }
-    _avanzar();
+    if (mounted) _avanzar();
+    return true;
   }
 }
 

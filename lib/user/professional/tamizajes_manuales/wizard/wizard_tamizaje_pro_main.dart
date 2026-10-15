@@ -53,7 +53,9 @@ class _WizardTamizajeProWidgetState extends State<WizardTamizajeProWidget> {
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        leading: _paso == 0
+        // En Resultados el tamizaje ya está guardado: no se vuelve al
+        // formulario (evita reenviarlo y duplicarlo).
+        leading: _paso == 0 || _paso == 3
             ? IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () => Navigator.of(context).pop(),
@@ -108,7 +110,7 @@ class _WizardTamizajeProWidgetState extends State<WizardTamizajeProWidget> {
                               _puntajeTotal = puntaje;
                               _tieneIdeacion = ideacion;
                             });
-                            _guardarYAvanzar();
+                            return _guardarYAvanzar();
                           },
                         ),
                   PasoResultados(
@@ -131,9 +133,10 @@ class _WizardTamizajeProWidgetState extends State<WizardTamizajeProWidget> {
     );
   }
 
-  Future<void> _guardarYAvanzar() async {
+  /// Guarda la respuesta y pasa a Resultados solo si se guardó.
+  Future<bool> _guardarYAvanzar() async {
     if (_adolescenteSeleccionado == null || _tamizajeSeleccionado == null) {
-      return;
+      return false;
     }
     try {
       // Guardar bajo /Encuestas/{encuestaId}/Respuestas/{newId} para que
@@ -174,10 +177,14 @@ class _WizardTamizajeProWidgetState extends State<WizardTamizajeProWidget> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al guardar el tamizaje: $e')),
+          SnackBar(
+              content: Text(
+                  'No se pudo guardar el tamizaje. Revisa tu conexión e inténtalo de nuevo.')),
         );
       }
+      return false;
     }
-    _avanzar();
+    if (mounted) _avanzar();
+    return true;
   }
 }
