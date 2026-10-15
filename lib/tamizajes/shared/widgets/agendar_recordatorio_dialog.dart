@@ -410,7 +410,8 @@ class _FechaSelector extends StatelessWidget {
           const Icon(Icons.calendar_today, size: 18.0, color: kNavy),
           const SizedBox(width: 10.0),
           Text(
-            '${formatDate(fecha)} · 9:00 a. m.',
+            // Solo la fecha: la hora es fija (9:00 a. m.) y no se elige.
+            formatDate(fecha),
             style: GoogleFonts.inter(
               fontSize: 14.0,
               fontWeight: FontWeight.w500,
