@@ -606,10 +606,17 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
                                             context,
                                             adolescenteRef:
                                                 adolescente.reference,
+                                            encuestaRef:
+                                                respuesta.parentReference,
                                             tituloDefault:
                                                 'Seguimiento ${respuesta.titlo}',
                                             pacienteNombre:
                                                 adolescente.displayName,
+                                            // En el teléfono, hoja inferior.
+                                            useBottomSheet:
+                                                MediaQuery.sizeOf(context)
+                                                        .width <
+                                                    600,
                                           ),
                                   icon: const Icon(Icons.alarm, size: 18),
                                   label: Text(

@@ -1,6 +1,7 @@
 import '/backend/backend.dart';
 import '/tamizajes/shared/tamizaje_utils.dart';
 import '/tamizajes/shared/tamizajes_constants.dart';
+import '/tamizajes/shared/widgets/detalle_tamizaje_view.dart';
 import '/tamizajes/shared/widgets/exportar_pdf_button.dart';
 import 'tamizaje_actions_menu_mobile.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,10 @@ class TamizajeCardMobile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
-      child: Container(
+      // Tocar la tarjeta abre el detalle completo (como "Ver" en la web).
+      child: GestureDetector(
+        onTap: () => _abrirDetalle(context),
+        child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14.0),
@@ -174,6 +178,24 @@ class TamizajeCardMobile extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+      ),
+    );
+  }
+
+  void _abrirDetalle(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (ctx) => Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: DetalleTamizajeView(
+              respuesta: respuesta,
+              adolescente: adolescente,
+              onVolver: () => Navigator.of(ctx).pop(),
+            ),
+          ),
         ),
       ),
     );
