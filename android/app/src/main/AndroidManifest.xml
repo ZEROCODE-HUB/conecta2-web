@@ -10,10 +10,16 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
 
+    <!-- Sin copias de seguridad de Android (Google Drive ni traspaso entre
+         teléfonos): los datos locales incluyen sesión, respuestas en curso
+         y la caché de Firestore con datos de salud de menores. -->
     <application
         android:label="Conecta2"
         tools:replace="android:label"
         android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:requestLegacyExternalStorage="true">
 
         <activity
