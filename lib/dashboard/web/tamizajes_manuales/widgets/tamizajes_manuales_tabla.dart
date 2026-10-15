@@ -284,7 +284,11 @@ class _MenuTresPuntos extends StatelessWidget {
           case 'recordar':
             showAgendarRecordatorioDialog(
               context,
-              adolescenteRef: respuesta.parentReference,
+              // Las respuestas manuales cuelgan de Encuestas/{id}: el
+              // destinatario es userRespuesta, no el documento padre.
+              adolescenteRef:
+                  adolescente?.reference ?? respuesta.userRespuesta,
+              encuestaRef: respuesta.parentReference,
               tituloDefault: 'Seguimiento ${respuesta.titlo}',
               pacienteNombre: adolescente?.displayName,
             );

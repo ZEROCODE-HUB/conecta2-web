@@ -72,107 +72,13 @@ class _PasoResultadosState extends State<_PasoResultados> {
 
   Future<void> _agendarRecordatorio() async {
     if (widget.adolescente == null) return;
-    final tituloController = TextEditingController(
-      text: 'Seguimiento ${widget.encuesta?.titulo ?? "tamizaje"}',
+    await showAgendarRecordatorioDialog(
+      context,
+      adolescenteRef: widget.adolescente!.reference,
+      encuestaRef: widget.encuesta?.reference,
+      tituloDefault: 'Seguimiento ${widget.encuesta?.titulo ?? "tamizaje"}',
+      pacienteNombre: widget.adolescente!.displayName,
     );
-    final contenidoController = TextEditingController();
-    DateTime fechaSeleccionada = DateTime.now().add(const Duration(days: 7));
-
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setStateDialog) => AlertDialog(
-          title: const Text('Programar recordatorio de seguimiento'),
-          content: SizedBox(
-            width: 420,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: tituloController,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: contenidoController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Notas',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_today, size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${fechaSeleccionada.day.toString().padLeft(2, '0')}/'
-                      '${fechaSeleccionada.month.toString().padLeft(2, '0')}/'
-                      '${fechaSeleccionada.year}',
-                    ),
-                    const Spacer(),
-                    TextButton.icon(
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: ctx,
-                          initialDate: fechaSeleccionada,
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now()
-                              .add(const Duration(days: 365 * 2)),
-                        );
-                        if (picked != null) {
-                          setStateDialog(() => fechaSeleccionada = picked);
-                        }
-                      },
-                      icon: const Icon(Icons.edit, size: 14),
-                      label: const Text('Cambiar'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Guardar'),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (ok == true) {
-      try {
-        await RemindersRecord.collection.doc().set(
-              createRemindersRecordData(
-                user: widget.adolescente!.reference,
-                dueDate: fechaSeleccionada,
-                title: tituloController.text.trim(),
-                content: contenidoController.text.trim(),
-              ),
-            );
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Recordatorio agendado')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al agendar: $e')),
-          );
-        }
-      }
-    }
   }
 
   /// Calculates the alert level label for this tamizaje based on the

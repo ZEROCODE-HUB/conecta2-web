@@ -171,6 +171,7 @@ class _PasoResultadosState extends State<PasoResultados> {
                         : () => showAgendarRecordatorioDialog(
                               context,
                               adolescenteRef: widget.adolescente!.reference,
+                              encuestaRef: widget.encuesta?.reference,
                               tituloDefault:
                                   'Seguimiento ${widget.encuesta?.titulo ?? "tamizaje"}',
                               pacienteNombre:

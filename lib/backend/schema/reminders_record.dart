@@ -40,12 +40,36 @@ class RemindersRecord extends FirestoreRecord {
   bool get notified => _notified ?? false;
   bool hasNotified() => _notified != null;
 
+  // "creado_por" field: profesional que programó el seguimiento.
+  DocumentReference? _creadoPor;
+  DocumentReference? get creadoPor => _creadoPor;
+  bool hasCreadoPor() => _creadoPor != null;
+
+  // "notas_internas" field: solo para el profesional (no va en el push).
+  String? _notasInternas;
+  String get notasInternas => _notasInternas ?? '';
+  bool hasNotasInternas() => _notasInternas != null;
+
+  // "encuesta" field: tamizaje del que surge el seguimiento.
+  DocumentReference? _encuesta;
+  DocumentReference? get encuesta => _encuesta;
+  bool hasEncuesta() => _encuesta != null;
+
+  // "created_time" field.
+  DateTime? _createdTime;
+  DateTime? get createdTime => _createdTime;
+  bool hasCreatedTime() => _createdTime != null;
+
   void _initializeFields() {
     _user = snapshotData['user'] as DocumentReference?;
     _dueDate = snapshotData['due_date'] as DateTime?;
     _title = snapshotData['title'] as String?;
     _content = snapshotData['content'] as String?;
     _notified = snapshotData['notified'] as bool?;
+    _creadoPor = snapshotData['creado_por'] as DocumentReference?;
+    _notasInternas = snapshotData['notas_internas'] as String?;
+    _encuesta = snapshotData['encuesta'] as DocumentReference?;
+    _createdTime = snapshotData['created_time'] as DateTime?;
   }
 
   static CollectionReference get collection =>
@@ -88,6 +112,10 @@ Map<String, dynamic> createRemindersRecordData({
   String? title,
   String? content,
   bool? notified,
+  DocumentReference? creadoPor,
+  String? notasInternas,
+  DocumentReference? encuesta,
+  DateTime? createdTime,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -96,6 +124,10 @@ Map<String, dynamic> createRemindersRecordData({
       'title': title,
       'content': content,
       'notified': notified ?? false,
+      'creado_por': creadoPor,
+      'notas_internas': notasInternas,
+      'encuesta': encuesta,
+      'created_time': createdTime,
     }.withoutNulls,
   );
 
