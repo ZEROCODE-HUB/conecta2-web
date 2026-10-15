@@ -284,8 +284,42 @@ class _EncuestasAndTamizajesWidgetState
                                               currentUserDocument?.rol ==
                                                   'Adolescente') {
                                             final now = DateTime.now();
+                                            // 1) Si la última respuesta fue
+                                            // invalidada, puede repetir el
+                                            // tamizaje pasadas 24 h.
+                                            final ultima = _model.exist2!;
+                                            if (ultima.invalidado) {
+                                              final desde =
+                                                  ultima.fechaInvalidacion ??
+                                                      ultima.fecha;
+                                              final hasta =
+                                                  ultima.bloqueadoHasta ??
+                                                      desde?.add(const Duration(
+                                                          hours: 24));
+                                              if (hasta != null &&
+                                                  now.isBefore(hasta)) {
+                                                final horas = (hasta
+                                                            .difference(now)
+                                                            .inMinutes /
+                                                        60)
+                                                    .ceil()
+                                                    .clamp(1, 24);
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                      content: Text(
+                                                          'Este tamizaje fue invalidado. Podrás intentarlo de nuevo en $horas ${horas == 1 ? 'hora' : 'horas'}.')),
+                                                );
+                                                return;
+                                              }
+                                            }
+                                            // 2) Una vez al mes, contando solo
+                                            // respuestas válidas.
+                                            final ultimaValida = pastResponses
+                                                .where((r) => !r.invalidado)
+                                                .firstOrNull;
                                             final responseDate =
-                                                _model.exist2?.fecha;
+                                                ultimaValida?.fecha;
                                             if (responseDate != null &&
                                                 responseDate.year == now.year &&
                                                 responseDate.month ==
@@ -294,11 +328,12 @@ class _EncuestasAndTamizajesWidgetState
                                                   .showSnackBar(
                                                 SnackBar(
                                                     content: Text(
-                                                        'Ya respondiste este tamizaje.')),
+                                                        'Ya respondiste este tamizaje este mes.')),
                                               );
                                               return;
                                             } else {
-                                              // Different month, they can take it again
+                                              // Otro mes, o solo hay
+                                              // respuestas invalidadas.
                                               canTakeSurvey = true;
                                             }
                                           }
