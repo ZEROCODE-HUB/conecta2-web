@@ -119,8 +119,29 @@ class _PacientesWidgetState extends State<PacientesWidget> {
                                                       _model.textController,
                                                   focusNode:
                                                       _model.textFieldFocusNode,
+                                                  onChanged: (texto) {
+                                                    // Al borrar el texto vuelve la lista completa.
+                                                    if (texto.trim().isEmpty &&
+                                                        _model.busquedaHecha
+                                                            .isNotEmpty) {
+                                                      _model.busquedaHecha = '';
+                                                      _model.simpleSearchResults =
+                                                          [];
+                                                      safeSetState(() {});
+                                                    }
+                                                  },
                                                   onFieldSubmitted: (_) async {
-                                                    await queryUsersRecordOnce()
+                                                    _model.busquedaHecha = _model
+                                                        .textController.text
+                                                        .trim();
+                                                    // Solo entre los adolescentes asignados a este profesional.
+                                                    await queryUsersRecordOnce(
+                                                      queryBuilder: (q) => q.where(
+                                                        'Profesionales.Ref',
+                                                        isEqualTo:
+                                                            currentUserReference,
+                                                      ),
+                                                    )
                                                         .then(
                                                           (records) => _model
                                                                   .simpleSearchResults =
@@ -232,6 +253,21 @@ class _PacientesWidgetState extends State<PacientesWidget> {
                                   ),
                                   Builder(
                                     builder: (context) {
+                                      if (_model.busquedaHecha.isNotEmpty &&
+                                          _model.simpleSearchResults.isEmpty) {
+                                        return Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 24.0),
+                                          child: Center(
+                                            child: Text(
+                                              'Sin coincidencias para "${_model.busquedaHecha}"',
+                                              style:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium,
+                                            ),
+                                          ),
+                                        );
+                                      }
                                       if (_model
                                           .simpleSearchResults.isNotEmpty) {
                                         return Builder(

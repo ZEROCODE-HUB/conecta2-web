@@ -14,6 +14,8 @@ class PacientesModel extends FlutterFlowModel<PacientesWidget> {
   TextEditingController? textController;
   String? Function(BuildContext, String?)? textControllerValidator;
   List<UsersRecord> simpleSearchResults = [];
+  // Texto de la última búsqueda enviada ('' = sin búsqueda: lista completa).
+  String busquedaHecha = '';
   // Model for footerProfessionals component.
   late FooterProfessionalsModel footerProfessionalsModel;
   // Model for ProfesionalHeader component.
