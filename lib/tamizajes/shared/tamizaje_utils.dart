@@ -50,3 +50,25 @@ bool hasIdeacion(List<RespuestaTestStruct> test) {
 ///   - `/users/{id}/Respuestas/...`     → usa `parentReference`
 DocumentReference? adolescenteRef(RespuestasRecord r) =>
     r.userRespuesta ?? r.parentReference;
+
+/// Respuestas vacías de [preguntas], una por pregunta y en el mismo orden.
+///
+/// Los componentes de respuesta escriben con
+/// `FFAppState().updateRespuestaEncAtIndex(i, …)`, así que `RespuestaEnc`
+/// debe tener una entrada por pregunta antes de abrir el tamizaje (y al
+/// cancelar y volver a empezar).
+List<RespuestaTestStruct> respuestasIniciales(
+  List<PreguntasEncuestaStruct> preguntas,
+  DocumentReference? userRef,
+) =>
+    [
+      for (var i = 0; i < preguntas.length; i++)
+        RespuestaTestStruct(
+          pregunta: preguntas[i].pregunta,
+          tipo: preguntas[i].tipo,
+          nPregunta: i + 1,
+          userRef: userRef,
+          respuestaSelection: preguntas[i].respuestaSelection,
+          rSeleccionUnica: preguntas[i].respuestasSeleccionUnica,
+        ),
+    ];

@@ -7,6 +7,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/index.dart';
+import '/tamizajes/shared/tamizaje_utils.dart' show respuestasIniciales;
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -340,50 +341,14 @@ class _EncuestasAndTamizajesWidgetState
                                         }
 
                                         if (canTakeSurvey) {
-                                          FFAppState().RespuestaEnc = [];
+                                          // Una entrada por pregunta (los componentes escriben por índice)
+                                          // y sin sustancias de un tamizaje anterior.
+                                          FFAppState().RespuestaEnc = respuestasIniciales(
+                                            surveyLists1EncuestasRecord.preguntas,
+                                            currentUserReference,
+                                          );
+                                          FFAppState().TamizajeSustanciaPermitidas = [];
                                           safeSetState(() {});
-                                          _model.maxRetries = null;
-                                          _model.retryCount = 0;
-                                          safeSetState(() {});
-                                          _model.maxRetries =
-                                              surveyLists1EncuestasRecord
-                                                  .preguntas.length;
-                                          safeSetState(() {});
-                                          while (_model.retryCount! <
-                                              _model.maxRetries!) {
-                                            FFAppState().addToRespuestaEnc(
-                                                RespuestaTestStruct(
-                                              pregunta:
-                                                  surveyLists1EncuestasRecord
-                                                      .preguntas
-                                                      .elementAtOrNull(
-                                                          _model.retryCount!)
-                                                      ?.pregunta,
-                                              tipo: surveyLists1EncuestasRecord
-                                                  .preguntas
-                                                  .elementAtOrNull(
-                                                      _model.retryCount!)
-                                                  ?.tipo,
-                                              nPregunta: _model.retryCount! + 1,
-                                              userRef: currentUserReference,
-                                              respuestaSelection:
-                                                  surveyLists1EncuestasRecord
-                                                      .preguntas
-                                                      .elementAtOrNull(
-                                                          _model.retryCount!)
-                                                      ?.respuestaSelection,
-                                              rSeleccionUnica:
-                                                  surveyLists1EncuestasRecord
-                                                      .preguntas
-                                                      .elementAtOrNull(
-                                                          _model.retryCount!)
-                                                      ?.respuestasSeleccionUnica,
-                                            ));
-                                            safeSetState(() {});
-                                            _model.retryCount =
-                                                _model.retryCount! + 1;
-                                            safeSetState(() {});
-                                          }
                                           if (surveyLists1EncuestasRecord
                                                   .tipo ==
                                               'Tamizajes') {

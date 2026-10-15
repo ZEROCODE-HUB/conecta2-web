@@ -3,6 +3,7 @@ import '/backend/backend.dart';
 import '/custom_code/actions/evaluar_alertas_especiales.dart';
 import '/tamizajes/shared/assist_utils.dart';
 import '/tamizajes/shared/nivel_respuesta.dart';
+import '/tamizajes/shared/tamizaje_utils.dart' show respuestasIniciales;
 import '/components/lista_respuestas_cond_widget.dart';
 import '/components/lista_respuestas_widget.dart';
 import '/components/r_seleccion_unica_radious_tamizaje_widget.dart';
@@ -296,17 +297,16 @@ class _EncuestasAdolescenteOpen2WidgetState
                                         0.0, 8.0, 0.0, 0.0),
                                     child: FFButtonWidget(
                                       onPressed: () async {
+                                        // Volver a empezar: una respuesta vacía por
+                                        // pregunta, porque los componentes escriben
+                                        // por índice (antes quedaba una sola entrada
+                                        // y no se podía terminar el tamizaje).
                                         _model.step = 1;
-                                        safeSetState(() {});
-                                        FFAppState().RespuestaEnc = [];
-                                        safeSetState(() {});
-                                        FFAppState().addToRespuestaEnc(
-                                            RespuestaTestStruct(
-                                          pregunta: 'Hola',
-                                          tipo: '-',
-                                          respuesta: '',
-                                          userRef: currentUserReference,
-                                        ));
+                                        FFAppState().RespuestaEnc =
+                                            respuestasIniciales(
+                                          columnEncuestasRecord.preguntas,
+                                          currentUserReference,
+                                        );
                                         FFAppState()
                                             .TamizajeSustanciaPermitidas = [];
                                         safeSetState(() {});

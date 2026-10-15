@@ -11,12 +11,6 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class EncuestasAndTamizajesModel
     extends FlutterFlowModel<EncuestasAndTamizajesWidget> {
-  ///  Local state fields for this page.
-
-  int? retryCount = 0;
-
-  int? maxRetries;
-
   ///  State fields for stateful widgets in this page.
 
   // State field(s) for ChoiceChips widget.
