@@ -609,7 +609,7 @@ extension _LoginMobile on _LoginWidgetState {
           highlightColor: Colors.transparent,
           onTap: () async {
             await launchURL(
-                ' https://conecta2ips.blogspot.com/2024/07/politica-de-privacidad.html');
+                'https://conecta2ips.blogspot.com/2024/07/politica-de-privacidad.html');
           },
           child: Text(
             'Politicas de Privacidad ',
