@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/tamizajes/shared/tamizajes_constants.dart';
 import '/tamizajes/shared/tamizaje_utils.dart';
 import '/tamizajes/shared/widgets/agendar_recordatorio_dialog.dart';
+import '/tamizajes/shared/widgets/cancelar_seguimiento_dialog.dart';
 import '/tamizajes/shared/widgets/tamizaje_empty_state.dart';
 import '/tamizajes/shared/widgets/tamizaje_page_header.dart';
 import '/tamizajes/shared/widgets/tamizaje_paginador.dart';
@@ -83,47 +84,11 @@ class _SeguimientosWidgetState extends State<SeguimientosWidget> {
     );
   }
 
-  Future<void> _cancelar(RemindersRecord r) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Cancelar recordatorio'),
-        content: Text(
-          '¿Cancelar el recordatorio "${r.title}" para ${_nombre(r.user)}? '
-          'No se enviará y se eliminará de la lista.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Volver'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kDanger,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Cancelar recordatorio'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true) return;
-    try {
-      await r.reference.delete();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Recordatorio cancelado')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo cancelar: $e')),
-        );
-      }
-    }
-  }
+  Future<void> _cancelar(RemindersRecord r) => confirmarCancelarSeguimiento(
+        context,
+        recordatorio: r,
+        pacienteNombre: _nombre(r.user),
+      );
 
   @override
   Widget build(BuildContext context) {

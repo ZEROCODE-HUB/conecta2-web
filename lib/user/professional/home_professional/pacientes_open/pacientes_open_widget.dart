@@ -1,3 +1,4 @@
+import '/tamizajes/shared/widgets/seguimientos_lista_movil.dart';
 import '/backend/backend.dart';
 import '/components/calendario_read/calendario_read_widget.dart';
 import '/components/header_prof_back/header_prof_back_widget.dart';
@@ -140,11 +141,12 @@ class _PacientesOpenWidgetState extends State<PacientesOpenWidget> {
                 child: _dropdown(
                   controller: _model.dropDownValueController1 ??=
                       FormFieldController<String>(_model.dropDownValue1 ??= '0'),
-                  options: const ['0', '1', '2'],
+                  options: const ['0', '1', '2', '3'],
                   optionLabels: const [
-                    'Dados Personales',
-                    'Registro de Emociones',
-                    'Repuestas de Encuestas',
+                    'Datos personales',
+                    'Registro de emociones',
+                    'Respuestas de encuestas',
+                    'Seguimientos programados',
                   ],
                   onChanged: (val) =>
                       safeSetState(() => _model.dropDownValue1 = val),
@@ -161,8 +163,8 @@ class _PacientesOpenWidgetState extends State<PacientesOpenWidget> {
                       FormFieldController<String>(_model.dropDownValue2 ??= '0'),
                   options: const ['0', '2'],
                   optionLabels: const [
-                    'Dados Personales',
-                    'Repuestas de Encuestas',
+                    'Datos personales',
+                    'Respuestas de encuestas',
                   ],
                   onChanged: (val) =>
                       safeSetState(() => _model.dropDownValue2 = val),
@@ -199,7 +201,7 @@ class _PacientesOpenWidgetState extends State<PacientesOpenWidget> {
         fontWeight: FontWeight.w600,
         fontStyle: bodyMedium.fontStyle,
       ),
-      hintText: 'Dados Personales',
+      hintText: 'Datos personales',
       icon: const Icon(
         Icons.keyboard_arrow_down_rounded,
         color: Color(0xFF265294),
@@ -219,6 +221,12 @@ class _PacientesOpenWidgetState extends State<PacientesOpenWidget> {
   }
 
   Widget _buildSelectedSection(UsersRecord user) {
+    if (_model.dropDownValue1 == '3') {
+      return SeguimientosListaMovil(
+        adolescenteRef: user.reference,
+        pacienteNombre: user.displayName,
+      );
+    }
     if (_model.dropDownValue1 == '0' || _model.dropDownValue2 == '0') {
       return PacienteInfoSection(user: user);
     }
