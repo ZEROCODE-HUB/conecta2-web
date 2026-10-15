@@ -137,6 +137,9 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => CrearUsuarioModel());
+    // Cada vez que se abre, el formulario empieza vacío (al cancelar o
+    // volver atrás el modelo conserva lo escrito).
+    _model.limpiarFormulario();
     _loadColegios();
     _loadBarrios();
 

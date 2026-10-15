@@ -103,6 +103,59 @@ class CrearUsuarioModel extends FlutterFlowModel<CrearUsuarioWidget> {
     repeatepasswordVisibility = false;
   }
 
+  /// Deja el formulario vacío. El modelo pertenece a AdminUsuarios y
+  /// sobrevive al cerrar el formulario, así que sin esto al volver a abrir
+  /// "Crear usuario" reaparecían los datos escritos antes de cancelar.
+  void limpiarFormulario() {
+    for (final c in [
+      textController1,
+      emailTextController,
+      textController2,
+      textController3,
+      textController4,
+      textFieldedadTextController,
+      textFieldfechaNacimientoTextController,
+      textFieldcolegioTextController,
+      textFieldepsTextController,
+      textFieldgradoTextController,
+      textFieldmunicipioTextController,
+      textFieldbarrioTextController,
+      passwordTextController,
+      repeatepasswordTextController,
+    ]) {
+      c?.clear();
+    }
+
+    dropDownValue1 = null;
+    dropDownValue2 = null;
+    tipoValue = null;
+    dropDownGeneroValue = null;
+    for (final c in [
+      dropDownValueController1,
+      dropDownValueController2,
+      tipoValueController,
+      dropDownGeneroValueController,
+      colegioDropDownController,
+      epsDropDownController,
+      municipioDropDownController,
+      barrioDropDownController,
+      gradoDropDownController,
+    ]) {
+      c?.reset();
+    }
+
+    isDataUploading_uploadImage = false;
+    uploadedLocalFile_uploadImage =
+        FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
+    uploadedFileUrl_uploadImage = '';
+
+    passwordVisibility = false;
+    repeatepasswordVisibility = false;
+    email = null;
+    getRefAcud = null;
+    getRefProf = null;
+  }
+
   @override
   void dispose() {
     textFieldFocusNode1?.dispose();
