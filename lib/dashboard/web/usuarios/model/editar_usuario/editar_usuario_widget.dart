@@ -170,10 +170,11 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                   ? DateFormat('dd/MM/yyyy')
                       .format(widget.userdoc!.fechaNacimiento!)
                   : '';
+          // El desplegable de profesional trabaja con el id del perfil.
           _model.dropDownProfesionalValueController?.value =
-              widget.userdoc!.profesionales.nombre;
+              widget.userdoc!.profesionales.ref?.id ?? '';
           _model.dropDownProfesionalValue =
-              widget.userdoc!.profesionales.nombre;
+              widget.userdoc!.profesionales.ref?.id ?? '';
 
           final existingEps = widget.userdoc?.eps ?? '';
           _model.epsDropDownController = FormFieldController<String>(
@@ -592,20 +593,31 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                     if (!snapshot.hasData) {
                       return _buildLoader(context);
                     }
-                    final users = snapshot.data!;
+                    final users = [...snapshot.data!]..sort((a, b) => a
+                        .displayName
+                        .toLowerCase()
+                        .compareTo(b.displayName.toLowerCase()));
                     final currentProfesionalName =
                         rowUsersRecord.profesionales.nombre;
                     final hintText = currentProfesionalName.isNotEmpty
                         ? currentProfesionalName
-                        : 'Nombres y Apellidos';
+                        : 'Sin profesional';
                     return buildSearchableDropDown(
                       context: context,
                       controller: _model.dropDownProfesionalValueController ??=
                           FormFieldController<String>(
                         _model.dropDownProfesionalValue ??=
-                            rowUsersRecord.profesionales.nombre,
+                            rowUsersRecord.profesionales.ref?.id ?? '',
                       ),
-                      options: users.map((e) => e.displayName).toList(),
+                      // Valor = id del perfil (los nombres pueden repetirse
+                      // o cambiar); vacío = sin profesional.
+                      options: ['', ...users.map((e) => e.reference.id)],
+                      optionLabels: [
+                        'Sin profesional',
+                        ...users.map((e) => e.email.isEmpty
+                            ? e.displayName
+                            : '${e.displayName} (${e.email})'),
+                      ],
                       onChanged: (val) => safeSetState(
                           () => _model.dropDownProfesionalValue = val),
                       hintText: hintText,
@@ -1440,15 +1452,24 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
       ).then((s) => s.firstOrNull);
     }
 
-    if (_model.dropDownProfesionalValue != null &&
-        _model.dropDownProfesionalValue!.isNotEmpty) {
-      _model.getRefProf = await queryUsersRecordOnce(
-        queryBuilder: (usersRecord) => usersRecord.where(
-          'display_name',
-          isEqualTo: _model.dropDownProfesionalValue,
-        ),
-        singleRecord: true,
-      ).then((s) => s.firstOrNull);
+    // Profesional asignado (el desplegable guarda el id del perfil):
+    // - mismo id que antes → no se toca el campo;
+    // - vacío → se quita la asignación;
+    // - otro id → se asigna ese perfil con su nombre actual.
+    final profIdAnterior = rowUsersRecord.profesionales.ref?.id ?? '';
+    final profIdNuevo = _model.dropDownProfesionalValue ?? profIdAnterior;
+    ProfesionalesStruct? profesionalesNuevo;
+    if (profIdNuevo != profIdAnterior) {
+      if (profIdNuevo.isEmpty) {
+        profesionalesNuevo = createProfesionalesStruct(delete: true);
+      } else {
+        _model.getRefProf = await UsersRecord.getDocumentOnce(
+            UsersRecord.collection.doc(profIdNuevo));
+        profesionalesNuevo = createProfesionalesStruct(
+          nombre: _model.getRefProf!.displayName,
+          ref: _model.getRefProf!.reference,
+        );
+      }
     }
 
     await widget.documentID!.update(createUsersRecordData(
@@ -1472,16 +1493,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
               clearUnsetFields: false,
             ),
       rol: _model.ddTipoValue,
-      profesionales: (_model.dropDownProfesionalValue == null ||
-              _model.dropDownProfesionalValue!.isEmpty)
-          ? null
-          : updateProfesionalesStruct(
-              ProfesionalesStruct(
-                nombre: _model.dropDownProfesionalValue,
-                ref: _model.getRefProf?.reference,
-              ),
-              clearUnsetFields: false,
-            ),
+      profesionales: profesionalesNuevo,
       address: _model.textFieldaddressTextController.text,
       identidad: _model.textFielddniTextController.text,
       edad: isAdolescente ? _model.textFieldedadTextController.text : null,

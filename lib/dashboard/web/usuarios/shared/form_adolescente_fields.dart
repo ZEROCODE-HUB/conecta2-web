@@ -47,6 +47,8 @@ class AdolescenteSidebarFields extends StatelessWidget {
           rol: 'Profesional',
           controllerFactory: profesionalController,
           onChanged: onProfesionalChanged,
+          valoresPorId: true,
+          etiquetaVacia: 'Sin profesional',
         ),
       ],
     );

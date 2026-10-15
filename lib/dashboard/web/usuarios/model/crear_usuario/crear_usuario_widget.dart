@@ -1207,13 +1207,9 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
 
     if (_model.dropDownValue2 != null &&
         _model.dropDownValue2!.isNotEmpty) {
-      _model.getRefProf = await queryUsersRecordOnce(
-        queryBuilder: (usersRecord) => usersRecord.where(
-          'display_name',
-          isEqualTo: _model.dropDownValue2,
-        ),
-        singleRecord: true,
-      ).then((s) => s.firstOrNull);
+      // El desplegable guarda el id del perfil del profesional.
+      _model.getRefProf = await UsersRecord.getDocumentOnce(
+          UsersRecord.collection.doc(_model.dropDownValue2));
     }
 
     final fechaNac = () {
@@ -1321,12 +1317,13 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                     clearUnsetFields: false,
                   ),
             profesionales: (_model.dropDownValue2 == null ||
-                    _model.dropDownValue2!.isEmpty)
+                    _model.dropDownValue2!.isEmpty ||
+                    _model.getRefProf == null)
                 ? null
                 : updateProfesionalesStruct(
                     ProfesionalesStruct(
-                      nombre: _model.dropDownValue2,
-                      ref: _model.getRefProf?.reference,
+                      nombre: _model.getRefProf!.displayName,
+                      ref: _model.getRefProf!.reference,
                     ),
                     clearUnsetFields: false,
                   ),

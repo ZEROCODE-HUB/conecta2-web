@@ -267,6 +267,7 @@ Widget buildSearchableDropDown({
   required ValueChanged<String?> onChanged,
   required String hintText,
   required String searchHintText,
+  List<String>? optionLabels,
   double? width,
   double height = 56.0,
 }) {
@@ -288,6 +289,7 @@ Widget buildSearchableDropDown({
   return FlutterFlowDropDown<String>(
     controller: controller,
     options: options,
+    optionLabels: optionLabels,
     onChanged: onChanged,
     width: width,
     height: height,
@@ -322,11 +324,17 @@ Widget buildSearchableDropDown({
 
 /// Stream-based role dropdown: lists `UsersRecord`s whose `rol` field equals
 /// the given role and exposes their `displayName` values.
+///
+/// Con [valoresPorId] el valor de cada opción es el id del perfil (no el
+/// nombre, que puede repetirse o cambiar), la etiqueta es "Nombre (correo)"
+/// y la primera opción, con valor vacío, es [etiquetaVacia].
 Widget buildUsersByRoleDropdown({
   required BuildContext context,
   required String rol,
   required FormFieldController<String> Function() controllerFactory,
   required ValueChanged<String?> onChanged,
+  bool valoresPorId = false,
+  String etiquetaVacia = 'Sin asignar',
 }) {
   return StreamBuilder<List<UsersRecord>>(
     stream: queryUsersRecord(
@@ -347,6 +355,23 @@ Widget buildUsersByRoleDropdown({
         );
       }
       final users = snapshot.data!;
+      if (valoresPorId) {
+        final ordenados = [...users]..sort((a, b) => a.displayName
+            .toLowerCase()
+            .compareTo(b.displayName.toLowerCase()));
+        return buildStyledDropDown(
+          context: context,
+          controller: controllerFactory(),
+          options: ['', ...ordenados.map((e) => e.reference.id)],
+          optionLabels: [
+            etiquetaVacia,
+            ...ordenados.map((e) =>
+                e.email.isEmpty ? e.displayName : '${e.displayName} (${e.email})'),
+          ],
+          onChanged: onChanged,
+          width: 276.0,
+        );
+      }
       final names = users.map((e) => e.displayName).toList();
       return buildStyledDropDown(
         context: context,
