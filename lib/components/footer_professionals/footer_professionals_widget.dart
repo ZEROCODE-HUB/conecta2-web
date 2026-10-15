@@ -65,217 +65,84 @@ class _FooterProfessionalsWidgetState extends State<FooterProfessionalsWidget> {
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          InkWell(
-            splashColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onTap: () async {
-              context.goNamed(
-                PacientesWidget.routeName,
-                extra: <String, dynamic>{
-                  '__transition_info__': TransitionInfo(
-                    hasTransition: true,
-                    transitionType: PageTransitionType.fade,
-                    duration: Duration(milliseconds: 0),
-                  ),
-                },
-              );
-            },
-            child: Stack(
-              children: [
-                if (widget.active != 1)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.asset(
-                      'assets/images/User.png',
-                      width: 30.0,
-                      height: 30.0,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                if (widget.active == 1)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.asset(
-                      'assets/images/User.png',
-                      width: 30.0,
-                      height: 30.0,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-              ],
-            ),
+          // 1. Pacientes
+          _boton(
+            indice: 1,
+            ruta: PacientesWidget.routeName,
+            icono: 'assets/images/User.png',
+            iconoActivo: 'assets/images/User.png',
+            png: true,
           ),
-          InkWell(
-            splashColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onTap: () async {
-              context.goNamed(
-                RecordatoriosWidget.routeName,
-                extra: <String, dynamic>{
-                  '__transition_info__': TransitionInfo(
-                    hasTransition: true,
-                    transitionType: PageTransitionType.fade,
-                    duration: Duration(milliseconds: 0),
-                  ),
-                },
-              );
-            },
-            child: Stack(
-              children: [
-                if (widget.active != 2)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: SvgPicture.asset(
-                      'assets/images/Alarm_Clock.svg',
-                      width: 30.0,
-                      height: 30.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                if (widget.active == 2)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: SvgPicture.asset(
-                      'assets/images/Alarm_ClockGray.svg',
-                      width: 30.0,
-                      height: 30.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-              ],
-            ),
+          // 2. Recordatorios (seguimientos)
+          _boton(
+            indice: 2,
+            ruta: RecordatoriosWidget.routeName,
+            icono: 'assets/images/Alarm_Clock.svg',
+            iconoActivo: 'assets/images/Alarm_ClockGray.svg',
           ),
-          InkWell(
-            splashColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onTap: () async {
-              context.pushNamed(
-                LiteraturaProWidget.routeName,
-                extra: <String, dynamic>{
-                  '__transition_info__': TransitionInfo(
-                    hasTransition: true,
-                    transitionType: PageTransitionType.fade,
-                    duration: Duration(milliseconds: 0),
-                  ),
-                },
-              );
-            },
-            child: Stack(
-              children: [
-                if (widget.active != 3)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: SvgPicture.asset(
-                      'assets/images/TabletGray.svg',
-                      width: 50.0,
-                      height: 50.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                if (widget.active == 3)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: SvgPicture.asset(
-                      'assets/images/Tablet.svg',
-                      width: 50.0,
-                      height: 50.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-              ],
-            ),
+          // 3. Tamizajes manuales (botón central)
+          _boton(
+            indice: 3,
+            ruta: TamizajesProWidget.routeName,
+            icono: 'assets/images/TabletGray.svg',
+            iconoActivo: 'assets/images/Tablet.svg',
+            tamano: 50.0,
           ),
-          InkWell(
-            splashColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onTap: () async {
-              context.pushNamed(
-                EncuestasProWidget.routeName,
-                extra: <String, dynamic>{
-                  '__transition_info__': TransitionInfo(
-                    hasTransition: true,
-                    transitionType: PageTransitionType.fade,
-                    duration: Duration(milliseconds: 0),
-                  ),
-                },
-              );
-            },
-            child: Stack(
-              children: [
-                if (widget.active != 4)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: SvgPicture.asset(
-                      'assets/images/BookGrey.svg',
-                      width: 30.0,
-                      height: 30.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                if (widget.active == 4)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: SvgPicture.asset(
-                      'assets/images/Book.svg',
-                      width: 30.0,
-                      height: 30.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-              ],
-            ),
+          // 4. Modelos de tamizajes (solo lectura)
+          _boton(
+            indice: 4,
+            ruta: ModelosTamizajesWidget.routeName,
+            icono: 'assets/images/DocumentGrey.svg',
+            iconoActivo: 'assets/images/Document_2.svg',
           ),
-          InkWell(
-            splashColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onTap: () async {
-              context.goNamed(
-                TamizajesProWidget.routeName,
-                extra: <String, dynamic>{
-                  '__transition_info__': TransitionInfo(
-                    hasTransition: true,
-                    transitionType: PageTransitionType.fade,
-                    duration: Duration(milliseconds: 0),
-                  ),
-                },
-              );
-            },
-            child: Stack(
-              children: [
-                if (widget.active != 5)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: SvgPicture.asset(
-                      'assets/images/DocumentGrey.svg',
-                      width: 30.0,
-                      height: 30.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                if (widget.active == 5)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: SvgPicture.asset(
-                      'assets/images/Document_2.svg',
-                      width: 30.0,
-                      height: 30.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-              ],
-            ),
+          // 5. Contenidos / Literatura
+          _boton(
+            indice: 5,
+            ruta: LiteraturaProWidget.routeName,
+            icono: 'assets/images/BookGrey.svg',
+            iconoActivo: 'assets/images/Book.svg',
           ),
         ],
+      ),
+    );
+  }
+
+  /// Botón del menú. Los iconos "activos" son los amarillos; navega con
+  /// goNamed para que el menú no apile pantallas.
+  Widget _boton({
+    required int indice,
+    required String ruta,
+    required String icono,
+    required String iconoActivo,
+    double tamano = 30.0,
+    bool png = false,
+  }) {
+    final asset = widget.active == indice ? iconoActivo : icono;
+    return InkWell(
+      splashColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: () async {
+        if (widget.active == indice) return;
+        context.goNamed(
+          ruta,
+          extra: <String, dynamic>{
+            '__transition_info__': TransitionInfo(
+              hasTransition: true,
+              transitionType: PageTransitionType.fade,
+              duration: Duration(milliseconds: 0),
+            ),
+          },
+        );
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8.0),
+        child: png
+            ? Image.asset(asset,
+                width: tamano, height: tamano, fit: BoxFit.contain)
+            : SvgPicture.asset(asset,
+                width: tamano, height: tamano, fit: BoxFit.cover),
       ),
     );
   }

@@ -653,7 +653,7 @@ class _EncuestasProWidgetState extends State<EncuestasProWidget> {
                   updateCallback: () => safeSetState(() {}),
                   updateOnChange: true,
                   child: FooterProfessionalsWidget(
-                    active: 4,
+                    active: 0, // fuera del menú desde 2026-10-15
                   ),
                 ),
               ),

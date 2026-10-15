@@ -644,6 +644,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => TamizajesProWidget(),
         ),
         FFRoute(
+          name: ModelosTamizajesWidget.routeName,
+          path: ModelosTamizajesWidget.routePath,
+          builder: (context, params) => ModelosTamizajesWidget(),
+        ),
+        FFRoute(
           name: WizardTamizajeProWidget.routeName,
           path: WizardTamizajeProWidget.routePath,
           builder: (context, params) => WizardTamizajeProWidget(),

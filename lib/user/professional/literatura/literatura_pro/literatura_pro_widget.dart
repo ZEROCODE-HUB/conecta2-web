@@ -224,7 +224,7 @@ class _LiteraturaProWidgetState extends State<LiteraturaProWidget> {
                   updateCallback: () => safeSetState(() {}),
                   updateOnChange: true,
                   child: FooterProfessionalsWidget(
-                    active: 3,
+                    active: 5,
                   ),
                 ),
               ),

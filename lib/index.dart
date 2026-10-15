@@ -86,5 +86,7 @@ export '/user/surveys/encuestas_adolescente_open2/encuestas_adolescente_open2_wi
     show EncuestasAdolescenteOpen2Widget;
 export '/user/professional/tamizajes_manuales/tamizajes_pro_widget.dart'
     show TamizajesProWidget;
+export '/user/professional/modelos_tamizajes/modelos_tamizajes_widget.dart'
+    show ModelosTamizajesWidget;
 export '/user/professional/tamizajes_manuales/wizard_tamizaje_pro_widget.dart'
     show WizardTamizajeProWidget;

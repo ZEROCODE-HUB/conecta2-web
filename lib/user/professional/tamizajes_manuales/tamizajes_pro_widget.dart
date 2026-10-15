@@ -219,7 +219,7 @@ class _TamizajesProWidgetState extends State<TamizajesProWidget> {
                     model: _model.footerProfessionalsModel,
                     updateCallback: () => safeSetState(() {}),
                     updateOnChange: true,
-                    child: const FooterProfessionalsWidget(active: 5),
+                    child: const FooterProfessionalsWidget(active: 3),
                   ),
                 ),
 
