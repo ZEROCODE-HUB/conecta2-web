@@ -1,4 +1,7 @@
 import '/backend/backend.dart';
+import '/app_constants.dart';
+import '/auth/firebase_auth/auth_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 import 'tamizaje_utils.dart';
 import 'tamizajes_constants.dart';
 
@@ -26,6 +29,23 @@ class TamizajeService {
     return queryUsersRecord(
       queryBuilder: (q) => q.where('rol', isEqualTo: 'Adolescente'),
     );
+  }
+
+  /// Usuarios cuyas respuestas puede ver el usuario actual, o null si no hay
+  /// que filtrar (cualquier rol distinto de Profesional). Para un profesional:
+  /// sus adolescentes asignados (`Profesionales.Ref`) y él mismo.
+  static Future<Set<DocumentReference>?> refsVisiblesParaProfesional() async {
+    final rol = valueOrDefault(currentUserDocument?.rol, '');
+    final yo = currentUserReference;
+    if (rol != FFAppConstants.Profesional || yo == null) return null;
+    final asignados = await queryUsersRecordOnce(
+      queryBuilder: (q) => q.where('Profesionales.Ref', isEqualTo: yo),
+    );
+    return {
+      yo,
+      for (final u in asignados)
+        if (u.rol == FFAppConstants.adolescente) u.reference,
+    };
   }
 
 

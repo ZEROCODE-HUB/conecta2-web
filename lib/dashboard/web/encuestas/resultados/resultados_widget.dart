@@ -1,4 +1,5 @@
 import '/backend/backend.dart';
+import '/tamizajes/shared/tamizaje_service.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
@@ -26,6 +27,9 @@ class ResultadosWidget extends StatefulWidget {
 class _ResultadosWidgetState extends State<ResultadosWidget> {
   late ResultadosModel _model;
 
+  /// Usuarios cuyas respuestas se muestran; null = todos (no profesional).
+  late Future<Set<DocumentReference>?> _visibles;
+
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
@@ -36,6 +40,7 @@ class _ResultadosWidgetState extends State<ResultadosWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => ResultadosModel());
+    _visibles = TamizajeService.refsVisiblesParaProfesional();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
@@ -88,13 +93,32 @@ class _ResultadosWidgetState extends State<ResultadosWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Flexible(
-                        child: StreamBuilder<List<RespuestasRecord>>(
+                        child: FutureBuilder<Set<DocumentReference>?>(
+                          future: _visibles,
+                          builder: (context, visiblesSnap) {
+                            if (visiblesSnap.connectionState !=
+                                ConnectionState.done) {
+                              return _loader(context);
+                            }
+                            // Si no se pudo leer la asignación, un
+                            // profesional no ve respuestas de nadie.
+                            final visibles = visiblesSnap.hasError
+                                ? <DocumentReference>{}
+                                : visiblesSnap.data;
+                            return StreamBuilder<List<RespuestasRecord>>(
                           stream: queryRespuestasRecord(parent: widget.documentID),
                           builder: (context, snapshot) {
                             if (!snapshot.hasData) {
                               return _loader(context);
                             }
-                            final respuestas = snapshot.data!;
+                            // Un profesional solo ve las respuestas de sus
+                            // adolescentes asignados (y las suyas).
+                            final respuestas = visibles == null
+                                ? snapshot.data!
+                                : snapshot.data!
+                                    .where((r) => visibles
+                                        .contains(r.userRespuesta))
+                                    .toList();
                             return Container(
                               height: MediaQuery.sizeOf(context).height,
                               decoration: const BoxDecoration(),
@@ -139,6 +163,8 @@ class _ResultadosWidgetState extends State<ResultadosWidget> {
                                   ],
                                 ),
                               ),
+                            );
+                          },
                             );
                           },
                         ),

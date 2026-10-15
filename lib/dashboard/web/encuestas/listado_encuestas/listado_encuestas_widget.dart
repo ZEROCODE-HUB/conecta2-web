@@ -1,3 +1,4 @@
+import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -242,9 +243,16 @@ class _ListadoEncuestasWidgetState extends State<ListadoEncuestasWidget> {
     Map<DocumentReference, UsersRecord?> usuarios,
   ) {
     final q = _model.busqueda.trim().toLowerCase();
+    // Un profesional solo ve las respuestas de sus adolescentes asignados.
+    final esProfesional = valueOrDefault(currentUserDocument?.rol, '') ==
+        FFAppConstants.Profesional;
     final filtradas = respuestas.where((r) {
       final usuario = usuarios[r.userRespuesta];
       if (usuario == null || !kRolesListadoEncuestas.contains(usuario.rol)) {
+        return false;
+      }
+      if (esProfesional &&
+          usuario.profesionales.ref != currentUserReference) {
         return false;
       }
       if (q.isEmpty) return true;
