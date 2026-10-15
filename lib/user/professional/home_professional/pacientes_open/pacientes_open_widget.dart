@@ -266,7 +266,9 @@ class _PacientesOpenWidgetState extends State<PacientesOpenWidget> {
                               FocusScope.of(dialogContext).unfocus();
                               FocusManager.instance.primaryFocus?.unfocus();
                             },
-                            child: ShowCalenderDetailsWidget(),
+                            child: ShowCalenderDetailsWidget(
+                              fecha: selectedDate,
+                            ),
                           ),
                         ),
                       );

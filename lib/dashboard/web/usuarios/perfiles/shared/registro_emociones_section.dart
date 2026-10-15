@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/user/calendar/emociones_service.dart' show cuandoEmocion;
 import 'package:google_fonts/google_fonts.dart';
 
 import '/backend/backend.dart';
@@ -25,6 +26,9 @@ class RegistroEmocionesSection extends StatefulWidget {
 }
 
 class _RegistroEmocionesSectionState extends State<RegistroEmocionesSection> {
+  /// Día elegido en el calendario (null = hoy).
+  DateTime? _fechaSeleccionada;
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +51,7 @@ class _RegistroEmocionesSectionState extends State<RegistroEmocionesSection> {
         if (mounted) {
           FFAppState().emocion = 0;
           FFAppState().description = '';
+          _fechaSeleccionada = null;
           widget.onStateChanged();
         }
       });
@@ -141,11 +146,18 @@ class _RegistroEmocionesSectionState extends State<RegistroEmocionesSection> {
                     inputDate: getCurrentTimestamp,
                     initialSelectedDate: getCurrentTimestamp,
                     userRef: widget.userRef,
-                    onSelectDateAction: (selectedDate) async {},
+                    onSelectDateAction: (selectedDate) async {
+                      if (mounted) {
+                        setState(() => _fechaSeleccionada = selectedDate);
+                      }
+                    },
                   ),
                 ),
               );
               final panel = _EmotionPanel(
+                titulo: emocion == 0
+                    ? '${cuandoEmocion(_fechaSeleccionada)}: sin registro'
+                    : '${cuandoEmocion(_fechaSeleccionada)} me sentí',
                 emocion: emocion,
                 image: _emotionImage(emocion),
                 label: _emotionLabel(emocion),
@@ -176,6 +188,7 @@ class _RegistroEmocionesSectionState extends State<RegistroEmocionesSection> {
 
 class _EmotionPanel extends StatelessWidget {
   const _EmotionPanel({
+    required this.titulo,
     required this.emocion,
     required this.image,
     required this.label,
@@ -183,6 +196,7 @@ class _EmotionPanel extends StatelessWidget {
     required this.recommendation,
   });
 
+  final String titulo;
   final int emocion;
   final String image;
   final String label;
@@ -204,7 +218,7 @@ class _EmotionPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Hoy me sentí',
+            titulo,
             style: theme.bodyMedium.override(
               font: GoogleFonts.inter(
                 fontWeight: FontWeight.w600,

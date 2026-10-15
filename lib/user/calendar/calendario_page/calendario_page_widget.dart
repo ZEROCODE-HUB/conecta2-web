@@ -14,6 +14,7 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'calendario_page_model.dart';
+import '../emociones_service.dart';
 import 'widgets/calendar_header.dart';
 import 'widgets/emotion_detail.dart';
 import 'widgets/emotion_selector.dart';
@@ -39,46 +40,39 @@ class _CalendarioPageWidgetState extends State<CalendarioPageWidget>
 
   final animationsMap = <String, AnimationInfo>{};
 
+  /// true mientras se consulta en Firestore si ya hay emoción de hoy.
+  bool _cargandoHoy = true;
+
+  /// Decide entre Start y Finish según lo guardado en Firestore (no según el
+  /// dispositivo), y sincroniza el estado local y el contador de días.
+  Future<void> _cargarEmocionDeHoy() async {
+    final userRef = currentUserReference;
+    try {
+      final hoy = userRef == null ? null : await emocionDeHoy(userRef);
+      if (hoy != null) {
+        _model.slider = 'Finish';
+        _model.emocionelegida = hoy.emocion;
+      } else {
+        _model.slider = 'Start';
+        _model.emocionelegida = null;
+      }
+      await sincronizarEmociones(userRef);
+    } catch (_) {
+      // Sin conexión: se permite elegir; al guardar se vuelve a comprobar.
+      _model.slider = 'Start';
+      _model.emocionelegida = null;
+    }
+    _cargandoHoy = false;
+    safeSetState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => CalendarioPageModel());
 
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      final todayFormatted = dateTimeFormat(
-        "d/M/y",
-        getCurrentTimestamp,
-        locale: FFLocalizations.of(context).languageCode,
-      );
-      final emotionDateFormatted = dateTimeFormat(
-        "d/M/y",
-        FFAppState().dateEmocion,
-        locale: FFLocalizations.of(context).languageCode,
-      );
-
-      if (emotionDateFormatted == todayFormatted) {
-        _model.slider = 'Finish';
-        _model.emocionelegida = FFAppState().emocionDay;
-      } else {
-        _model.slider = 'Start';
-        _model.emocionelegida = null;
-        FFAppState().emocionDay = 0;
-      }
-      safeSetState(() {});
-
-      final lastEmotionFormatted = dateTimeFormat(
-        "d/M/y",
-        FFAppState().CalenderEmotion.lastOrNull?.date,
-        locale: FFLocalizations.of(context).languageCode,
-      );
-      if (lastEmotionFormatted == '') {
-        _model.slider = 'Start';
-        _model.emocionelegida = null;
-        FFAppState().emocionDay = 0;
-        FFAppState().CalenderEmotion = [];
-        safeSetState(() {});
-      }
-    });
+    SchedulerBinding.instance
+        .addPostFrameCallback((_) => _cargarEmocionDeHoy());
 
     if (!isWeb) {
       _keyboardVisibilitySubscription =
@@ -200,6 +194,12 @@ class _CalendarioPageWidgetState extends State<CalendarioPageWidget>
   }
 
   Widget _buildSliderContent() {
+    if (_cargandoHoy) {
+      return const Padding(
+        padding: EdgeInsets.only(top: 80.0),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
     if (_model.slider == 'Start') {
       return Column(
         mainAxisSize: MainAxisSize.max,
@@ -211,9 +211,11 @@ class _CalendarioPageWidgetState extends State<CalendarioPageWidget>
           EmotionSelector(
             animationsMap: animationsMap,
             onEmotionPicked: (emotion) {
+              // emocionDay se fija al guardar, no al elegir: si el usuario
+              // sale sin enviar, el home no debe mostrar una emoción no
+              // registrada.
               _model.emocionelegida = emotion;
               _model.slider = 'Dis';
-              FFAppState().emocionDay = emotion;
               safeSetState(() {});
             },
           ),
@@ -288,7 +290,9 @@ class _CalendarioPageWidgetState extends State<CalendarioPageWidget>
                               FocusScope.of(dialogContext).unfocus();
                               FocusManager.instance.primaryFocus?.unfocus();
                             },
-                            child: ShowCalenderDetailsWidget(),
+                            child: ShowCalenderDetailsWidget(
+                              fecha: selectedDate,
+                            ),
                           ),
                         ),
                       );

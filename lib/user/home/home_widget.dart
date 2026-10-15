@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/user/calendar/emociones_service.dart' show sincronizarEmociones;
 import '/backend/backend.dart';
 import '/components/footer/footer_widget.dart';
 import '/components/header/header_widget.dart';
@@ -35,6 +36,11 @@ class _HomeWidgetState extends State<HomeWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      // Tarjeta "hoy me sentí", cara del header y contador de días desde
+      // Firestore (no del dispositivo).
+      sincronizarEmociones(currentUserReference)
+          .then((_) => safeSetState(() {}))
+          .catchError((_) {});
       if (loggedIn) {
         await currentUserReference!.update(createUsersRecordData(
           status: 1,

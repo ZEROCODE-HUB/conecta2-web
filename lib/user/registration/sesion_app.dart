@@ -1,5 +1,6 @@
 import '/app_state.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/user/calendar/emociones_service.dart' show limpiarEstadoEmociones;
 
 /// Marca la sesión como iniciada desde la app.
 ///
@@ -24,4 +25,5 @@ String get correoDeAcceso => currentUser?.email ?? currentUserEmail;
 void limpiarSesionApp() {
   FFAppState().EmailAdmin = '';
   FFAppState().PasswordAdmin = '';
+  limpiarEstadoEmociones();
 }

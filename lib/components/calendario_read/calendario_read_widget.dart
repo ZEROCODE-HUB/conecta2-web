@@ -1,4 +1,6 @@
 import '/backend/backend.dart';
+import '/user/calendar/emociones_service.dart'
+    show emocionesDelDia, registroDelDia;
 import '/components/dias/dias_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -6,7 +8,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -312,17 +313,11 @@ class _CalendarioReadWidgetState extends State<CalendarioReadWidget> {
                             hoverColor: Colors.transparent,
                             highlightColor: Colors.transparent,
                             onTap: () async {
-                              _model.leerreaccion =
-                                  await queryEmocionesRegistroRecordOnce(
-                                parent: widget.userRef,
-                                queryBuilder: (emocionesRegistroRecord) =>
-                                    emocionesRegistroRecord.where(
-                                  'fecha',
-                                  isEqualTo: functions
-                                      .formatdate(calendarItem.calendarDate!),
-                                ),
-                                singleRecord: true,
-                              ).then((s) => s.firstOrNull);
+                              // Mismo registro que pinta el icono del día (si hay varios,
+                              // el de menor valor); consulta por rango del día.
+                              _model.leerreaccion = registroDelDia(
+                                  await emocionesDelDia(
+                                      widget.userRef!, calendarItem.calendarDate!));
                               if (_model.leerreaccion?.emocion != null) {
                                 FFAppState().description =
                                     _model.leerreaccion!.descripcion;
@@ -338,7 +333,7 @@ class _CalendarioReadWidgetState extends State<CalendarioReadWidget> {
                               }
 
                               await widget.onSelectDateAction?.call(
-                                getCurrentTimestamp,
+                                calendarItem.calendarDate,
                               );
 
                               safeSetState(() {});

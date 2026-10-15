@@ -1,4 +1,5 @@
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/user/calendar/emociones_service.dart' show cuandoEmocion;
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,10 @@ import 'show_calender_details_model.dart';
 export 'show_calender_details_model.dart';
 
 class ShowCalenderDetailsWidget extends StatefulWidget {
-  const ShowCalenderDetailsWidget({super.key});
+  const ShowCalenderDetailsWidget({super.key, this.fecha});
+
+  /// Día seleccionado en el calendario (null = hoy).
+  final DateTime? fecha;
 
   @override
   State<ShowCalenderDetailsWidget> createState() =>
@@ -59,7 +63,9 @@ class _ShowCalenderDetailsWidgetState extends State<ShowCalenderDetailsWidget> {
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 20.0),
               child: Text(
-                'Hoy me sentí',
+                FFAppState().emocion == 0
+                    ? '${cuandoEmocion(widget.fecha)}: sin registro'
+                    : '${cuandoEmocion(widget.fecha)} me sentí',
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       font: GoogleFonts.inter(
                         fontWeight: FontWeight.w600,

@@ -9,10 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'calendar_header.dart';
+import '../../emociones_service.dart';
 
 /// Feedback form shown after the user picks an emotion. Works for both the
 /// "sad/neutral" path (asset CHICA / CHICO) and the "happy" path; the parent
 /// supplies the correct imagery + copy.
+/// Evita guardar dos veces si se toca "enviar" repetidamente.
+bool _guardandoEmocion = false;
+
 class EmotionFeedbackForm extends StatelessWidget {
   const EmotionFeedbackForm({
     super.key,
@@ -173,44 +177,70 @@ class EmotionFeedbackForm extends StatelessWidget {
   }
 
   Future<void> _handleSubmit(BuildContext context) async {
-    await EmocionesRegistroRecord.createDoc(currentUserReference!).set(
-      createEmocionesRegistroRecordData(
-        fecha: functions.formatdate(getCurrentTimestamp),
-        emocion: emocionElegida,
-        descripcion: controller.text,
-      ),
-    );
-    if (!context.mounted) return;
-    await showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return Dialog(
-          elevation: 0,
-          insetPadding: EdgeInsets.zero,
-          backgroundColor: Colors.transparent,
-          alignment: const AlignmentDirectional(0.0, 0.0)
-              .resolve(Directionality.of(context)),
-          child: WebViewAware(
-            child: GestureDetector(
-              onTap: () {
-                FocusScope.of(dialogContext).unfocus();
-                FocusManager.instance.primaryFocus?.unfocus();
-              },
-              child: ThankYouCopyWidget(),
-            ),
+    final userRef = currentUserReference;
+    final emocion = emocionElegida;
+    if (_guardandoEmocion || userRef == null || emocion == null) return;
+    _guardandoEmocion = true;
+    try {
+      // Un registro por día: se comprueba en Firestore, no en el dispositivo
+      // (otro teléfono, reinstalación o la web podían duplicarlo).
+      final hoy = await emocionDeHoy(userRef);
+      if (hoy == null) {
+        await EmocionesRegistroRecord.createDoc(userRef).set(
+          createEmocionesRegistroRecordData(
+            fecha: functions.formatdate(getCurrentTimestamp),
+            emocion: emocion,
+            descripcion: controller.text.trim(),
           ),
         );
-      },
-    );
-
-    FFAppState().addToCalenderEmotion(
-      CalenderEmocionesStruct(
-        date: functions.formatdate(getCurrentTimestamp),
-        emocion: emocionElegida?.toString(),
-      ),
-    );
-    FFAppState().dateEmocion = functions.formatdate(getCurrentTimestamp);
-    onSubmitted();
+      }
+      // El estado local se actualiza antes del diálogo: si la app se cierra
+      // con el diálogo abierto, no queda desincronizado.
+      await sincronizarEmociones(userRef);
+      if (!context.mounted) return;
+      if (hoy != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ya registraste tu emoción de hoy.'),
+          ),
+        );
+        onSubmitted();
+        return;
+      }
+      await showDialog(
+        context: context,
+        builder: (dialogContext) {
+          return Dialog(
+            elevation: 0,
+            insetPadding: EdgeInsets.zero,
+            backgroundColor: Colors.transparent,
+            alignment: const AlignmentDirectional(0.0, 0.0)
+                .resolve(Directionality.of(context)),
+            child: WebViewAware(
+              child: GestureDetector(
+                onTap: () {
+                  FocusScope.of(dialogContext).unfocus();
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
+                child: ThankYouCopyWidget(),
+              ),
+            ),
+          );
+        },
+      );
+      onSubmitted();
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'No se pudo guardar tu emoción. Revisa tu conexión e inténtalo de nuevo.'),
+          ),
+        );
+      }
+    } finally {
+      _guardandoEmocion = false;
+    }
   }
 }
 
