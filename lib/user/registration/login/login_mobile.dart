@@ -483,108 +483,66 @@ extension _LoginMobile on _LoginWidgetState {
             child: RegistartionButtonWidget(
               btnText: 'Iniciar Sesion',
               btnAction: () async {
-                FFAppState().EmailAdmin =
-                    _model.emailTextController1.text;
-                FFAppState().PasswordAdmin =
-                    _model.passwordTextController1.text;
-
-                GoRouter.of(context).prepareAuthEvent();
-
-                final user =
-                    await authManager.signInWithEmail(
-                  context,
-                  _model.emailTextController1.text,
-                  _model.passwordTextController1.text,
-                );
-                if (user == null) {
-                  FFAppState().EmailAdmin = '';
-                  FFAppState().PasswordAdmin = '';
+                final correo = _model.emailTextController1.text.trim();
+                final contrasena = _model.passwordTextController1.text;
+                String? error;
+                if (correo.isEmpty || contrasena.isEmpty) {
+                  error = 'Ingresa tu correo y tu contraseña.';
+                } else if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                    .hasMatch(correo)) {
+                  error = 'Ingresa un correo válido.';
+                }
+                if (error != null) {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(error)));
                   return;
                 }
 
-                if (valueOrDefault(
-                        currentUserDocument?.rol, '') ==
-                    'Adolescente') {
-                  context.goNamedAuth(
-                    HomeWidget.routeName,
-                    context.mounted,
-                    extra: <String, dynamic>{
-                      '__transition_info__': TransitionInfo(
-                        hasTransition: true,
-                        transitionType:
-                            PageTransitionType.fade,
-                        duration: Duration(milliseconds: 0),
-                      ),
-                    },
-                  );
-                } else if (valueOrDefault(
-                        currentUserDocument?.rol, '') ==
-                    'Acudiente') {
-                  context.goNamedAuth(
-                    HomeParentsWidget.routeName,
-                    context.mounted,
-                    extra: <String, dynamic>{
-                      '__transition_info__': TransitionInfo(
-                        hasTransition: true,
-                        transitionType:
-                            PageTransitionType.fade,
-                        duration: Duration(milliseconds: 0),
-                      ),
-                    },
-                  );
-                } else if (valueOrDefault(
-                        currentUserDocument?.rol, '') ==
-                    'Profesional') {
-                  context.goNamedAuth(
-                    PacientesWidget.routeName,
-                    context.mounted,
-                    extra: <String, dynamic>{
-                      '__transition_info__': TransitionInfo(
-                        hasTransition: true,
-                        transitionType:
-                            PageTransitionType.fade,
-                        duration: Duration(milliseconds: 0),
-                      ),
-                    },
-                  );
-                } else if (valueOrDefault(
-                        currentUserDocument?.rol, '') ==
-                    'Administrador') {
-                  context.goNamedAuth(
-                    WebWidget.routeName,
-                    context.mounted,
-                    extra: <String, dynamic>{
-                      '__transition_info__': TransitionInfo(
-                        hasTransition: true,
-                        transitionType:
-                            PageTransitionType.fade,
-                        duration: Duration(milliseconds: 0),
-                      ),
-                    },
-                  );
-                } else if (valueOrDefault(
-                        currentUserDocument?.rol, '') ==
-                    'Padre') {
-                  context.goNamedAuth(
-                    HomeParentsWidget.routeName,
-                    context.mounted,
-                    extra: <String, dynamic>{
-                      '__transition_info__': TransitionInfo(
-                        hasTransition: true,
-                        transitionType:
-                            PageTransitionType.fade,
-                        duration: Duration(milliseconds: 0),
-                      ),
-                    },
-                  );
+                // El parche de nav.dart exige la sesión marcada. La
+                // contraseña solo la necesita "Crear usuario" (web) para
+                // volver a entrar como admin; SplashHome la borra para
+                // adolescentes y acudientes.
+                marcarSesionApp(correo);
+                FFAppState().PasswordAdmin = contrasena;
+
+                GoRouter.of(context).prepareAuthEvent();
+
+                final user = await authManager.signInWithEmail(
+                  context,
+                  correo,
+                  contrasena,
+                );
+                if (user == null) {
+                  limpiarSesionApp();
+                  return;
                 }
 
-                await UsersRecord.collection
-                    .doc(user.uid)
-                    .update(createUsersRecordData(
-                  lastconnectedday: getCurrentTimestamp,
-                  status: 1,
-                ));
+                try {
+                  await UsersRecord.collection
+                      .doc(user.uid)
+                      .update(createUsersRecordData(
+                    lastconnectedday: getCurrentTimestamp,
+                    status: 1,
+                  ));
+                } catch (_) {}
+
+                // SplashHome carga el perfil y redirige según el rol (con
+                // reintento si la red falla y aviso si el rol no es válido);
+                // aquí currentUserDocument aún podía no estar cargado y el
+                // usuario se quedaba en el login sin mensaje.
+                if (!context.mounted) return;
+                context.goNamedAuth(
+                  SplashHomeWidget.routeName,
+                  context.mounted,
+                  extra: <String, dynamic>{
+                    '__transition_info__': TransitionInfo(
+                      hasTransition: true,
+                      transitionType: PageTransitionType.fade,
+                      duration: Duration(milliseconds: 0),
+                    ),
+                  },
+                );
               },
             ),
           ),

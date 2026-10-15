@@ -133,6 +133,11 @@ class _SplashHomeWidgetState extends State<SplashHomeWidget> {
       return;
     }
     _redirigido = true;
+    // Solo "Crear usuario" (web, admin/profesional) usa la contraseña
+    // guardada; para los demás roles no se conserva en el dispositivo.
+    if (rol == 'Adolescente' || rol == 'Acudiente' || rol == 'Padre') {
+      FFAppState().PasswordAdmin = '';
+    }
 
     if (rol ==
         valueOrDefault<String>(

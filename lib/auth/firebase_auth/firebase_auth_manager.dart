@@ -307,10 +307,20 @@ class FirebaseAuthManager extends AuthManager
     } on FirebaseAuthException catch (e) {
       final errorMsg = switch (e.code) {
         'email-already-in-use' =>
-          'Error: The email is already in use by a different account',
-        'INVALID_LOGIN_CREDENTIALS' =>
-          'Error: The supplied auth credential is incorrect, malformed or has expired',
-        _ => 'Error: ${e.message!}',
+          'Este correo ya está registrado. Inicia sesión o usa otro correo.',
+        'INVALID_LOGIN_CREDENTIALS' ||
+        'invalid-credential' ||
+        'wrong-password' ||
+        'user-not-found' =>
+          'Correo o contraseña incorrectos.',
+        'invalid-email' => 'El correo no es válido.',
+        'user-disabled' => 'Esta cuenta está deshabilitada.',
+        'weak-password' => 'La contraseña debe tener al menos 6 caracteres.',
+        'too-many-requests' =>
+          'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
+        'network-request-failed' =>
+          'Sin conexión. Revisa tu internet e inténtalo de nuevo.',
+        _ => 'No se pudo completar la operación (${e.code}).',
       };
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
