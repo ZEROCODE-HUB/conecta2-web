@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/user/registration/sesion_app.dart';
 import '/components/button_vazado/button_vazado_widget.dart';
 import '/components/registartion_button/registartion_button_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -53,7 +54,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     _model.textFieldnameFocusNode ??= FocusNode();
 
     _model.textFieldemailTextController ??=
-        TextEditingController(text: currentUserEmail);
+        TextEditingController(text: correoDeAcceso);
     _model.textFieldemailFocusNode ??= FocusNode();
 
     _model.textFieldphoneTextController ??=
@@ -91,8 +92,8 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   }
 
   Future<void> _onSubmit() async {
+    // El correo no se edita aquí: es el de acceso (Firebase Auth).
     await currentUserReference!.update(createUsersRecordData(
-      email: _model.textFieldemailTextController.text,
       displayName: _model.textFieldnameTextController.text,
       photoUrl: valueOrDefault<String>(_resolvedPhotoUrl, kDefaultProfileAvatar),
       phoneNumber: _model.textFieldphoneTextController.text,
@@ -117,14 +118,14 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   }
 
   Future<void> _onResetPassword() async {
-    if (_model.textFieldemailTextController.text.isEmpty) {
+    if (correoDeAcceso.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email required!')),
+        const SnackBar(content: Text('No se encontró tu correo de acceso.')),
       );
       return;
     }
     await authManager.resetPassword(
-      email: _model.textFieldemailTextController.text,
+      email: correoDeAcceso,
       context: context,
     );
   }
@@ -190,6 +191,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                               validator:
                                   _model.textFieldemailTextControllerValidator,
                               wrapInAuthStream: false,
+                              readOnly: true,
+                              nota: 'Es tu correo de acceso. Para cambiarlo, '
+                                  'contacta al administrador.',
                             ),
                             ProfileFormField(
                               label: 'Celular',

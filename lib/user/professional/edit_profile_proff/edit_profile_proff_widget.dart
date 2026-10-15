@@ -47,7 +47,7 @@ class _EditProfileProffWidgetState extends State<EditProfileProffWidget> {
     _model.textFieldnameFocusNode ??= FocusNode();
 
     _model.textFieldemailTextController ??=
-        TextEditingController(text: currentUserEmail);
+        TextEditingController(text: correoDeAcceso);
     _model.textFieldemailFocusNode ??= FocusNode();
 
     _model.textFieldphoneTextController ??=
@@ -243,20 +243,18 @@ class _EditProfileProffWidgetState extends State<EditProfileProffWidget> {
                               child: ButtonVazadoWidget(
                                 btnText: 'Restaurar contrasena',
                                 btnAction: () async {
-                                  if (_model.textFieldemailTextController.text
-                                      .isEmpty) {
+                                  if (correoDeAcceso.isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          'Email required!',
+                                          'No se encontró tu correo de acceso.',
                                         ),
                                       ),
                                     );
                                     return;
                                   }
                                   await authManager.resetPassword(
-                                    email: _model
-                                        .textFieldemailTextController.text,
+                                    email: correoDeAcceso,
                                     context: context,
                                   );
                                 },
@@ -274,8 +272,7 @@ class _EditProfileProffWidgetState extends State<EditProfileProffWidget> {
                                 btnAction: () async {
                                   await currentUserReference!
                                       .update(createUsersRecordData(
-                                    email: _model
-                                        .textFieldemailTextController.text,
+                                    // El correo no se edita: es el de acceso.
                                     displayName:
                                         _model.textFieldnameTextController.text,
                                     address: _model

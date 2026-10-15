@@ -15,6 +15,8 @@ class ProfileFormField extends StatelessWidget {
     required this.focusNode,
     this.validator,
     this.wrapInAuthStream = true,
+    this.readOnly = false,
+    this.nota,
   });
 
   final String label;
@@ -23,6 +25,12 @@ class ProfileFormField extends StatelessWidget {
   final FocusNode focusNode;
   final String? Function(BuildContext, String?)? validator;
   final bool wrapInAuthStream;
+
+  /// Campo no editable (p. ej. el correo de acceso).
+  final bool readOnly;
+
+  /// Texto de ayuda bajo el campo.
+  final String? nota;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +62,24 @@ class ProfileFormField extends StatelessWidget {
             ),
           ],
         ),
+        if (nota != null)
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(0.0, 6.0, 0.0, 0.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    nota!,
+                    style: FlutterFlowTheme.of(context).bodySmall.override(
+                          font: GoogleFonts.inter(),
+                          color: FlutterFlowTheme.of(context).secondaryText,
+                          letterSpacing: 0.0,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -81,7 +107,8 @@ class ProfileFormField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
-      autofocus: true,
+      autofocus: !readOnly,
+      readOnly: readOnly,
       obscureText: false,
       decoration: InputDecoration(
         labelStyle: labelMedium.override(
@@ -112,6 +139,7 @@ class ProfileFormField extends StatelessWidget {
         errorBorder: _border(theme.error),
         focusedErrorBorder: _border(theme.error),
         filled: true,
+        fillColor: readOnly ? theme.alternate.withValues(alpha: 0.35) : null,
       ),
       style: bodyMedium.override(
         font: GoogleFonts.inter(

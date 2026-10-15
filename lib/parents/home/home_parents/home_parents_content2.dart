@@ -35,7 +35,9 @@ extension _HomeParentsContent2 on _HomeParentsWidgetState {
         builder: (context) => StreamBuilder<List<UsersRecord>>(
           stream: queryUsersRecord(
             queryBuilder: (usersRecord) => usersRecord
-                .where('Acudiente.correo', isEqualTo: currentUserEmail),
+                // Correo de acceso (Auth), no el editable del perfil: así nadie
+                // puede ver adolescentes ajenos cambiando su correo.
+                .where('Acudiente.correo', isEqualTo: correoDeAcceso),
           ),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {

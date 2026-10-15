@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/user/registration/sesion_app.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -50,7 +51,7 @@ class _AdminProfileWidgetState extends State<AdminProfileWidget> {
     _model.textFieldFocusNode2 ??= FocusNode();
 
     _model.emailTextController ??=
-        TextEditingController(text: currentUserEmail);
+        TextEditingController(text: correoDeAcceso);
     _model.emailFocusNode ??= FocusNode();
 
     _model.textController3 ??= TextEditingController(text: currentPhoneNumber);

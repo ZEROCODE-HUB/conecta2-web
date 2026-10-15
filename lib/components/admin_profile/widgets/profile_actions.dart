@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/user/registration/sesion_app.dart';
 import '/backend/backend.dart';
 import '/components/successpopup_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -23,14 +24,15 @@ class ProfileResetPasswordButton extends StatelessWidget {
       padding: const EdgeInsetsDirectional.fromSTEB(20.0, 25.0, 0.0, 0.0),
       child: FFButtonWidget(
         onPressed: () async {
-          if (emailController.text.isEmpty) {
+          if (correoDeAcceso.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Email required!')),
+              const SnackBar(
+                  content: Text('No se encontró tu correo de acceso.')),
             );
             return;
           }
           await authManager.resetPassword(
-            email: emailController.text,
+            email: correoDeAcceso,
             context: context,
           );
           if (!context.mounted) return;
@@ -88,8 +90,8 @@ class ProfileSaveButton extends StatelessWidget {
             onPressed: () async {
               final ref = currentUserReference;
               if (ref == null) return;
+              // El correo no se edita aquí: es el de acceso.
               await ref.update(createUsersRecordData(
-                email: emailController.text,
                 displayName: nameController.text,
                 photoUrl: uploadedFileUrl.isNotEmpty
                     ? uploadedFileUrl

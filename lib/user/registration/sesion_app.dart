@@ -1,4 +1,5 @@
 import '/app_state.dart';
+import '/auth/firebase_auth/auth_util.dart';
 
 /// Marca la sesión como iniciada desde la app.
 ///
@@ -10,6 +11,13 @@ import '/app_state.dart';
 void marcarSesionApp(String email) {
   FFAppState().EmailAdmin = email.trim();
 }
+
+/// Correo con el que el usuario inicia sesión (Firebase Auth).
+///
+/// `currentUserEmail` prefiere el `email` del documento `users`, que puede
+/// diferir del de acceso. Para vincular adolescentes o restablecer la
+/// contraseña hay que usar el de acceso.
+String get correoDeAcceso => currentUser?.email ?? currentUserEmail;
 
 /// Borra los datos de sesión guardados en el dispositivo (al cerrar sesión o
 /// si el registro falla).

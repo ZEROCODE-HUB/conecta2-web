@@ -106,6 +106,7 @@ class ProfileForm extends StatelessWidget {
               focusNode: emailFocusNode,
               validator: emailValidator,
               wrapInAuthStream: false,
+              readOnly: true,
               widthOverride: 200.0,
             ),
             right: _FieldBlock(
@@ -168,6 +169,7 @@ class _FieldBlock extends StatelessWidget {
     required this.wrapInAuthStream,
     this.widthOverride,
     this.labelFontSize,
+    this.readOnly = false,
   });
 
   final String label;
@@ -179,6 +181,9 @@ class _FieldBlock extends StatelessWidget {
   final double? widthOverride;
   final double? labelFontSize;
 
+  /// Campo no editable (el correo de acceso).
+  final bool readOnly;
+
   @override
   Widget build(BuildContext context) {
     final field = Padding(
@@ -188,9 +193,14 @@ class _FieldBlock extends StatelessWidget {
         child: TextFormField(
           controller: controller,
           focusNode: focusNode,
+          readOnly: readOnly,
           obscureText: false,
           decoration: InputDecoration(
             hintText: hint,
+            helperText: readOnly
+                ? 'Correo de acceso. Para cambiarlo, contacta al administrador.'
+                : null,
+            helperMaxLines: 2,
             hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
                   font: GoogleFonts.inter(),
                   fontSize: 18.0,
@@ -203,7 +213,8 @@ class _FieldBlock extends StatelessWidget {
             focusedErrorBorder:
                 _underline(context, FlutterFlowTheme.of(context).error),
             filled: true,
-            fillColor: const Color(0xFFF5F5F5),
+            fillColor:
+                readOnly ? const Color(0xFFE9ECF2) : const Color(0xFFF5F5F5),
           ),
           style: FlutterFlowTheme.of(context).bodyMedium.override(
                 font: GoogleFonts.inter(),
