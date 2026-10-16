@@ -66,6 +66,44 @@ String calcularNivelRespuesta({
   );
 }
 
+/// Nivel de una respuesta para las gráficas de Estadísticas.
+///
+/// Misma regla que el detalle del tamizaje ([calcularNivelRespuesta], con los
+/// rangos configurados en la encuesta). Solo si no se puede clasificar así
+/// (encuesta sin categoría o sin rangos) se usan los cortes por defecto de
+/// [classifyNivel], como antes.
+///
+/// [respuesta] es el documento crudo de `Respuestas`; [items] son sus ítems
+/// (`test` + `Respusta`) ya aplanados, para el cálculo de respaldo.
+String nivelParaEstadisticas({
+  required EncuestasRecord? encuesta,
+  required Map<String, dynamic> respuesta,
+  required String titulo,
+  required List<Map<String, dynamic>> items,
+}) {
+  final puntaje = respuesta['puntajeTotal'] as num?;
+  if (encuesta != null) {
+    final test = <RespuestaTestStruct>[
+      for (final e in (respuesta['test'] as List?) ?? const [])
+        if (RespuestaTestStruct.maybeFromMap(e) case final r?) r,
+    ];
+    final nivel = calcularNivelRespuesta(
+      encuesta: encuesta,
+      puntajeTotal: puntaje?.round() ?? 0,
+      test: test,
+    );
+    if (nivel.isNotEmpty) return nivel;
+  }
+  return classifyNivel(
+    titulo,
+    items,
+    puntajeTotal: puntaje,
+    alertasEspeciales: (respuesta['alertasEspeciales'] as List?)
+        ?.map((e) => e.toString())
+        .toList(),
+  );
+}
+
 /// Umbrales configurados al crear el tamizaje, para `classifyNivel`.
 /// `null` si el documento no los tiene (se usan los cortes clínicos).
 UmbralesConfig? _umbralesDe(EncuestasRecord e) {

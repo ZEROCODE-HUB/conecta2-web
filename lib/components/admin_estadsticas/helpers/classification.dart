@@ -77,6 +77,39 @@ String tipoKeyFromTitulo(String titulo) {
   return 'otros';
 }
 
+/// Clave de tipo según la `categoria` de la Encuesta (la misma que usan el
+/// editor, el detalle y `calcularNivelRespuesta`). '' si la categoría está
+/// vacía o no es de un tamizaje conocido.
+String tipoKeyFromCategoria(String? categoria) {
+  switch ((categoria ?? '').trim()) {
+    case 'Escala autoestima':
+      return 'autoestima';
+    case 'CDI':
+      return 'cdi';
+    case 'Depresión Beck':
+      return 'bdi';
+    case 'Escala ansiedad':
+      return 'ansiedad';
+    case 'RQC':
+      return 'rqc';
+    case 'SRQ':
+    case 'CRQ':
+    case 'CRQ / SRQ':
+      return 'srq';
+    case 'Consumo de SPA':
+      return 'sustancias';
+    default:
+      return '';
+  }
+}
+
+/// Clave de tipo de un tamizaje: primero por `categoria`; si no la tiene,
+/// por el título (tamizajes antiguos sin categoría).
+String tipoKeyDe({String? categoria, required String titulo}) {
+  final porCategoria = tipoKeyFromCategoria(categoria);
+  return porCategoria.isNotEmpty ? porCategoria : tipoKeyFromTitulo(titulo);
+}
+
 /// Normalizes raw gender strings coming from the database into one of
 /// [kGeneros]. Accepts Spanish/Portuguese variants commonly seen in
 /// production data (e.g. "M", "Masc", "H", "F", "Mujer", "Femenino").
@@ -231,12 +264,29 @@ String classifyNivel(
 /// instead of defaulting everything to the first bucket.
 String mapNivelToBucket(String nivel, List<String> buckets) {
   if (buckets.contains(nivel)) return nivel;
-  final n = nivel.toLowerCase();
+  // Los rangos de autoestima se guardan como 'Autoestima Baja/Media/Elevada'
+  // y el eje de la gráfica usa 'Baja/Media/Elevada'.
+  final n = nivel
+      .trim()
+      .toLowerCase()
+      .replaceFirst(RegExp(r'^autoestima\s+'), '');
   String? firstMatching(List<String> candidates) {
     for (final b in buckets) {
       if (candidates.contains(b.toLowerCase())) return b;
     }
     return null;
+  }
+
+  final exacto = firstMatching([n]);
+  if (exacto != null) return exacto;
+
+  // RQC/SRQ: 'Subescala 2' es el tramo alto y 'Subescala 1' el intermedio.
+  if (n.contains('subescala 2')) {
+    return firstMatching(['severo', 'severa']) ?? buckets.last;
+  }
+  if (n.contains('subescala 1')) {
+    return firstMatching(['moderada', 'moderado']) ??
+        buckets[buckets.length ~/ 2];
   }
 
   if (n.contains('grave')) {
@@ -254,17 +304,6 @@ String mapNivelToBucket(String nivel, List<String> buckets) {
   if (n.contains('moderad') || n.contains('leve') || n.contains('media')) {
     return firstMatching(['moderada', 'moderado', 'leve', 'media']) ??
         buckets[buckets.length ~/ 2];
-  }
-  if (n.contains('moderado')) {
-    return firstMatching(['moderado', 'moderada']) ??
-        buckets[buckets.length ~/ 2];
-  }
-  if (n.contains('severo') ||
-      n.contains('severa') ||
-      n.contains('baja') ||
-      n.contains('alto') ||
-      n.contains('alta')) {
-    return firstMatching(['severo', 'severa']) ?? buckets.last;
   }
   // 'sin sintomatología', 'mínima', 'sin alerta', 'elevada' → healthy
   return firstMatching(

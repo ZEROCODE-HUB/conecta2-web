@@ -8,7 +8,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' show DateTimeRange;
 
+import '/backend/schema/encuestas_record.dart';
 import '/tamizajes/shared/assist_utils.dart';
+import '/tamizajes/shared/nivel_respuesta.dart' show nivelParaEstadisticas;
 
 import 'classification.dart';
 
@@ -88,11 +90,14 @@ extension TamizajeTipoX on TamizajeTipo {
   }
 }
 
-bool _matchesTipo(TamizajeTipo tipo, String titulo) {
+/// [categoria] es la de la Encuesta: decide el tipo; el título solo se usa
+/// si la encuesta no tiene categoría.
+bool _matchesTipo(TamizajeTipo tipo, String titulo, {String? categoria}) {
   if (tipo == TamizajeTipo.todas) return true;
-  final key = tipoKeyFromTitulo(titulo);
-  final isLegacy = titulo.toLowerCase().contains('rqc / srq') ||
-      titulo.toLowerCase().contains('rqc/srq');
+  final key = tipoKeyDe(categoria: categoria, titulo: titulo);
+  final isLegacy = tipoKeyFromCategoria(categoria).isEmpty &&
+      (titulo.toLowerCase().contains('rqc / srq') ||
+          titulo.toLowerCase().contains('rqc/srq'));
   switch (tipo) {
     case TamizajeTipo.autoestima:
       return key == 'autoestima';
@@ -113,15 +118,15 @@ bool _matchesTipo(TamizajeTipo tipo, String titulo) {
   }
 }
 
-/// Una encuesta pertenece al tipo seleccionado. Para Sustancias se decide por
-/// la categoría ('Consumo de SPA'), con el título como respaldo; el resto de
-/// tipos sigue usando el título.
+/// Una encuesta pertenece al tipo seleccionado. Se decide por la categoría
+/// (como el editor y el detalle), con el título como respaldo.
 bool _encuestaMatchesTipo(TamizajeTipo tipo, Map<String, dynamic> data) {
   final titulo = (data['titulo'] ?? '').toString();
+  final categoria = (data['categoria'] ?? '').toString();
   if (tipo == TamizajeTipo.sustancias) {
-    return esEncuestaAssist((data['categoria'] ?? '').toString(), titulo);
+    return esEncuestaAssist(categoria, titulo);
   }
-  return _matchesTipo(tipo, titulo);
+  return _matchesTipo(tipo, titulo, categoria: categoria);
 }
 
 bool _esEncuestaAssistData(Map<String, dynamic>? data) =>
@@ -129,8 +134,8 @@ bool _esEncuestaAssistData(Map<String, dynamic>? data) =>
     esEncuestaAssist((data['categoria'] ?? '').toString(),
         (data['titulo'] ?? '').toString());
 
-TamizajeTipo _resolveTipoForTitulo(String titulo) {
-  final key = tipoKeyFromTitulo(titulo);
+TamizajeTipo _resolveTipo(String titulo, {String? categoria}) {
+  final key = tipoKeyDe(categoria: categoria, titulo: titulo);
   switch (key) {
     case 'autoestima':
       return TamizajeTipo.autoestima;
@@ -228,7 +233,7 @@ String? categoriaForTipo(TamizajeTipo tipo) {
     case TamizajeTipo.autoestima:
       return 'Escala autoestima';
     case TamizajeTipo.ansiedad:
-      return 'Ansiedad';
+      return 'Escala ansiedad';
     case TamizajeTipo.cdi:
       return 'CDI';
     case TamizajeTipo.beck:
@@ -310,6 +315,7 @@ Future<StatsAggregates> loadStats(
     final encuestaPorPath = <String, Map<String, dynamic>>{
       for (final d in encuestasSnap.docs) d.reference.path: d.data(),
     };
+    final encuestaRecords = <String, EncuestasRecord>{};
 
     Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs;
 
@@ -374,8 +380,12 @@ Future<StatsAggregates> loadStats(
       final data = doc.data();
       final titulo = (data['Titlo'] ?? data['titlo'] ?? '').toString();
       if (titulo.isEmpty) continue;
-      // Sustancias ya se filtró por la categoría de la encuesta padre.
-      if (tipo != TamizajeTipo.sustancias && !_matchesTipo(tipo, titulo)) {
+      // Sustancias ya se filtró por la categoría de la encuesta padre; el
+      // resto se decide también por la categoría de la encuesta padre.
+      final categoriaPadre =
+          (encuestaPorPath[parentRef.path]?['categoria'] ?? '').toString();
+      if (tipo != TamizajeTipo.sustancias &&
+          !_matchesTipo(tipo, titulo, categoria: categoriaPadre)) {
         continue;
       }
       if (tituloEncuesta != null &&
@@ -467,13 +477,13 @@ Future<StatsAggregates> loadStats(
         };
         nivel = r.tieneEvaluaciones ? bucketStats(r.nivelGlobal) : 'Sin alerta';
       } else {
-        nivel = classifyNivel(
-          titulo,
-          items,
-          puntajeTotal: data['puntajeTotal'] as num?,
-          alertasEspeciales: (data['alertasEspeciales'] as List?)
-              ?.map((e) => e.toString())
-              .toList(),
+        // Misma regla que el detalle: rangos configurados en la encuesta.
+        nivel = nivelParaEstadisticas(
+          encuesta: _encuestaRecord(doc.reference.parent.parent, encuestaData,
+              encuestaRecords),
+          respuesta: data,
+          titulo: titulo,
+          items: items,
         );
       }
       final bucket = mapNivelToBucket(nivel, nivelesEje);
@@ -489,7 +499,8 @@ Future<StatsAggregates> loadStats(
         edad: _edadFromUser(userData),
         tipo: esAssist
             ? TamizajeTipo.sustancias
-            : _resolveTipoForTitulo(titulo),
+            : _resolveTipo(titulo,
+                categoria: (encuestaData?['categoria'] ?? '').toString()),
         titulo: titulo,
         userId: userRef.path,
         nivelesPorSustancia: nivelesPorSustancia,
@@ -500,6 +511,18 @@ Future<StatsAggregates> loadStats(
   }
 
   return _aggregate(tipo, responses);
+}
+
+/// Encuesta padre como [EncuestasRecord] (con caché por ruta), para
+/// [nivelParaEstadisticas]. `null` si no se tiene el documento.
+EncuestasRecord? _encuestaRecord(
+  DocumentReference? ref,
+  Map<String, dynamic>? data,
+  Map<String, EncuestasRecord> cache,
+) {
+  if (ref == null || data == null) return null;
+  return cache.putIfAbsent(
+      ref.path, () => EncuestasRecord.getDocumentFromData(data, ref));
 }
 
 Future<Map<String, dynamic>?> _fetchUser(
