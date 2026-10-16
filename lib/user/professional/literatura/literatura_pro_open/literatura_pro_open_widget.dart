@@ -2,7 +2,7 @@ import '/backend/backend.dart';
 import '/components/header_prof_back/header_prof_back_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_web_view.dart';
+import '/components/contenido_html_view.dart';
 import 'package:flutter/material.dart';
 import 'literatura_pro_open_model.dart';
 export 'literatura_pro_open_model.dart';
@@ -115,13 +115,10 @@ class _LiteraturaProOpenWidgetState extends State<LiteraturaProOpenWidget> {
                       Padding(
                         padding: EdgeInsetsDirectional.fromSTEB(
                             0.0, 20.0, 0.0, 40.0),
-                        child: FlutterFlowWebView(
-                          content: literaturaProOpenContenidoRecord.html,
-                          width: MediaQuery.sizeOf(context).width * 1.0,
-                          height: 2500.0,
-                          verticalScroll: true,
-                          horizontalScroll: false,
-                          html: true,
+                        // Altura del artículo (antes 2500 px fijos con
+                        // scroll propio).
+                        child: ContenidoHtmlView(
+                          html: literaturaProOpenContenidoRecord.html,
                         ),
                       ),
                     ],

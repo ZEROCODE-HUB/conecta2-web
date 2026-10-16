@@ -3,7 +3,7 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_expanded_image_view.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_web_view.dart';
+import '/components/contenido_html_view.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -162,16 +162,15 @@ class _BookSingleWidgetState extends State<BookSingleWidget> {
                   ),
                 ),
               ),
-              Flexible(
-                child: Container(
-                  width: MediaQuery.sizeOf(context).width * 1.0,
-                  height: MediaQuery.sizeOf(context).height * 1.0,
-                  decoration: BoxDecoration(),
+              // Imagen y artículo con un solo scroll (antes el texto iba en
+              // una caja del alto de la pantalla con scroll propio).
+              Expanded(
+                child: SingleChildScrollView(
                   child: Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 0.0),
+                        EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
                     child: Column(
-                      mainAxisSize: MainAxisSize.max,
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         InkWell(
@@ -229,12 +228,14 @@ class _BookSingleWidgetState extends State<BookSingleWidget> {
                         ),
                         if (widget.contenido?.html != null &&
                             widget.contenido?.html != '')
-                          Flexible(
-                            child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 20.0, 0.0, 20.0),
-                              child: FlutterFlowWebView(
-                                content: '''
+                          Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                0.0, 20.0, 0.0, 20.0),
+                            // Misma plantilla de siempre; solo cambia la
+                            // altura (la del artículo).
+                            child: ContenidoHtmlView(
+                              agregarViewport: false,
+                              html: '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -268,12 +269,6 @@ class _BookSingleWidgetState extends State<BookSingleWidget> {
 </body>
 </html>
 ''',
-                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                height: MediaQuery.sizeOf(context).height * 1.0,
-                                verticalScroll: true,
-                                horizontalScroll: false,
-                                html: true,
-                              ),
                             ),
                           ),
                       ].divide(SizedBox(height: 20.0)),
