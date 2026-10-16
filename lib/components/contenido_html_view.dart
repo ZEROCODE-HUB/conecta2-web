@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
@@ -117,7 +118,12 @@ class _ContenidoHtmlViewState extends State<ContenidoHtmlView> {
         key: ValueKey(contenido.hashCode),
         width: constraints.maxWidth,
         height: _altura,
-        ignoreAllGestures: false,
+        // En la web el WebView es un iframe que se queda con la rueda y el
+        // arrastre, y la página no podía desplazarse sobre el artículo: se
+        // le pone una capa encima para que el scroll llegue a Flutter (los
+        // enlaces del artículo no se abren en la web). En el teléfono el
+        // scroll ya lo toma la página y los toques llegan al artículo.
+        ignoreAllGestures: kIsWeb,
         initialContent: contenido,
         initialSourceType: SourceType.html,
         javascriptMode: JavascriptMode.unrestricted,
