@@ -13,9 +13,18 @@ class VistapreviaContenidoWidget extends StatefulWidget {
   const VistapreviaContenidoWidget({
     super.key,
     required this.continidoID,
+    this.contenido,
+    this.onVolver,
   });
 
   final DocumentReference? continidoID;
+
+  /// Contenido sin guardar (desde Crear o Editar). Si viene, se muestra tal
+  /// cual y no se lee Firestore; si no, se lee el documento [continidoID].
+  final ContenidoRecord? contenido;
+
+  /// Flecha de volver. Si no viene, vuelve al listado.
+  final VoidCallback? onVolver;
 
   @override
   State<VistapreviaContenidoWidget> createState() =>
@@ -84,6 +93,10 @@ class _VistapreviaContenidoWidgetState
                                 hoverColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
                                 onTap: () async {
+                                  if (widget.onVolver != null) {
+                                    widget.onVolver!();
+                                    return;
+                                  }
                                   FFAppState().selectUser = '';
                                   FFAppState().update(() {});
                                 },
@@ -191,8 +204,10 @@ class _VistapreviaContenidoWidgetState
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 45.0, 0.0, 0.0),
                             child: StreamBuilder<ContenidoRecord>(
-                              stream: ContenidoRecord.getDocument(
-                                  widget.continidoID!),
+                              stream: widget.contenido != null
+                                  ? Stream.value(widget.contenido!)
+                                  : ContenidoRecord.getDocument(
+                                      widget.continidoID!),
                               builder: (context, snapshot) {
                                 // Customize what your widget looks like when it's loading.
                                 if (!snapshot.hasData) {

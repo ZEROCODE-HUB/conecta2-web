@@ -1,7 +1,8 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
-import '/backend/push_notifications/push_notifications_util.dart';
+import '/dashboard/web/contenido/contenido_notificacion.dart';
+import '/dashboard/web/contenido/contenido_validacion.dart';
 import '/components/successpopup_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -812,9 +813,12 @@ class _EditarContenidoWidgetState extends State<EditarContenidoWidget> {
                                                                       .width *
                                                                   1.0,
                                                               height: 800.0,
+                                                              // Texto en edición: el del contenido al
+                                                              // abrirlo, o el editado al volver de la
+                                                              // vista previa.
                                                               initialHtml:
-                                                                  rowContenidoRecord
-                                                                      .html,
+                                                                  FFAppState()
+                                                                      .HTML,
                                                             ),
                                                           ),
                                                         ),

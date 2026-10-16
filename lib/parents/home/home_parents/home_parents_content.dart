@@ -112,8 +112,10 @@ extension _HomeParentsContent on _HomeParentsWidgetState {
                         builder: (context) => StreamBuilder<
                             List<ContenidoRecord>>(
                           stream: queryContenidoRecord(
-                            queryBuilder: (contenidoRecord) =>
-                                contenidoRecord.where(
+                            // Solo publicados (como adolescente y profesional).
+                            queryBuilder: (contenidoRecord) => contenidoRecord
+                                .where('Publicado', isEqualTo: true)
+                                .where(
                               'Roles',
                               arrayContains: valueOrDefault(
                                   currentUserDocument?.rol, ''),

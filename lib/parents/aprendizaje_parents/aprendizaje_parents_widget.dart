@@ -136,8 +136,13 @@ class _AprendizajeParentsWidgetState extends State<AprendizajeParentsWidget> {
                                       builder: (context) =>
                                           StreamBuilder<List<ContenidoRecord>>(
                                         stream: queryContenidoRecord(
+                                          // Solo publicados (como adolescente
+                                          // y profesional).
                                           queryBuilder: (contenidoRecord) =>
-                                              contenidoRecord.where(
+                                              contenidoRecord
+                                                  .where('Publicado',
+                                                      isEqualTo: true)
+                                                  .where(
                                             'Roles',
                                             arrayContains: valueOrDefault(
                                                 currentUserDocument?.rol, ''),

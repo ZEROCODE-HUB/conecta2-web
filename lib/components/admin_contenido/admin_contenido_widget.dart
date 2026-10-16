@@ -58,33 +58,43 @@ class _AdminContenido2WidgetState extends State<AdminContenido2Widget> {
   }
 
   void _openEdit(ContenidoRecord item) {
-    FFAppState().selectUser = 'EditarContenido';
+    // Formulario limpio y texto del contenido abierto (no el del anterior).
+    _model.editarContenidoModel.reiniciar();
+    FFAppState().HTML = item.html;
     _model.documentID = item.reference;
+    FFAppState().selectUser = 'EditarContenido';
     safeSetState(() {});
   }
 
   void _openPreview(ContenidoRecord item) {
+    _model.origenPrevia = '';
     FFAppState().selectUser = 'Contenidoprevia';
     _model.documentID = item.reference;
     safeSetState(() {});
   }
 
-  Future<void> _crearContenido() async {
-    final ref = ContenidoRecord.collection.doc();
-    final data = createContenidoRecordData(
-      titulo: 'Vacío',
-      createAt: getCurrentTimestamp,
-      publicado: false,
-      userRef: currentUserReference,
-    );
-    
-    _model.contenidoID = ContenidoRecord.getDocumentFromData(data, ref);
-    _model.documentID = ref;
-    
+  /// Reserva el id del contenido nuevo; el documento se crea al guardar
+  /// como borrador o publicar (antes se creaba al instante con título
+  /// "Vacío" y quedaba vacío si se salía sin guardar).
+  void _crearContenido() {
+    _model.crearcontenidoModel.reiniciar();
+    FFAppState().HTML = '';
+    _model.documentID = ContenidoRecord.collection.doc();
     FFAppState().selectUser = 'CrearContenido';
     safeSetState(() {});
+  }
 
-    await ref.set(data);
+  /// Contenido sin guardar que muestra la vista previa abierta desde Crear o
+  /// Editar. `null` desde el listado (se lee de Firestore).
+  ContenidoRecord? get _contenidoPrevia {
+    switch (_model.origenPrevia) {
+      case 'EditarContenido':
+        return _model.editarContenidoModel.previa;
+      case 'CrearContenido':
+        return _model.crearcontenidoModel.previa;
+      default:
+        return null;
+    }
   }
 
   @override
@@ -92,6 +102,13 @@ class _AdminContenido2WidgetState extends State<AdminContenido2Widget> {
     context.watch<FFAppState>();
 
     final selected = FFAppState().selectUser;
+    // La vista previa vuelve a la vista desde la que se abrió.
+    if (selected != 'Contenidoprevia') {
+      _model.origenPrevia =
+          selected == 'CrearContenido' || selected == 'EditarContenido'
+              ? selected
+              : '';
+    }
 
     if (selected == 'CrearContenido') {
       return wrapWithModel(
@@ -105,7 +122,14 @@ class _AdminContenido2WidgetState extends State<AdminContenido2Widget> {
         model: _model.vistapreviaContenidoModel,
         updateCallback: () => safeSetState(() {}),
         updateOnChange: true,
-        child: VistapreviaContenidoWidget(continidoID: _model.documentID!),
+        child: VistapreviaContenidoWidget(
+          continidoID: _model.documentID!,
+          contenido: _contenidoPrevia,
+          onVolver: () {
+            FFAppState().selectUser = _model.origenPrevia;
+            safeSetState(() {});
+          },
+        ),
       );
     } else if (selected == 'EditarContenido') {
       return wrapWithModel(

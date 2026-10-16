@@ -141,82 +141,49 @@ extension _EditarContenidoSidebar on _EditarContenidoWidgetState {
                             ),
                           ],
                         ),
-                        StreamBuilder<List<UsersRecord>>(
-                          stream: queryUsersRecord(),
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData) {
-                              return Center(
-                                child: SizedBox(
-                                  width: 50.0,
-                                  height: 50.0,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      FlutterFlowTheme.of(context).primary,
-                                    ),
-                                  ),
+                        FlutterFlowDropDown<String>(
+                          controller: _model.dropDownValueController ??=
+                              FormFieldController<String>(null),
+                          options: [kNotificarContenido],
+                          // Solo guarda la elección: el aviso se envía al
+                          // publicar (antes se enviaba al elegir, a todos).
+                          onChanged: (val) =>
+                              safeSetState(() => _model.dropDownValue = val),
+                          width: MediaQuery.sizeOf(context).width * 1.0,
+                          height: 56.0,
+                          textStyle: FlutterFlowTheme.of(context)
+                              .bodyMedium
+                              .override(
+                                font: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w500,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
                                 ),
-                              );
-                            }
-                            List<UsersRecord> dropDownUsersRecordList =
-                                snapshot.data!;
-
-                            return FlutterFlowDropDown<String>(
-                              controller: _model.dropDownValueController ??=
-                                  FormFieldController<String>(null),
-                              options: ['All'],
-                              onChanged: (val) async {
-                                safeSetState(
-                                    () => _model.dropDownValue = val);
-                                triggerPushNotification(
-                                  notificationTitle: 'nuevo contenido',
-                                  notificationText:
-                                      'Hemos publicado un nuevo articulo llamado: ${_model.textController.text} puedes verlo en la sección de contenido',
-                                  notificationSound: 'default',
-                                  userRefs: dropDownUsersRecordList
-                                      .map((e) => e.reference)
-                                      .toList(),
-                                  initialPageName: 'book',
-                                  parameterData: {},
-                                );
-                              },
-                              width: MediaQuery.sizeOf(context).width * 1.0,
-                              height: 56.0,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    color: Color(0xFF9E8888),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                              hintText: 'Seleccionar',
-                              icon: Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: Color(0xFF265294),
-                                size: 35.0,
+                                color: Color(0xFF9E8888),
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w500,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontStyle,
                               ),
-                              fillColor: Color(0xFFF5F5F5),
-                              elevation: 2.0,
-                              borderColor:
-                                  FlutterFlowTheme.of(context).alternate,
-                              borderWidth: 2.0,
-                              borderRadius: 8.0,
-                              margin: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 4.0, 16.0, 4.0),
-                              hidesUnderline: true,
-                              isOverButton: false,
-                              isSearchable: false,
-                              isMultiSelect: false,
-                            );
-                          },
+                          hintText: 'Seleccionar',
+                          icon: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: Color(0xFF265294),
+                            size: 35.0,
+                          ),
+                          fillColor: Color(0xFFF5F5F5),
+                          elevation: 2.0,
+                          borderColor: FlutterFlowTheme.of(context).alternate,
+                          borderWidth: 2.0,
+                          borderRadius: 8.0,
+                          margin: EdgeInsetsDirectional.fromSTEB(
+                              16.0, 4.0, 16.0, 4.0),
+                          hidesUnderline: true,
+                          isOverButton: false,
+                          isSearchable: false,
+                          isMultiSelect: false,
                         ),
                       ],
                     ),
@@ -225,14 +192,17 @@ extension _EditarContenidoSidebar on _EditarContenidoWidgetState {
                           0.0, 40.0, 0.0, 0.0),
                       child: FFButtonWidget(
                         onPressed: () async {
-                          await rowContenidoRecord.reference
-                              .update(createContenidoRecordData(
-                            titulo: _model.dropDownValue,
-                            publicado: false,
-                            html: FFAppState().HTML,
-                          ));
+                          // No guarda nada: muestra los cambios en memoria y
+                          // el contenido conserva su estado (antes pasaba a
+                          // Borrador).
+                          _model.previa = ContenidoRecord.getDocumentFromData(
+                            {
+                              ...rowContenidoRecord.snapshotData,
+                              ..._datosEditados(rowContenidoRecord),
+                            },
+                            rowContenidoRecord.reference,
+                          );
                           FFAppState().selectUser = 'Contenidoprevia';
-                          FFAppState().createEncuesta = true;
                           safeSetState(() {});
                         },
                         text: 'Vista Previa',
@@ -244,23 +214,15 @@ extension _EditarContenidoSidebar on _EditarContenidoWidgetState {
                           0.0, 20.0, 0.0, 0.0),
                       child: FFButtonWidget(
                         onPressed: () async {
+                          final faltan = faltantesParaBorrador(
+                              titulo: _model.textController?.text);
+                          if (faltan.isNotEmpty) {
+                            _avisar(context, mensajeFaltantes(faltan));
+                            return;
+                          }
                           await widget.contenidoID!.update({
-                            ...createContenidoRecordData(
-                              titulo: _model.textController.text,
-                              publicado: false,
-                              html: rowContenidoRecord.html,
-                              imageProfile:
-                                  _model.uploadedFileUrl_uploadDataMes2 != ''
-                                      ? _model.uploadedFileUrl_uploadDataMes2
-                                      : rowContenidoRecord.imageProfile,
-                              imagePortada:
-                                  _model.uploadedFileUrl_uploadDataXz5 != ''
-                                      ? _model.uploadedFileUrl_uploadDataXz5
-                                      : rowContenidoRecord.imagePortada,
-                            ),
-                            ...mapToFirestore(
-                              {'Roles': _model.dropDownRolesValue},
-                            ),
+                            ..._datosEditados(rowContenidoRecord),
+                            'Publicado': false,
                           });
                           FFAppState().selectUser = '';
                           safeSetState(() {});
@@ -275,24 +237,28 @@ extension _EditarContenidoSidebar on _EditarContenidoWidgetState {
                             0.0, 20.0, 0.0, 0.0),
                         child: FFButtonWidget(
                           onPressed: () async {
+                            final datos = _datosEditados(rowContenidoRecord);
+                            final roles =
+                                List<String>.from(datos['Roles'] as List);
+                            final faltan = faltantesParaPublicar(
+                              titulo: datos['titulo'] as String?,
+                              html: datos['html'] as String?,
+                              roles: roles,
+                            );
+                            if (faltan.isNotEmpty) {
+                              _avisar(context, mensajeFaltantes(faltan));
+                              return;
+                            }
                             await widget.contenidoID!.update({
-                              ...createContenidoRecordData(
-                                titulo: _model.textController.text,
-                                publicado: true,
-                                html: FFAppState().HTML,
-                                imageProfile:
-                                    _model.uploadedFileUrl_uploadDataMes2 != ''
-                                        ? _model.uploadedFileUrl_uploadDataMes2
-                                        : rowContenidoRecord.imageProfile,
-                                imagePortada:
-                                    _model.uploadedFileUrl_uploadDataXz5 != ''
-                                        ? _model.uploadedFileUrl_uploadDataXz5
-                                        : rowContenidoRecord.imagePortada,
-                              ),
-                              ...mapToFirestore(
-                                {'Roles': _model.dropDownRolesValue},
-                              ),
+                              ...datos,
+                              'Publicado': true,
                             });
+                            if (debeNotificarContenido(_model.dropDownValue)) {
+                              await notificarContenidoPublicado(
+                                titulo: datos['titulo'] as String,
+                                roles: roles,
+                              );
+                            }
                             FFAppState().selectUser = '';
                             safeSetState(() {});
                             await showDialog(
@@ -324,6 +290,27 @@ extension _EditarContenidoSidebar on _EditarContenidoWidgetState {
           ],
         ),
       ),
+    );
+  }
+
+  /// Título, texto, imágenes y roles tal como están en el formulario.
+  Map<String, dynamic> _datosEditados(ContenidoRecord original) => {
+        ...createContenidoRecordData(
+          titulo: (_model.textController?.text ?? original.titulo).trim(),
+          html: FFAppState().HTML,
+          imageProfile: _model.uploadedFileUrl_uploadDataMes2 != ''
+              ? _model.uploadedFileUrl_uploadDataMes2
+              : original.imageProfile,
+          imagePortada: _model.uploadedFileUrl_uploadDataXz5 != ''
+              ? _model.uploadedFileUrl_uploadDataXz5
+              : original.imagePortada,
+        ),
+        'Roles': _model.dropDownRolesValue ?? original.roles,
+      };
+
+  void _avisar(BuildContext context, String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje)),
     );
   }
 

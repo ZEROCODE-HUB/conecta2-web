@@ -11,6 +11,10 @@ class AdminContenido2Model extends FlutterFlowModel<AdminContenido2Widget> {
   ///  Local state fields for this component.
   DocumentReference? documentID;
 
+  /// Vista desde la que se abrió la vista previa ('EditarContenido',
+  /// 'CrearContenido' o '' = listado); su flecha vuelve ahí.
+  String origenPrevia = '';
+
   ///  State fields for stateful widgets in this component.
   // Model for Crearcontenido component.
   late CrearcontenidoModel crearcontenidoModel;

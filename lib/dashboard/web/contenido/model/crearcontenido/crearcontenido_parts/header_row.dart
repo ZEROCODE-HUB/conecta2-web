@@ -12,7 +12,8 @@ extension CCHeader on _CrearcontenidoWidgetState {
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    await widget.contenidoID!.delete();
+                                    // Sin guardar no hay documento; si se
+                                    // guardó como borrador, se conserva.
                                     FFAppState().selectUser = '';
                                     safeSetState(() {});
                                   },

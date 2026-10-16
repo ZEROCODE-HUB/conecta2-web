@@ -837,6 +837,11 @@ extension CCLeft on _CrearcontenidoWidgetState {
                                                                       .width *
                                                                   1.0,
                                                           height: 800.0,
+                                                          // Vacío al crear; el texto
+                                                          // escrito al volver de la
+                                                          // vista previa.
+                                                          initialHtml:
+                                                              FFAppState().HTML,
                                                         ),
                                                       ),
                                                     ),

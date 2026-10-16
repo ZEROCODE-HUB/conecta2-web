@@ -158,21 +158,10 @@ extension CCRight on _CrearcontenidoWidgetState {
                                                           isSearchable: false,
                                                           isMultiSelect: true,
                                                           onMultiSelectChanged:
-                                                              (val) async {
-                                                            safeSetState(() =>
-                                                                _model.dropDownValue1 =
-                                                                    val);
-                                                            await widget
-                                                                .contenidoID!
-                                                                .update({
-                                                              ...mapToFirestore(
-                                                                {
-                                                                  'Roles': _model
-                                                                      .dropDownValue1,
-                                                                },
-                                                              ),
-                                                            });
-                                                          },
+                                                              (val) =>
+                                                                  safeSetState(() =>
+                                                                      _model.dropDownValue1 =
+                                                                          val),
                                                         ),
                                                       ],
                                                     ),
@@ -232,7 +221,7 @@ extension CCRight on _CrearcontenidoWidgetState {
                                                               FormFieldController<
                                                                   String>(null),
                                                           options: [
-                                                            'Selecciona'
+                                                            kNotificarContenido
                                                           ],
                                                           onChanged: (val) =>
                                                               safeSetState(() =>
@@ -313,25 +302,19 @@ extension CCRight on _CrearcontenidoWidgetState {
                                                                   0.0),
                                                       child: FFButtonWidget(
                                                         onPressed: () async {
-                                                          await widget
-                                                              .contenidoID!
-                                                              .update(
-                                                                  createContenidoRecordData(
-                                                            titulo: _model
-                                                                .tituloTextController
-                                                                .text,
-                                                            publicado: false,
-                                                            imageProfile: _model
-                                                                .imgperfil,
-                                                            html: FFAppState()
-                                                                .HTML,
-                                                          ));
+                                                          // No guarda nada: el
+                                                          // documento se crea al
+                                                          // guardar o publicar.
+                                                          _model.previa =
+                                                              ContenidoRecord
+                                                                  .getDocumentFromData(
+                                                            _datosNuevos(
+                                                                publicado: false),
+                                                            widget.contenidoID!,
+                                                          );
                                                           FFAppState()
                                                                   .selectUser =
                                                               'Contenidoprevia';
-                                                          FFAppState()
-                                                                  .createEncuesta =
-                                                              true;
                                                           safeSetState(() {});
                                                         },
                                                         text: 'Vista Previa',
@@ -415,21 +398,26 @@ extension CCRight on _CrearcontenidoWidgetState {
                                                                   0.0),
                                                       child: FFButtonWidget(
                                                         onPressed: () async {
+                                                          final faltan =
+                                                              faltantesParaBorrador(
+                                                                  titulo: _model
+                                                                      .tituloTextController
+                                                                      ?.text);
+                                                          if (faltan.isNotEmpty) {
+                                                            _avisarCrear(context,
+                                                                mensajeFaltantes(
+                                                                    faltan));
+                                                            return;
+                                                          }
                                                           await widget
                                                               .contenidoID!
-                                                              .update(
-                                                                  createContenidoRecordData(
-                                                            titulo: _model
-                                                                .tituloTextController
-                                                                .text,
-                                                            publicado: false,
-                                                            imageProfile: _model
-                                                                .imgperfil,
-                                                            html: FFAppState()
-                                                                .HTML,
-                                                            imagePortada: _model
-                                                                .imgportada,
-                                                          ));
+                                                              .set(
+                                                                  _datosNuevos(
+                                                                      publicado:
+                                                                          false),
+                                                                  SetOptions(
+                                                                      merge:
+                                                                          true));
                                                           FFAppState()
                                                               .selectUser = '';
                                                           safeSetState(() {});
@@ -518,27 +506,51 @@ extension CCRight on _CrearcontenidoWidgetState {
                                                                     0.0),
                                                         child: FFButtonWidget(
                                                           onPressed: () async {
+                                                            final datos =
+                                                                _datosNuevos(
+                                                                    publicado:
+                                                                        true);
+                                                            final roles =
+                                                                List<String>.from(
+                                                                    datos['Roles']
+                                                                        as List);
+                                                            final faltan =
+                                                                faltantesParaPublicar(
+                                                              titulo:
+                                                                  datos['titulo']
+                                                                      as String?,
+                                                              html: datos['html']
+                                                                  as String?,
+                                                              roles: roles,
+                                                            );
+                                                            if (faltan
+                                                                .isNotEmpty) {
+                                                              _avisarCrear(
+                                                                  context,
+                                                                  mensajeFaltantes(
+                                                                      faltan));
+                                                              return;
+                                                            }
                                                             await widget
                                                                 .contenidoID!
-                                                                .update(
-                                                                    createContenidoRecordData(
-                                                              titulo: _model
-                                                                  .tituloTextController
-                                                                  .text,
-                                                              publicado: true,
-                                                              imageProfile:
-                                                                  _model
-                                                                      .imgperfil,
-                                                              html: FFAppState()
-                                                                  .HTML,
-                                                              imagePortada: _model
-                                                                  .imgportada,
-                                                            ));
-                                                            // Limpiar los campos del formulario
-                                                            _model.tituloTextController?.clear();
-                                                            _model.imgperfil = null;
-                                                            _model.imgportada = null;
-                                                            _model.dropDownValueController1?.reset();
+                                                                .set(
+                                                                    datos,
+                                                                    SetOptions(
+                                                                        merge:
+                                                                            true));
+                                                            if (debeNotificarContenido(
+                                                                _model
+                                                                    .dropDownValue2)) {
+                                                              await notificarContenidoPublicado(
+                                                                titulo: datos[
+                                                                        'titulo']
+                                                                    as String,
+                                                                roles: roles,
+                                                              );
+                                                            }
+                                                            // El siguiente "Crear
+                                                            // Contenido" reinicia el
+                                                            // formulario.
                                                             FFAppState().HTML = '';
                                                             
                                                             FFAppState()
@@ -648,6 +660,26 @@ extension CCRight on _CrearcontenidoWidgetState {
                                         ),
                                       ),
                                     )
+    );
+  }
+
+  /// Datos del contenido nuevo tal como están en el formulario.
+  Map<String, dynamic> _datosNuevos({required bool publicado}) => {
+        ...createContenidoRecordData(
+          titulo: (_model.tituloTextController?.text ?? '').trim(),
+          publicado: publicado,
+          createAt: getCurrentTimestamp,
+          userRef: currentUserReference,
+          imageProfile: _model.imgperfil,
+          imagePortada: _model.imgportada,
+          html: FFAppState().HTML,
+        ),
+        'Roles': _model.dropDownValue1 ?? <String>[],
+      };
+
+  void _avisarCrear(BuildContext context, String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje)),
     );
   }
 }
