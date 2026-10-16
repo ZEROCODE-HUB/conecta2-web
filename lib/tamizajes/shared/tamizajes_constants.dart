@@ -13,6 +13,9 @@ const Color kSuccess = Color(0xFF34A853);
 /// Color de peligro (rojo).
 const Color kDanger = Color(0xFFE53935);
 
+/// Nivel "Sin alerta": el puntaje no cayó en ningún rango configurado (gris).
+const Color kGrisSinAlerta = Color(0xFF9AA0A6);
+
 /// Color para tamizaje manual (azul).
 const Color kManualBlue = Color(0xFF1976D2);
 

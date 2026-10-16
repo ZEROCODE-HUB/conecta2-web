@@ -94,7 +94,8 @@ class _ChartDistribucionNivelesState extends State<ChartDistribucionNiveles> {
       final isTouched = i == _touchedIndex;
       sections.add(PieChartSectionData(
         value: value,
-        color: Color(StatsColors.forNivel(nivel)),
+        color: Color(StatsColors.forNivel(nivel,
+            sinAlertaGris: widget.stats.tipo.sinAlertaFueraDeRango)),
         title: '${pct.toStringAsFixed(0)}%',
         titleStyle: TextStyle(
           color: Colors.white,
@@ -131,7 +132,8 @@ class _Legend extends StatelessWidget {
                 width: 12,
                 height: 12,
                 decoration: BoxDecoration(
-                  color: Color(StatsColors.forNivel(n)),
+                  color: Color(StatsColors.forNivel(n,
+                      sinAlertaGris: stats.tipo.sinAlertaFueraDeRango)),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),

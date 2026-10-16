@@ -17,6 +17,11 @@
 import '/backend/backend.dart';
 import '/custom_code/widgets/tamizaje_data_table/data/substance_data.dart'
     show kTodasLasSustancias;
+import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart'
+    show kSinAlerta;
+
+export '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart'
+    show kSinAlerta;
 
 const String kCategoriaAssist = 'Consumo de SPA';
 
@@ -236,11 +241,8 @@ String _clasificar(List<_Rango> rangos, num puntaje) {
       return r.nivel;
     }
   }
-  // Hueco entre rangos: el nivel más alto cuyo mínimo se alcanza.
-  for (final r in rangos.reversed) {
-    if (puntaje >= r.min) return r.nivel;
-  }
-  return kNivelesAssist.first;
+  // Fuera de todos los rangos (hueco, por debajo o por encima): no es alerta.
+  return kSinAlerta;
 }
 
 /// Rangos estándar ASSIST OMS v3.1 (Alcohol 0–10 / 11–26 / 27+; resto
@@ -393,8 +395,13 @@ class ResultadoAssist {
   /// Sustancias marcadas en el Condicionante (nombres canónicos).
   final List<String> sustanciasMarcadas;
 
-  String get nivelGlobal =>
-      peorNivel(porSustancia.values.map((s) => s.nivel));
+  /// Peor nivel ASSIST de las sustancias evaluadas; [kSinAlerta] si ninguna
+  /// cayó en un rango configurado; '' si no hay sustancias evaluadas.
+  String get nivelGlobal {
+    final peor = peorNivel(porSustancia.values.map((s) => s.nivel));
+    if (peor.isEmpty && porSustancia.isNotEmpty) return kSinAlerta;
+    return peor;
+  }
 
   bool get tieneEvaluaciones => porSustancia.isNotEmpty;
 }

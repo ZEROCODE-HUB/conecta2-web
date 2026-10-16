@@ -3,7 +3,12 @@
 // ignore_for_file: unnecessary_null_comparison, unnecessary_non_null_assertion, invalid_null_aware_operator, dead_null_aware_expression
 
 import '/tamizajes/shared/assist_utils.dart'
-    show esEncuestaAssist, evaluarAssist, itemSustanciaNoAplica, ResultadoAssist;
+    show
+        esEncuestaAssist,
+        evaluarAssist,
+        itemSustanciaNoAplica,
+        kSinAlerta,
+        ResultadoAssist;
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -977,7 +982,7 @@ pw.Widget _buildCabeceraTamizaje(int numero, _TamizajeImprimir t) {
       for (final s in a.porSustancia.values) {
         resumen.add(pw.Text(
           '• ${s.sustancia}: ${s.puntaje} puntos'
-          '${s.nivel.isNotEmpty ? ' — riesgo ${s.nivel}' : ''}',
+          '${s.nivel == kSinAlerta ? ' — sin alerta (fuera de los rangos)' : s.nivel.isNotEmpty ? ' — riesgo ${s.nivel}' : ''}',
           style: pw.TextStyle(fontSize: 9, color: _colorNivel(s.nivel)),
         ));
       }

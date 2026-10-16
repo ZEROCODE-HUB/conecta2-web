@@ -104,6 +104,7 @@ Future<void> exportarTamizajeAExcel({
 
     final Map<String, xlsio.Style> riesgoStyles = {
       'Sin alarma': estiloSinAlarma,
+      'Sin alerta': estiloSinAlarma,
       'Bajo': estiloBajo,
       'Moderado': estiloModerado,
       'Alto': estiloAlto,

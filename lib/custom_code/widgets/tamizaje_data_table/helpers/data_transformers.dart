@@ -2,7 +2,11 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '/backend/schema/structs/index.dart';
+import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart'
+    show usaNivelesGlobales;
 import '/tamizajes/shared/assist_utils.dart';
+import '/tamizajes/shared/nivel_respuesta.dart' show nivelPorPuntaje;
 
 import '../data/substance_data.dart';
 
@@ -238,9 +242,28 @@ Map<String, dynamic> procesarRespuestasTamizaje(
   }
 
   Map<String, String> nivelRiesgoPorVariable = {};
-  for (var v in variables) {
-    final puntaje = puntajesPorVariable[v] ?? 0.0;
-    nivelRiesgoPorVariable[v] = evaluarNivelRiesgo(v, puntaje, alertas);
+  if (usaNivelesGlobales(categoria)) {
+    // CDI, autoestima, ansiedad y Beck: un solo nivel por respuesta, con la
+    // regla del detalle (puntaje total en los rangos configurados; fuera de
+    // todos → 'Sin alerta').
+    final puntajeTotal = respuestaData['puntajeTotal'] as num? ??
+        puntajesPorVariable.values.fold<double>(0, (a, b) => a + b);
+    final nivel = nivelPorPuntaje(
+      categoria: categoria,
+      puntaje: puntajeTotal,
+      alertas: [
+        for (final a in alertas)
+          if (AlertaStruct.maybeFromMap(a) case final s?) s,
+      ],
+    );
+    for (var v in variables) {
+      nivelRiesgoPorVariable[v] = nivel;
+    }
+  } else {
+    for (var v in variables) {
+      final puntaje = puntajesPorVariable[v] ?? 0.0;
+      nivelRiesgoPorVariable[v] = evaluarNivelRiesgo(v, puntaje, alertas);
+    }
   }
 
   return {

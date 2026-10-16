@@ -1,6 +1,10 @@
 // Tamizaje processing + card builders styled to match the reference PDF.
 
+import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart'
+    show usaNivelesGlobales;
 import '/tamizajes/shared/assist_utils.dart';
+import '/tamizajes/shared/nivel_respuesta.dart'
+    show gravedadNivel, nivelConRiesgo, nivelPorPuntaje;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -193,12 +197,62 @@ Future<ResultadoTamizaje?> _resultadoDeDocumento(
     _procesarDocRespuesta(data, items);
     if (items.isEmpty) return null;
     final tipoDoc = titulo.isNotEmpty ? titulo : items.first.tipo;
-    return _clasificarUnTamizaje(tipoDoc, items)
+    final base = _clasificarUnTamizaje(tipoDoc, items)
         .conDocumento(fecha: fecha, notas: notas);
+    final categoria = (encuesta?['categoria'] ?? '').toString();
+    if (encuesta != null && usaNivelesGlobales(categoria)) {
+      return _conNivelPorRangos(base, data, encuesta, categoria);
+    }
+    return base;
   } catch (e) {
     print('  Error procesando doc de tamizaje: $e');
     return null;
   }
+}
+
+/// CDI, autoestima, ansiedad y Beck: nivel con la regla del detalle (puntaje
+/// total en los rangos configurados; fuera de todos → 'Sin alerta'), en vez
+/// de los cortes fijos de `_clasificarCDI`/`_clasificarBDI`/etc. Se conservan
+/// los subpuntajes del clasificador.
+ResultadoTamizaje _conNivelPorRangos(
+  ResultadoTamizaje base,
+  Map<String, dynamic> data,
+  Map<String, dynamic> encuesta,
+  String categoria,
+) {
+  final puntaje = (data['puntajeTotal'] as num?)?.round() ?? base.puntaje;
+  final nivel = nivelPorPuntaje(
+    categoria: categoria,
+    puntaje: puntaje,
+    alertas: [
+      for (final a in (encuesta['alertas'] as List?) ?? const [])
+        if (AlertaStruct.maybeFromMap(a) case final s?) s,
+    ],
+  );
+  final String nivelRiesgo;
+  if (nivel.isEmpty) {
+    nivelRiesgo = 'N/A';
+  } else if (nivel == kSinAlerta) {
+    nivelRiesgo = 'SIN ALERTA';
+  } else {
+    nivelRiesgo = const ['BAJO', 'MODERADO', 'ALTO'][gravedadNivel(nivel)];
+  }
+  return ResultadoTamizaje(
+    titulo: base.titulo,
+    nivelRiesgo: nivelRiesgo,
+    puntaje: puntaje,
+    subPuntajes: base.subPuntajes,
+    estado: base.estado,
+    escalaLabel: base.escalaLabel.isNotEmpty ? base.escalaLabel : 'NIVEL:',
+    escalaSubtitulo: nivel == kSinAlerta
+        ? 'Sin alerta: el puntaje no está en ningún rango configurado'
+        : nivel,
+    ideacionSuicida: base.ideacionSuicida,
+    impactoImportante: nivelConRiesgo(nivel),
+    tipoKey: base.tipoKey,
+    fecha: base.fecha,
+    notas: base.notas,
+  );
 }
 
 /// Notas del profesional de un doc de `Respuestas` (Quill delta, HTML o texto).
@@ -260,7 +314,9 @@ ResultadoTamizaje _resultadoAssistDe(
     escalaLabel: 'RIESGO POR SUSTANCIA',
     escalaSubtitulo: r.porSustancia.isEmpty
         ? 'No se marcó consumo de sustancias'
-        : (peor != null
+        : global == kSinAlerta
+            ? 'Ninguna sustancia quedó dentro de un rango configurado'
+            : (peor != null
             ? 'Mayor riesgo: ${peor.sustancia} (${peor.nivel})'
             : ''),
     ideacionSuicida: false,

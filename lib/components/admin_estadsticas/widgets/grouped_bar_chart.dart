@@ -14,6 +14,7 @@ class GroupedBarChart extends StatelessWidget {
     required this.niveles,
     required this.data,
     required this.tooltipCategoryLabel,
+    this.sinAlertaGris = false,
   });
 
   /// X-axis categories (e.g. ['Masculino', 'Femenino', 'Otro']).
@@ -27,6 +28,9 @@ class GroupedBarChart extends StatelessWidget {
 
   /// Formatter for the bold tooltip first line, e.g. '10-12 años'.
   final String Function(String categoria) tooltipCategoryLabel;
+
+  /// "Sin alerta" = fuera de rango: se pinta gris (ver [StatsColors.forNivel]).
+  final bool sinAlertaGris;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +150,8 @@ class GroupedBarChart extends StatelessWidget {
       final rods = niveles
           .map((n) => BarChartRodData(
                 toY: (counts[n] ?? 0).toDouble(),
-                color: Color(StatsColors.forNivel(n)),
+                color: Color(
+                    StatsColors.forNivel(n, sinAlertaGris: sinAlertaGris)),
                 width: 14,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(4),

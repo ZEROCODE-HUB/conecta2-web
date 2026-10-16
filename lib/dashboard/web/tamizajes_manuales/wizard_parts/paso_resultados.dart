@@ -458,32 +458,9 @@ class _NivelAlertaCard extends StatelessWidget {
   final String categoria;
   final String nivel;
 
-  Color _colorForNivel() {
-    final n = nivel.toLowerCase();
-    if (n.contains('baja') ||
-        n.contains('bajo') ||
-        n.contains('sin ') ||
-        n.contains('mínima') ||
-        n.contains('minima')) {
-      return const Color(0xFF34A853);
-    }
-    if (n.contains('media') ||
-        n.contains('moderad') ||
-        n.contains('leve')) {
-      return const Color(0xFFF6BD33);
-    }
-    if (n.contains('elevada') ||
-        n.contains('alto') ||
-        n.contains('grave') ||
-        n.contains('severo')) {
-      return const Color(0xFFD92D20);
-    }
-    return _kNavy;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final color = _colorForNivel();
+    final color = colorNivelTamizaje(categoria, nivel);
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(

@@ -7,6 +7,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/tamizajes/shared/assist_utils.dart';
 import '/tamizajes/shared/nivel_respuesta.dart';
 import '/tamizajes/shared/widgets/agendar_recordatorio_dialog.dart';
+import '/tamizajes/shared/widgets/color_nivel.dart';
 import '/tamizajes/shared/widgets/riesgo_sustancias_card.dart';
 import '/user/professional/tamizajes_manuales/wizard/state/respuesta_state.dart'
     show PreguntaTipo, RespuestaState, VisibilidadAssist;

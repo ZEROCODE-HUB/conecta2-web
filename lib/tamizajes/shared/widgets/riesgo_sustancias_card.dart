@@ -4,9 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../assist_utils.dart';
 import '../tamizajes_constants.dart';
 
-/// Color de un nivel ASSIST (Bajo / Moderado / Alto).
+/// Color de un nivel ASSIST (Bajo / Moderado / Alto; gris si "Sin alerta").
 Color colorNivelAssist(String nivel) {
   switch (nivel) {
+    case kSinAlerta:
+      return kGrisSinAlerta;
     case 'Alto':
       return const Color(0xFFD92D20);
     case 'Moderado':

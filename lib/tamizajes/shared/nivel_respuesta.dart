@@ -15,8 +15,9 @@ import '/tamizajes/shared/assist_utils.dart';
 /// Nivel de la respuesta según su tamizaje. '' si no se puede clasificar.
 ///
 /// - ASSIST (Consumo de SPA): el peor nivel por sustancia.
-/// - Autoestima, CDI, Beck y ansiedad: umbrales configurados en la encuesta
-///   o, si faltan, los cortes clínicos por defecto (`classifyNivel`).
+/// - Autoestima, CDI, Beck y ansiedad: rangos `[min, max]` configurados en la
+///   encuesta ([nivelPorRangos]; fuera de todos → [kSinAlerta]) o, si no hay
+///   rangos, los cortes clínicos por defecto (`classifyNivel`).
 /// - Resto (CRQ/SRQ/RQC…): rangos de `Encuesta.alertas`.
 String calcularNivelRespuesta({
   required EncuestasRecord encuesta,
@@ -33,29 +34,11 @@ String calcularNivelRespuesta({
   final categoria = encuesta.categoria;
   if (categoria.isEmpty) return '';
 
-  if (usaNivelesGlobales(categoria) || categoria == 'Depresión Beck') {
-    final String titulo;
-    switch (categoria) {
-      case 'Escala autoestima':
-        titulo = 'autoestima';
-        break;
-      case 'CDI':
-        titulo = 'cdi';
-        break;
-      case 'Depresión Beck':
-        titulo = 'beck';
-        break;
-      case 'Escala ansiedad':
-        titulo = 'ansiedad';
-        break;
-      default:
-        titulo = encuesta.titulo;
-    }
-    return classifyNivel(
-      titulo,
-      const [],
-      puntajeTotal: puntajeTotal,
-      umbrales: _umbralesDe(encuesta),
+  if (usaNivelesGlobales(categoria)) {
+    return nivelPorPuntaje(
+      categoria: categoria,
+      puntaje: puntajeTotal,
+      alertas: encuesta.alertas,
     );
   }
 
@@ -64,6 +47,41 @@ String calcularNivelRespuesta({
     puntaje: puntajeTotal,
     alertas: encuesta.alertas.toList(),
   );
+}
+
+/// Nivel de CDI, autoestima, ansiedad y Beck a partir del puntaje total.
+///
+/// Rangos `[min, max]` configurados ([nivelPorRangos]; fuera de todos →
+/// [kSinAlerta]). Si la encuesta no tiene rangos de su categoría, cortes
+/// clínicos por defecto (`classifyNivel`). La usan [calcularNivelRespuesta] y
+/// la Tabulación General.
+String nivelPorPuntaje({
+  required String categoria,
+  required num puntaje,
+  required Iterable<AlertaStruct> alertas,
+}) {
+  final porRangos =
+      nivelPorRangos(categoria: categoria, puntaje: puntaje, alertas: alertas);
+  if (porRangos != null) return porRangos;
+
+  final String clave;
+  switch (categoria) {
+    case 'Escala autoestima':
+      clave = 'autoestima';
+      break;
+    case 'CDI':
+      clave = 'cdi';
+      break;
+    case 'Depresión Beck':
+      clave = 'beck';
+      break;
+    case 'Escala ansiedad':
+      clave = 'ansiedad';
+      break;
+    default:
+      return '';
+  }
+  return classifyNivel(clave, const [], puntajeTotal: puntaje);
 }
 
 /// Nivel de una respuesta para las gráficas de Estadísticas.
@@ -104,23 +122,6 @@ String nivelParaEstadisticas({
   );
 }
 
-/// Umbrales configurados al crear el tamizaje, para `classifyNivel`.
-/// `null` si el documento no los tiene (se usan los cortes clínicos).
-UmbralesConfig? _umbralesDe(EncuestasRecord e) {
-  final cat = e.categoria;
-  if (cat == 'Escala autoestima' || cat == 'CDI' || cat == 'Escala ansiedad') {
-    return umbralesTripleteDesdeEncuesta(e);
-  }
-  if (cat == 'Depresión Beck' && e.alertas.length >= 4) {
-    return UmbralesConfig(
-      beckMinimaMax: e.alertas[0].max,
-      beckLeveMax: e.alertas[1].max,
-      beckModeradaMax: e.alertas[2].max,
-    );
-  }
-  return null;
-}
-
 String _sinTildes(String s) {
   const con = 'áéíóúüñ';
   const sin = 'aeiouun';
@@ -134,7 +135,8 @@ String _sinTildes(String s) {
 
 /// `true` si el nivel implica riesgo y amerita avisar al acudiente.
 ///
-/// Sin riesgo: vacío, "Sin alerta", "Sin sintomatología", "Mínima", "Bajo"
+/// Sin riesgo: vacío, "Sin alerta" (incluye el puntaje fuera de todos los
+/// rangos, [kSinAlerta]), "Sin sintomatología", "Mínima", "Bajo"
 /// (ASSIST) y autoestima "Media"/"Elevada". Con riesgo: Leve, Moderado/a,
 /// Severo, Grave, Alto, autoestima "Baja", subescalas.
 /// Misma regla que `nivelConRiesgo` de la Cloud Function.
@@ -149,4 +151,23 @@ bool nivelConRiesgo(String nivel) {
   if (n == 'minima' || n == 'bajo') return false;
   if (n.contains('media') || n.contains('elevada')) return false;
   return true;
+}
+
+/// `true` si [nivel] es [kSinAlerta] porque el puntaje no cayó en ningún rango
+/// configurado (CDI, autoestima, ansiedad, Beck y Consumo de SPA). En
+/// SRQ/RQC/CRQ "Sin alerta" es el nivel sano configurado y devuelve `false`.
+bool esSinAlertaPorRango(String? categoria, String nivel) =>
+    nivel == kSinAlerta &&
+    (usaNivelesGlobales(categoria) || categoria == kCategoriaAssist);
+
+/// Gravedad de un nivel para los PDF: 0 = sin riesgo (incluye
+/// [kSinAlerta]), 1 = intermedio (Leve, Moderado/a), 2 = el más severo
+/// (Severo, Grave, autoestima Baja).
+int gravedadNivel(String nivel) {
+  if (!nivelConRiesgo(nivel)) return 0;
+  final n = _sinTildes(nivel.trim().toLowerCase());
+  if (n.contains('sever') || n.contains('grave') || n.contains('baja')) {
+    return 2;
+  }
+  return 1;
 }

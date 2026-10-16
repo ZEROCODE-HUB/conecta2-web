@@ -4,6 +4,7 @@ import '/components/rich_text_notas/rich_text_notas_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/tamizajes/shared/assist_utils.dart';
 import '/tamizajes/shared/tamizajes_constants.dart';
+import '/tamizajes/shared/widgets/color_nivel.dart';
 import '/tamizajes/shared/widgets/riesgo_sustancias_card.dart';
 import '/tamizajes/shared/widgets/agendar_recordatorio_dialog.dart';
 import 'package:flutter/material.dart';
@@ -380,22 +381,9 @@ class _NivelAlertaCard extends StatelessWidget {
   final String categoria;
   final FlutterFlowTheme theme;
 
-  Color _colorNivel() {
-    final n = nivel.toLowerCase();
-    if (n.contains('baja') || n.contains('bajo') || n.contains('sin ') ||
-        n.contains('mínima') ||
-        n.contains('minima')) return kSuccess;
-    if (n.contains('media') || n.contains('moderad') || n.contains('leve')) {
-      return const Color(0xFFF6BD33);
-    }
-    if (n.contains('elevada') || n.contains('alto') || n.contains('grave') ||
-        n.contains('severo')) return const Color(0xFFD92D20);
-    return kNavy;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final color = _colorNivel();
+    final color = colorNivelTamizaje(categoria, nivel);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(

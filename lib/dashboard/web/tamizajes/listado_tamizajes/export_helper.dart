@@ -11,7 +11,10 @@ import '/components/rich_text_notas/rich_text_notas_widget.dart'
     show quillDeltaToPlainText;
 
 import '/custom_code/actions/informe_pdf/builders/pdf_user_info.dart';
+import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart'
+    show usaNivelesGlobales;
 import '/tamizajes/shared/assist_utils.dart';
+import '/tamizajes/shared/nivel_respuesta.dart';
 
 // ─── Paleta de marca ─────────────────────────────────────────────────────────
 const PdfColor _yellowBrand = PdfColor.fromInt(0xFFF6C04F);
@@ -96,6 +99,21 @@ Future<void> exportarResultadosPDF({
           for (final p in preguntas)
             if (!noAplican.contains(p.numero)) p,
         ];
+      } else if (usaNivelesGlobales(encuesta.categoria) &&
+          !invalidado &&
+          !hayIdeacionSuicida) {
+        // CDI, autoestima, ansiedad y Beck: severidad = nivel según los
+        // rangos configurados (fuera de todos → Sin alerta → N/A).
+        final nivel = calcularNivelRespuesta(
+          encuesta: encuesta,
+          puntajeTotal: puntaje,
+          test: respuesta.test,
+        );
+        severity = switch (gravedadNivel(nivel)) {
+          2 => _Severity.severo,
+          1 => _Severity.alto,
+          _ => _Severity.normal,
+        };
       }
       if (encuesta.categoria == 'CDI') {
         int d = 0, a = 0;
@@ -582,6 +600,7 @@ pw.Widget _buildRiesgoSustanciasSection(ResultadoAssist r) {
         'Alto' => PdfColors.red700,
         'Moderado' => PdfColors.orange700,
         'Bajo' => PdfColors.green700,
+        kSinAlerta => PdfColors.grey600,
         _ => _darkGrey,
       };
   final filas = r.porSustancia.values.toList();

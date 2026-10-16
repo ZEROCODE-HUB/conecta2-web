@@ -36,6 +36,7 @@ Widget buildBodyCell(String text) {
 Color obtenerColorRiesgoParaUI(String nivelRiesgo) {
   switch (nivelRiesgo.toLowerCase()) {
     case 'sin alarma':
+    case 'sin alerta':
       return const Color(0xFFD3D3D3);
     case 'bajo':
       return const Color(0xFFC8E6C9);

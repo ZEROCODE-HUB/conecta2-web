@@ -1,8 +1,6 @@
 import '/backend/backend.dart';
-import '/components/admin_estadsticas/helpers/classification.dart';
-import '/dashboard/web/encuestas/editar/widgets/tamizajes_niveles.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/tamizajes/shared/assist_utils.dart';
+import '/tamizajes/shared/nivel_respuesta.dart';
 import '/tamizajes/shared/tamizaje_service.dart';
 import '/tamizajes/shared/tamizaje_utils.dart';
 import '/tamizajes/shared/tamizajes_constants.dart';
@@ -225,67 +223,20 @@ class _RespuestaCardState extends State<_RespuestaCard> {
     return age;
   }
 
-  // Deriva el nivel clínico a partir de la categoría configurada en el
-  // tamizaje y del puntaje total. Devuelve '' si no hay encuesta aún.
+  // Nivel clínico con la regla común (`calcularNivelRespuesta`): rangos
+  // configurados en el tamizaje; fuera de todos → 'Sin alerta'. Devuelve ''
+  // si no hay encuesta aún.
   String _nivelDe(EncuestasRecord? encuesta, RespuestasRecord r) {
     if (encuesta == null) return '';
-    // ASSIST: nivel = peor sustancia, con los rangos por sustancia de la
-    // encuesta (o cortes OMS); no el puntaje total con cortes fijos.
-    if (esEncuestaAssist(encuesta.categoria, encuesta.titulo)) {
-      return evaluarAssistDesdeStructs(
-        preguntas: encuesta.preguntas,
-        test: r.test,
-        alertas: encuesta.alertas,
-      ).nivelGlobal;
-    }
-    String titulo = encuesta.titulo;
-    switch (encuesta.categoria) {
-      case 'Consumo de SPA':
-        titulo = 'sustancias';
-        break;
-      case 'Escala autoestima':
-        titulo = 'autoestima';
-        break;
-      case 'CDI':
-        titulo = 'cdi';
-        break;
-      case 'Depresión Beck':
-        titulo = 'beck';
-        break;
-      case 'CRQ / SRQ':
-      case 'CRQ':
-      case 'SRQ':
-      case 'RQC':
-        titulo = 'srq';
-        break;
-    }
-    return classifyNivel(
-      titulo,
-      const [],
+    return calcularNivelRespuesta(
+      encuesta: encuesta,
       puntajeTotal: r.puntajeTotal,
-      umbrales: _umbralesFrom(encuesta),
+      test: r.test,
     );
   }
 
-  // Proyecta los umbrales configurados al crear el tamizaje en una
-  // estructura plana reutilizable por classifyNivel. Devuelve null si la
-  // encuesta no tiene umbrales o la categoría no es configurable.
-  UmbralesConfig? _umbralesFrom(EncuestasRecord e) {
-    final cat = e.categoria;
-    if (cat == 'Escala autoestima' || cat == 'CDI') {
-      return umbralesTripleteDesdeEncuesta(e);
-    }
-    if (cat == 'Depresión Beck' && e.alertas.length >= 4) {
-      return UmbralesConfig(
-        beckMinimaMax: e.alertas[0].max,
-        beckLeveMax: e.alertas[1].max,
-        beckModeradaMax: e.alertas[2].max,
-      );
-    }
-    return null;
-  }
-
-  Color _colorNivel(String nivel) {
+  Color _colorNivel(String categoria, String nivel) {
+    if (esSinAlertaPorRango(categoria, nivel)) return kGrisSinAlerta;
     final n = nivel.toLowerCase();
     if (n.contains('grave')) return kDanger;
     if (n.contains('severo') || n.contains('severa')) return kDanger;
@@ -307,7 +258,8 @@ class _RespuestaCardState extends State<_RespuestaCard> {
     final r = widget.respuesta;
     final tieneIdeacion = hasIdeacion(r.test);
     final nivel = _nivelDe(widget.encuesta, r);
-    final nivelColor = _colorNivel(nivel);
+    final nivelColor =
+        _colorNivel(widget.encuesta?.categoria ?? '', nivel);
     final alertasEspeciales =
         r.alertasEspeciales.where((a) => a.trim().isNotEmpty).toList();
 

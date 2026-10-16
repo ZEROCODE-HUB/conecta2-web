@@ -6,6 +6,7 @@ import '/tamizajes/shared/nivel_respuesta.dart';
 import '/tamizajes/shared/tamizaje_utils.dart';
 import '/tamizajes/shared/tamizajes_constants.dart';
 import '/tamizajes/shared/widgets/agendar_recordatorio_dialog.dart';
+import '/tamizajes/shared/widgets/color_nivel.dart';
 import '/tamizajes/shared/widgets/riesgo_sustancias_card.dart';
 import '/tamizajes/shared/widgets/tamizaje_page_header.dart';
 import 'package:flutter/material.dart';
@@ -122,26 +123,6 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
     );
   }
 
-  Color _colorNivel(String nivel) {
-    final n = nivel.toLowerCase();
-    if (n.contains('baja') ||
-        n.contains('bajo') ||
-        n.contains('sin ') ||
-        n.contains('mínima') ||
-        n.contains('minima')) return kSuccess;
-    if (n.contains('media') ||
-        n.contains('moderad') ||
-        n.contains('moderado') ||
-        n.contains('leve')) {
-      return const Color(0xFFF6BD33);
-    }
-    if (n.contains('elevada') ||
-        n.contains('alto') ||
-        n.contains('grave') ||
-        n.contains('severo')) return const Color(0xFFD92D20);
-    return kNavy;
-  }
-
   bool get _esManual => widget.respuesta.tipoTamizaje == 'manual';
   bool get _tieneIdeacion => hasIdeacion(widget.respuesta.test);
 
@@ -180,6 +161,11 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
   // obtenido. Ayuda al profesional a interpretar el resultado sin tener
   // que recordar los rangos de cada escala.
   String _descripcionNivel(String categoria, String nivel) {
+    if (esSinAlertaPorRango(categoria, nivel)) {
+      return categoria == kCategoriaAssist
+          ? 'Ninguna sustancia quedó dentro de un rango configurado. No se cataloga como alerta.'
+          : 'El puntaje no está dentro de ningún rango configurado para este tamizaje. No se cataloga como alerta.';
+    }
     final n = nivel.toLowerCase();
     if (categoria == 'Escala autoestima') {
       if (n.contains('baja'))
@@ -309,7 +295,8 @@ class _DetalleTamizajeViewState extends State<DetalleTamizajeView> {
                           descripcion: _descripcionNivel(
                               _encuesta?.categoria ?? '', _nivelCalculado()),
                           puntaje: respuesta.puntajeTotal,
-                          color: _colorNivel(_nivelCalculado()),
+                          color: colorNivelTamizaje(
+                              _encuesta?.categoria ?? '', _nivelCalculado()),
                           theme: theme,
                           cdiSub: cdiSub,
                         ),

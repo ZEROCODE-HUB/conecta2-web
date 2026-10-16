@@ -144,6 +144,48 @@ void main() {
     });
   });
 
+  group('fuera de todos los rangos → barra "Sin alerta"', () {
+    test('no cae a los cortes por defecto', () {
+      // STAIC empieza en 18: 10 no está en ningún rango (antes: Sin
+      // sintomatología). CDI con hueco: 2 no está en 0–1 ni en 5–10.
+      final cdiHueco = _encuesta('CDI', 'CDI hueco', [
+        ['Sin sintomatología', 0, 1],
+        ['Leve', 5, 10],
+        ['Severo', 11, 54],
+      ]);
+      expect(_nivel(staic, 10), 'Sin alerta');
+      expect(_nivel(cdiHueco, 2), 'Sin alerta');
+      expect(_barra(cdiHueco, 2, TamizajeTipo.cdi), 'Sin alerta');
+      expect(_barra(staic, 10, TamizajeTipo.ansiedad), 'Sin alerta');
+    });
+
+    test('Autoestima 14–15 (Baja 29–30): 23 → Sin alerta, no Baja', () {
+      final chicos1415 = _encuesta('Escala autoestima', 'AUTOESTIMA 14-15', [
+        ['Autoestima Baja', 29, 30],
+        ['Autoestima Media', 30, 35],
+        ['Autoestima Elevada', 36, 40],
+      ]);
+      expect(_barra(chicos1415, 23, TamizajeTipo.autoestima), 'Sin alerta');
+      expect(_barra(chicos1415, 30, TamizajeTipo.autoestima), 'Baja');
+    });
+
+    test('los 4 ejes tienen la barra "Sin alerta" (gris)', () {
+      for (final t in [
+        TamizajeTipo.cdi,
+        TamizajeTipo.ansiedad,
+        TamizajeTipo.beck,
+        TamizajeTipo.autoestima,
+      ]) {
+        expect(t.niveles.first, 'Sin alerta');
+        expect(t.sinAlertaFueraDeRango, isTrue);
+      }
+      expect(TamizajeTipo.srq.sinAlertaFueraDeRango, isFalse);
+      expect(StatsColors.forNivel('Sin alerta', sinAlertaGris: true),
+          StatsColors.gris);
+      expect(StatsColors.forNivel('Sin alerta'), StatsColors.verde);
+    });
+  });
+
   group('mapNivelToBucket con etiquetas de cada tamizaje', () {
     const todas = ['Sin alerta', 'Moderada', 'Severo', 'Grave'];
     const ejeAutoestima = ['Baja', 'Media', 'Elevada'];

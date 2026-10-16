@@ -70,14 +70,21 @@ extension TamizajeTipoX on TamizajeTipo {
   /// Labels for the level distribution axis (ordered low -> critical).
   List<String> get niveles {
     switch (this) {
+      // 'Sin alerta' = puntaje fuera de todos los rangos configurados.
       case TamizajeTipo.autoestima:
-        return const ['Baja', 'Media', 'Elevada'];
+        return const ['Sin alerta', 'Baja', 'Media', 'Elevada'];
       case TamizajeTipo.ansiedad:
-        return const ['Sin sintomatología', 'Leve', 'Moderado', 'Severo'];
+        return const [
+          'Sin alerta',
+          'Sin sintomatología',
+          'Leve',
+          'Moderado',
+          'Severo',
+        ];
       case TamizajeTipo.cdi:
-        return const ['Sin sintomatología', 'Leve', 'Severo'];
+        return const ['Sin alerta', 'Sin sintomatología', 'Leve', 'Severo'];
       case TamizajeTipo.beck:
-        return const ['Mínima', 'Leve', 'Moderada', 'Grave'];
+        return const ['Sin alerta', 'Mínima', 'Leve', 'Moderada', 'Grave'];
       case TamizajeTipo.rqc:
         return const ['Sin alerta', 'Subescala 1', 'Subescala 2'];
       case TamizajeTipo.srq:
@@ -86,6 +93,20 @@ extension TamizajeTipoX on TamizajeTipo {
         return const ['Sin alerta', 'Moderada', 'Severo'];
       case TamizajeTipo.todas:
         return const ['Sin alerta', 'Moderada', 'Severo', 'Grave'];
+    }
+  }
+
+  /// En estos ejes "Sin alerta" es el puntaje fuera de todos los rangos
+  /// configurados (barra gris); en los demás es el nivel sano (verde).
+  bool get sinAlertaFueraDeRango {
+    switch (this) {
+      case TamizajeTipo.autoestima:
+      case TamizajeTipo.ansiedad:
+      case TamizajeTipo.cdi:
+      case TamizajeTipo.beck:
+        return true;
+      default:
+        return false;
     }
   }
 }
@@ -640,7 +661,10 @@ class StatsColors {
   static const rojoOscuro = 0xFFB42318; // grave
   static const gris = 0xFF9AA0A6; // fallback
 
-  static int forNivel(String nivel) {
+  /// [sinAlertaGris]: "Sin alerta" es un puntaje fuera de todos los rangos
+  /// configurados (gris) y no el nivel sano.
+  static int forNivel(String nivel, {bool sinAlertaGris = false}) {
+    if (sinAlertaGris && nivel == 'Sin alerta') return gris;
     final n = nivel.toLowerCase();
     if (n.contains('grave') || n.contains('crítica') || n.contains('critica')) {
       return rojoOscuro;
