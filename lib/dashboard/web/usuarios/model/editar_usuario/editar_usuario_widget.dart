@@ -17,16 +17,10 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
+import '/backend/schema/shared/ubicacion_colegio.dart';
+import '/components/ubicacion_colegio/ubicacion_colegio_readonly.dart';
 import 'editar_usuario_model.dart';
 export 'editar_usuario_model.dart';
-
-const List<String> kListaMunicipios = [
-  'Cartagena',
-  'Bucaramanga',
-  'Montería',
-  'Cúcuta',
-  'Barrancabermeja',
-];
 
 const List<String> kListaGrados = [
   '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'
@@ -50,56 +44,16 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
   late EditarUsuarioModel _model;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  /// Catálogo de colegios: la ubicación del adolescente sale del colegio.
+  List<ColegiosRecord> _colegios = [];
   List<String> _colegiosNombres = [];
   bool _isLoadingColegios = true;
   String? _unregisteredColegio;
 
-  List<String> _barriosNombres = [];
-  bool _isLoadingBarrios = true;
-
-  Future<void> _loadBarrios() async {
-    try {
-      final barrios = await queryBarriosRecordOnce();
-      final nombres = barrios
-          .map((b) => b.nombre)
-          .where((n) => n.isNotEmpty)
-          .toSet()
-          .toList();
-      nombres.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-      if (mounted) {
-        setState(() {
-          _barriosNombres = nombres;
-          _isLoadingBarrios = false;
-          
-          final existingBarrio = widget.userdoc?.barrio ?? '';
-          if (_barriosNombres.contains(existingBarrio)) {
-            _model.barrioDropDownController =
-                FormFieldController<String>(existingBarrio);
-          } else {
-            _model.barrioDropDownController =
-                FormFieldController<String>(null);
-          }
-        });
-      }
-    } catch (e) {
-      print('Error cargando barrios: $e');
-      if (mounted) {
-        setState(() {
-          _isLoadingBarrios = false;
-        });
-      }
-    }
-  }
-
   Future<void> _loadColegios() async {
     try {
       final colegios = await queryColegiosRecordOnce();
-      final nombres = colegios
-          .map((c) => c.nombre)
-          .where((n) => n.isNotEmpty)
-          .toSet()
-          .toList();
-      nombres.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+      final nombres = nombresDeColegios(colegios);
 
       final existingColegio = widget.userdoc?.colegio ?? '';
       if (existingColegio.isNotEmpty && !nombres.contains(existingColegio)) {
@@ -108,8 +62,10 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
 
       if (mounted) {
         setState(() {
+          _colegios = colegios;
           _colegiosNombres = nombres;
           _isLoadingColegios = false;
+          _sincronizarUbicacion();
 
           if (_colegiosNombres.contains(existingColegio)) {
             _model.colegioDropDownController =
@@ -130,6 +86,27 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     }
   }
 
+  /// Municipio y barrio = los del colegio elegido (solo lectura). Si el
+  /// colegio no está en el catálogo se conservan los guardados.
+  void _sincronizarUbicacion() {
+    final ubicacion = ubicacionDeColegio(
+        _colegios, _model.textFieldcolegioTextController?.text);
+    if (ubicacion == null) return;
+    _model.textFieldmunicipioTextController?.text = ubicacion.municipio;
+    _model.textFieldbarrioTextController?.text = ubicacion.barrio;
+  }
+
+  void _seleccionarColegio(String? nombre) {
+    safeSetState(() {
+      _model.textFieldcolegioTextController?.text = nombre ?? '';
+      _unregisteredColegio = null;
+      final ubicacion = ubicacionDeColegio(_colegios, nombre);
+      _model.textFieldmunicipioTextController?.text =
+          ubicacion?.municipio ?? '';
+      _model.textFieldbarrioTextController?.text = ubicacion?.barrio ?? '';
+    });
+  }
+
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
@@ -141,7 +118,6 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     super.initState();
     _model = createModel(context, () => EditarUsuarioModel());
     _loadColegios();
-    _loadBarrios();
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -162,6 +138,8 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
           _model.textFieldmunicipioTextController?.text =
               widget.userdoc!.municipio;
           _model.textFieldbarrioTextController?.text = widget.userdoc!.barrio;
+          // Si los colegios ya cargaron, la ubicación sale del colegio.
+          _sincronizarUbicacion();
           _model.textFieldedadTextController?.text = widget.userdoc!.edad;
           _model.dropDownGeneroValueController?.value = widget.userdoc!.genero;
           _model.dropDownGeneroValue = widget.userdoc!.genero;
@@ -179,11 +157,6 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
           final existingEps = widget.userdoc?.eps ?? '';
           _model.epsDropDownController = FormFieldController<String>(
             kListaEPS.contains(existingEps) ? existingEps : null,
-          );
-
-          final existingMunicipio = widget.userdoc?.municipio ?? '';
-          _model.municipioDropDownController = FormFieldController<String>(
-            kListaMunicipios.contains(existingMunicipio) ? existingMunicipio : null,
           );
 
           final existingGrado = widget.userdoc?.grado ?? '';
@@ -795,9 +768,10 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                         _buildEdadGeneroRow(context, rowUsersRecord),
                         if (_model.ddTipoValue == 'Adolescente') ...[
                           _buildNacimientoRow(context, rowUsersRecord),
-                          _buildColegioEpsRow(context, rowUsersRecord),
-                          _buildMunicipioBarrioRow(context, rowUsersRecord),
-                          _buildGradoRow(context, rowUsersRecord),
+                          // El municipio y el barrio salen del colegio.
+                          _buildColegioRow(context, rowUsersRecord),
+                          _buildUbicacionRow(context, rowUsersRecord),
+                          _buildEpsGradoRow(context, rowUsersRecord),
                         ],
                         _buildResetPasswordButton(context),
                       ],
@@ -926,11 +900,9 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     );
   }
 
-  Widget _buildColegioEpsRow(BuildContext context, UsersRecord rowUsersRecord) {
+  Widget _buildColegioRow(BuildContext context, UsersRecord rowUsersRecord) {
     _model.textFieldcolegioTextController ??=
         TextEditingController(text: rowUsersRecord.colegio);
-    _model.textFieldepsTextController ??=
-        TextEditingController(text: rowUsersRecord.eps);
 
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
@@ -971,13 +943,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                                 : null,
                           ),
                           options: _colegiosNombres,
-                          onChanged: (val) {
-                            safeSetState(() {
-                              _model.textFieldcolegioTextController?.text =
-                                  val ?? '';
-                              _unregisteredColegio = null;
-                            });
-                          },
+                          onChanged: _seleccionarColegio,
                           hintText: _colegiosNombres.contains(
                                   _model.textFieldcolegioTextController?.text)
                               ? _model.textFieldcolegioTextController?.text ??
@@ -991,6 +957,40 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUbicacionRow(BuildContext context, UsersRecord rowUsersRecord) {
+    _model.textFieldmunicipioTextController ??=
+        TextEditingController(text: rowUsersRecord.municipio);
+    _model.textFieldbarrioTextController ??=
+        TextEditingController(text: rowUsersRecord.barrio);
+
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: UbicacionColegioReadonly(
+        municipio: _model.textFieldmunicipioTextController!.text,
+        barrio: _model.textFieldbarrioTextController!.text,
+        colegioElegido: (_model.textFieldcolegioTextController?.text ?? '')
+            .trim()
+            .isNotEmpty,
+      ),
+    );
+  }
+
+  Widget _buildEpsGradoRow(BuildContext context, UsersRecord rowUsersRecord) {
+    _model.textFieldepsTextController ??=
+        TextEditingController(text: rowUsersRecord.eps);
+    _model.textFieldgradoTextController ??=
+        TextEditingController(text: rowUsersRecord.grado);
+
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1023,116 +1023,6 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
               ],
             ),
           ),
-        ].divide(const SizedBox(width: 25.0)),
-      ),
-    );
-  }
-
-  Widget _buildMunicipioBarrioRow(
-      BuildContext context, UsersRecord rowUsersRecord) {
-    _model.textFieldmunicipioTextController ??=
-        TextEditingController(text: rowUsersRecord.municipio);
-    _model.textFieldbarrioTextController ??=
-        TextEditingController(text: rowUsersRecord.barrio);
-
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildFieldLabel(context, 'Municipio'),
-                Padding(
-                  padding:
-                      const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                  child: buildSearchableDropDown(
-                    context: context,
-                    controller: _model.municipioDropDownController ??=
-                        FormFieldController<String>(
-                      kListaMunicipios.contains(_model.textFieldmunicipioTextController?.text)
-                          ? _model.textFieldmunicipioTextController?.text
-                          : null,
-                    ),
-                    options: kListaMunicipios,
-                    onChanged: (val) {
-                      safeSetState(() {
-                        _model.textFieldmunicipioTextController?.text = val ?? '';
-                      });
-                    },
-                    hintText: 'Seleccionar municipio',
-                    searchHintText: 'Buscar municipio',
-                    width: double.infinity,
-                    height: 47.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildFieldLabel(context, 'Barrio'),
-                Padding(
-                  padding:
-                      const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                  child: _isLoadingBarrios
-                      ? Container(
-                          height: 47.0,
-                          decoration: BoxDecoration(
-                            color: kFormFieldFillColor,
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: const SizedBox(
-                            width: 20.0,
-                            height: 20.0,
-                            child: CircularProgressIndicator(strokeWidth: 2.0),
-                          ),
-                        )
-                      : buildSearchableDropDown(
-                          context: context,
-                          controller: _model.barrioDropDownController ??=
-                              FormFieldController<String>(
-                            _barriosNombres.contains(_model.textFieldbarrioTextController?.text)
-                                ? _model.textFieldbarrioTextController?.text
-                                : null,
-                          ),
-                          options: _barriosNombres,
-                          onChanged: (val) {
-                            safeSetState(() {
-                              _model.textFieldbarrioTextController?.text = val ?? '';
-                            });
-                          },
-                          hintText: 'Seleccionar barrio',
-                          searchHintText: 'Buscar barrio',
-                          width: double.infinity,
-                          height: 47.0,
-                        ),
-                ),
-              ],
-            ),
-          ),
-        ].divide(const SizedBox(width: 25.0)),
-      ),
-    );
-  }
-
-  Widget _buildGradoRow(BuildContext context, UsersRecord rowUsersRecord) {
-    _model.textFieldgradoTextController ??=
-        TextEditingController(text: rowUsersRecord.grado);
-
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: [
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1165,7 +1055,6 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
               ],
             ),
           ),
-          Expanded(child: const SizedBox()),
         ].divide(const SizedBox(width: 25.0)),
       ),
     );

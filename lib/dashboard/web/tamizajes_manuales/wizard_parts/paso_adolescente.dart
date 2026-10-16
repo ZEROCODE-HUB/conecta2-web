@@ -157,9 +157,9 @@ class _DialogoRegistrarAdolescenteState
   DateTime? _fechaNacimiento;
   String? _colegioSeleccionado;
   String? _epsSeleccionada;
-  String? _barrioSeleccionado;
+  /// Catálogo de colegios: el municipio y el barrio salen del colegio.
+  List<ColegiosRecord> _colegios = const [];
   List<String> _colegiosOpciones = const [];
-  List<String> _barriosOpciones = const [];
   bool _cargandoCatalogos = true;
   bool _guardando = false;
 
@@ -183,26 +183,11 @@ class _DialogoRegistrarAdolescenteState
 
   Future<void> _cargarCatalogos() async {
     try {
-      final resultados = await Future.wait([
-        queryColegiosRecordOnce(),
-        queryBarriosRecordOnce(),
-      ]);
-      final colegios = (resultados[0] as List<ColegiosRecord>)
-          .map((c) => c.nombre)
-          .where((n) => n.isNotEmpty)
-          .toSet()
-          .toList()
-        ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-      final barrios = (resultados[1] as List<BarriosRecord>)
-          .map((b) => b.nombre)
-          .where((n) => n.isNotEmpty)
-          .toSet()
-          .toList()
-        ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+      final colegios = await queryColegiosRecordOnce();
       if (!mounted) return;
       setState(() {
-        _colegiosOpciones = colegios;
-        _barriosOpciones = barrios;
+        _colegios = colegios;
+        _colegiosOpciones = nombresDeColegios(colegios);
         _cargandoCatalogos = false;
       });
     } catch (_) {
@@ -358,7 +343,6 @@ class _DialogoRegistrarAdolescenteState
         email.isEmpty ||
         _colegioSeleccionado == null || _colegioSeleccionado!.isEmpty ||
         _epsSeleccionada == null || _epsSeleccionada!.isEmpty ||
-        _barrioSeleccionado == null || _barrioSeleccionado!.isEmpty ||
         acudienteNombre.isEmpty ||
         acudienteTelefono.isEmpty ||
         acudienteCorreo.isEmpty) {
@@ -408,6 +392,7 @@ class _DialogoRegistrarAdolescenteState
       }
 
       final ref = FirebaseFirestore.instance.collection('users').doc();
+      final ubicacion = ubicacionDeColegio(_colegios, _colegioSeleccionado);
       final data = createUsersRecordData(
         email: email,
         displayName: nombre,
@@ -418,7 +403,8 @@ class _DialogoRegistrarAdolescenteState
         fechaNacimiento: _fechaNacimiento,
         colegio: _colegioSeleccionado ?? '',
         eps: _epsSeleccionada ?? '',
-        barrio: _barrioSeleccionado ?? '',
+        municipio: ubicacion?.municipio ?? '',
+        barrio: ubicacion?.barrio ?? '',
         createdTime: DateTime.now(),
         acudiente: AcudienteStruct(
           nombre: acudienteNombre,
@@ -594,6 +580,17 @@ class _DialogoRegistrarAdolescenteState
                 onSeleccionado: (v) => setState(() => _colegioSeleccionado = v),
               ),
               const SizedBox(height: 12),
+              UbicacionColegioReadonly(
+                municipio: ubicacionDeColegio(_colegios, _colegioSeleccionado)
+                        ?.municipio ??
+                    '',
+                barrio:
+                    ubicacionDeColegio(_colegios, _colegioSeleccionado)?.barrio ??
+                        '',
+                colegioElegido: (_colegioSeleccionado ?? '').isNotEmpty,
+                compacto: true,
+              ),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _epsSeleccionada,
                 isExpanded: true,
@@ -603,14 +600,6 @@ class _DialogoRegistrarAdolescenteState
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (v) => setState(() => _epsSeleccionada = v),
-              ),
-              const SizedBox(height: 12),
-              _buildAutocompleteCatalogo(
-                label: 'Barrio',
-                hint: 'Seleccionar barrio',
-                opciones: _barriosOpciones,
-                valorSeleccionado: _barrioSeleccionado,
-                onSeleccionado: (v) => setState(() => _barrioSeleccionado = v),
               ),
 
               // ── Acudiente ──

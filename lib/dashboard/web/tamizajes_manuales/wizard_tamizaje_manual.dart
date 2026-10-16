@@ -1,7 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/schema/shared/listas_fijas.dart';
+import '/backend/schema/shared/ubicacion_colegio.dart';
 import '/components/rich_text_notas/rich_text_notas_widget.dart';
+import '/components/ubicacion_colegio/ubicacion_colegio_readonly.dart';
 import '/custom_code/actions/evaluar_alertas_especiales.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/tamizajes/shared/assist_utils.dart';

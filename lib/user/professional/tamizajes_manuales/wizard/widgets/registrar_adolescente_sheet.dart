@@ -1,6 +1,8 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/schema/shared/listas_fijas.dart';
+import '/backend/schema/shared/ubicacion_colegio.dart';
+import '/components/ubicacion_colegio/ubicacion_colegio_readonly.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,7 +30,10 @@ class _BottomSheetRegistrarAdolescenteState
   DateTime? _fechaNacimiento;
   String? _colegioSeleccionado;
   String? _epsSeleccionada;
-  String? _barrioSeleccionado;
+
+  /// Último catálogo de colegios recibido: el municipio y el barrio del
+  /// adolescente salen del colegio elegido.
+  List<ColegiosRecord> _colegios = const [];
   bool _guardando = false;
 
   int? get _edadCalculada {
@@ -67,6 +72,7 @@ class _BottomSheetRegistrarAdolescenteState
       }
 
       final ref = FirebaseFirestore.instance.collection('users').doc();
+      final ubicacion = ubicacionDeColegio(_colegios, _colegioSeleccionado);
       final data = createUsersRecordData(
         email: _email.text.trim(),
         displayName: _nombre.text.trim(),
@@ -77,7 +83,8 @@ class _BottomSheetRegistrarAdolescenteState
         fechaNacimiento: _fechaNacimiento,
         colegio: _colegioSeleccionado ?? '',
         eps: _epsSeleccionada ?? '',
-        barrio: _barrioSeleccionado ?? '',
+        municipio: ubicacion?.municipio ?? '',
+        barrio: ubicacion?.barrio ?? '',
         createdTime: DateTime.now(),
         profesionales: ProfesionalesStruct(
           ref: currentUserReference,
@@ -374,41 +381,30 @@ class _BottomSheetRegistrarAdolescenteState
                     StreamBuilder<List<ColegiosRecord>>(
                       stream: queryColegiosRecord(),
                       builder: (context, snap) {
-                        final nombres = (snap.data ?? [])
-                            .map((c) => c.nombre)
-                            .where((n) => n.isNotEmpty)
-                            .toSet()
-                            .toList()
-                          ..sort((a, b) =>
-                              a.toLowerCase().compareTo(b.toLowerCase()));
-                        return _buildAutocompleteField(
-                          label: 'Colegio',
-                          hint: 'Seleccionar colegio',
-                          opciones: nombres,
-                          valor: _colegioSeleccionado,
-                          onChanged: (v) =>
-                              setState(() => _colegioSeleccionado = v),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    StreamBuilder<List<BarriosRecord>>(
-                      stream: queryBarriosRecord(),
-                      builder: (context, snap) {
-                        final nombres = (snap.data ?? [])
-                            .map((b) => b.nombre)
-                            .where((n) => n.isNotEmpty)
-                            .toSet()
-                            .toList()
-                          ..sort((a, b) =>
-                              a.toLowerCase().compareTo(b.toLowerCase()));
-                        return _buildAutocompleteField(
-                          label: 'Barrio',
-                          hint: 'Seleccionar barrio',
-                          opciones: nombres,
-                          valor: _barrioSeleccionado,
-                          onChanged: (v) =>
-                              setState(() => _barrioSeleccionado = v),
+                        if (snap.data != null) _colegios = snap.data!;
+                        final ubicacion =
+                            ubicacionDeColegio(_colegios, _colegioSeleccionado);
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildAutocompleteField(
+                              label: 'Colegio',
+                              hint: 'Seleccionar colegio',
+                              opciones: nombresDeColegios(_colegios),
+                              valor: _colegioSeleccionado,
+                              onChanged: (v) =>
+                                  setState(() => _colegioSeleccionado = v),
+                            ),
+                            const SizedBox(height: 12),
+                            // Municipio y barrio salen del colegio.
+                            UbicacionColegioReadonly(
+                              municipio: ubicacion?.municipio ?? '',
+                              barrio: ubicacion?.barrio ?? '',
+                              colegioElegido:
+                                  (_colegioSeleccionado ?? '').isNotEmpty,
+                              compacto: true,
+                            ),
+                          ],
                         );
                       },
                     ),
