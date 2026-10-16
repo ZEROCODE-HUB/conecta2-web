@@ -63,10 +63,15 @@ class ResultadoRespuestaView extends StatelessWidget {
         return _buildUserList(
           context,
           filtered,
-          trailing: (item) => _trailingText(
-            context,
-            item.test.elementAtOrNull(itemIndex!)?.trueAndFalse == 1 ? 'Si' : 'No',
-          ),
+          trailing: (item) {
+            final r = item.test.elementAtOrNull(itemIndex!);
+            return _trailingText(
+              context,
+              r == null || !r.hasTrueAndFalse()
+                  ? 'Sin respuesta'
+                  : (r.trueAndFalse == 1 ? 'Verdadero' : 'Falso'),
+            );
+          },
         );
       case 'Selección única':
         return _buildUserList(

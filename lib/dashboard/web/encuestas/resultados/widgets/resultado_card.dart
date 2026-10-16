@@ -187,9 +187,9 @@ class ResultadoTrueFalseRow extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
-          _booleanCard(context, label: 'Si'),
+          _booleanCard(context, label: 'Verdadero'),
           const SizedBox(width: 10),
-          _booleanCard(context, label: 'No'),
+          _booleanCard(context, label: 'Falso'),
         ],
       ),
     );

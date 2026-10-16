@@ -597,7 +597,7 @@ class _TamizajeRespuesta2WidgetState extends State<TamizajeRespuesta2Widget> {
                                 ),
                               ),
                               Text(
-                                'Si',
+                                'Verdadero',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -674,7 +674,7 @@ class _TamizajeRespuesta2WidgetState extends State<TamizajeRespuesta2Widget> {
                                 ),
                               ),
                               Text(
-                                'No',
+                                'Falso',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(

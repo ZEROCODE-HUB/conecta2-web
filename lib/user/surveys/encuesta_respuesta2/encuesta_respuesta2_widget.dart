@@ -635,7 +635,7 @@ class _EncuestaRespuesta2WidgetState extends State<EncuestaRespuesta2Widget> {
                                 ),
                               ),
                               Text(
-                                'Si',
+                                'Verdadero',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -712,7 +712,7 @@ class _EncuestaRespuesta2WidgetState extends State<EncuestaRespuesta2Widget> {
                                 ),
                               ),
                               Text(
-                                'No',
+                                'Falso',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(

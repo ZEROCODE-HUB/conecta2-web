@@ -3,16 +3,8 @@ import 'verdaderofalso_widget.dart' show VerdaderofalsoWidget;
 import 'package:flutter/material.dart';
 
 class VerdaderofalsoModel extends FlutterFlowModel<VerdaderofalsoWidget> {
-  ///  Local state fields for this component.
-
-  int? select;
-
-  ///  State fields for stateful widgets in this component.
-
-  // State field(s) for Si widget.
-  bool? siValue;
-  // State field(s) for No widget.
-  bool? noValue;
+  // La opción marcada vive en `FFAppState().RespuestaEnc` (fuente única), no
+  // en el modelo.
 
   @override
   void initState(BuildContext context) {}
