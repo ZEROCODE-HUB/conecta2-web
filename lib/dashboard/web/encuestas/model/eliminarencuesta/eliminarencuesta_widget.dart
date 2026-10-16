@@ -10,9 +10,13 @@ class EliminarencuestaWidget extends StatefulWidget {
   const EliminarencuestaWidget({
     super.key,
     required this.id,
+    this.esTamizaje = false,
   });
 
   final DocumentReference? id;
+
+  /// `true` cuando se borra un tamizaje (cambia el texto de la pregunta).
+  final bool esTamizaje;
 
   @override
   State<EliminarencuestaWidget> createState() => _EliminarencuestaWidgetState();
@@ -100,7 +104,7 @@ class _EliminarencuestaWidgetState extends State<EliminarencuestaWidget> {
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 30.0, 0.0, 0.0),
                     child: Text(
-                      '¿Estás seguro que quieres eliminar esta encuesta?',
+                      '¿Estás seguro que quieres eliminar ${widget.esTamizaje ? 'este tamizaje' : 'esta encuesta'}?',
                       textAlign: TextAlign.center,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             font: GoogleFonts.inter(

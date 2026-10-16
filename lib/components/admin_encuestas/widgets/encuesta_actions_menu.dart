@@ -36,7 +36,10 @@ class EncuestaActionsMenu extends StatelessWidget {
         return WebViewAware(
           child: Padding(
             padding: MediaQuery.viewInsetsOf(context),
-            child: EliminarencuestaWidget(id: encuesta.reference),
+            child: EliminarencuestaWidget(
+              id: encuesta.reference,
+              esTamizaje: encuesta.tipo == 'Tamizajes',
+            ),
           ),
         );
       },
