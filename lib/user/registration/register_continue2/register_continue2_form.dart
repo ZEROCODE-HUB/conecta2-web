@@ -254,7 +254,7 @@ extension _RegisterContinue2Form on _RegisterContinue2WidgetState {
                             .detalle
                             .genero,
                   ),
-                  options: ['Masculino', 'Femenino'],
+                  options: kListaGeneros,
                   onChanged: (val) => safeSetState(() =>
                       _model.dropDownGeneroValue = val),
                   width:

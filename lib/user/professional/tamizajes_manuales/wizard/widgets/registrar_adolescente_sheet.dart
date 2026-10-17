@@ -317,13 +317,9 @@ class _BottomSheetRegistrarAdolescenteState
                       decoration: _inputDecoration('G\u00e9nero'),
                       style: GoogleFonts.inter(
                           fontSize: 14, color: theme.primaryText),
-                      items: const [
-                        DropdownMenuItem(
-                            value: 'Masculino', child: Text('Masculino')),
-                        DropdownMenuItem(
-                            value: 'Femenino', child: Text('Femenino')),
-                        DropdownMenuItem(
-                            value: 'Otro', child: Text('Otro')),
+                      items: [
+                        for (final g in kListaGeneros)
+                          DropdownMenuItem(value: g, child: Text(g)),
                       ],
                       onChanged: (v) => setState(() => _genero = v),
                     ),

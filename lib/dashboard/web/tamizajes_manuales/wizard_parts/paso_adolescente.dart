@@ -479,11 +479,9 @@ class _DialogoRegistrarAdolescenteState
               DropdownButtonFormField<String>(
                 initialValue: _genero,
                 decoration: _inputDecoration('Genero'),
-                items: const [
-                  DropdownMenuItem(
-                      value: 'Masculino', child: Text('Masculino')),
-                  DropdownMenuItem(value: 'Femenino', child: Text('Femenino')),
-                  DropdownMenuItem(value: 'Otro', child: Text('Otro')),
+                items: [
+                  for (final g in kListaGeneros)
+                    DropdownMenuItem(value: g, child: Text(g)),
                 ],
                 onChanged: (v) => setState(() => _genero = v),
               ),

@@ -1094,7 +1094,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
                     controller: _model.dropDownGeneroValueController ??=
                         FormFieldController<String>(_model
                             .dropDownGeneroValue ??= rowUsersRecord.genero),
-                    options: ['Masculino', 'Femenino', 'Otro'],
+                    options: kListaGeneros,
                     onChanged: (val) =>
                         safeSetState(() => _model.dropDownGeneroValue = val),
                     width: double.infinity,

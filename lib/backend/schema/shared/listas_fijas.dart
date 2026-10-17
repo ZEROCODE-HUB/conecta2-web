@@ -3,6 +3,11 @@
 /// Centralizadas aquí para evitar duplicación cuando un mismo catálogo
 /// se usa en varios formularios (registro, wizards, edición de perfil, etc.).
 
+/// Opciones de género de los formularios de alta. Deben coincidir con las
+/// categorías de las gráficas (`kGeneros` en
+/// `components/admin_estadsticas/helpers/classification.dart`).
+const List<String> kListaGeneros = ['Masculino', 'Femenino', 'Otro'];
+
 /// Catálogo de EPS (Entidades Promotoras de Salud) disponibles para
 /// seleccionar en formularios de registro y actualización de adolescentes.
 ///

@@ -670,7 +670,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                     context: context,
                     controller: _model.dropDownGeneroValueController ??=
                         FormFieldController<String>(null),
-                    options: ['Masculino', 'Femenino', 'Otro'],
+                    options: kListaGeneros,
                     onChanged: (val) =>
                         safeSetState(() => _model.dropDownGeneroValue = val),
                     hintText: 'Seleccionar género',
