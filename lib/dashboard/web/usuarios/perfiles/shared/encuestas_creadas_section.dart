@@ -8,7 +8,9 @@ import '/flutter_flow/form_field_controller.dart';
 import 'encuesta_list_card.dart';
 
 /// "Encuestas creadas" del perfil del profesional: chips (Encuestas /
-/// Tamizajes) + las encuestas cuyo `created_by` es ese profesional.
+/// Tamizajes) + la lista de las encuestas cuyo `created_by` es ese
+/// profesional. Solo informativa: los resultados se ven en las secciones
+/// Encuestas y Tamizajes del menú.
 class EncuestasCreadasSection extends StatelessWidget {
   const EncuestasCreadasSection({
     super.key,
@@ -16,14 +18,12 @@ class EncuestasCreadasSection extends StatelessWidget {
     required this.selected,
     required this.controller,
     required this.onChanged,
-    required this.onOpenResultados,
   });
 
   final DocumentReference profesionalRef;
   final String? selected;
   final FormFieldController<List<String>> controller;
   final ValueChanged<String?> onChanged;
-  final ValueChanged<EncuestasRecord> onOpenResultados;
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +150,6 @@ class EncuestasCreadasSection extends StatelessWidget {
                           record.publicado ? 'Publicado' : 'Borrador',
                           if (record.categoria.isNotEmpty) record.categoria,
                         ],
-                        onTap: () => onOpenResultados(record),
                       );
                     },
                   );

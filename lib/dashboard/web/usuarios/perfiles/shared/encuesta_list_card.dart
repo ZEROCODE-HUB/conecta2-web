@@ -11,12 +11,14 @@ class EncuestaListCard extends StatelessWidget {
   const EncuestaListCard({
     super.key,
     required this.encuesta,
-    required this.onTap,
+    this.onTap,
     this.etiquetas = const [],
   });
 
   final EncuestasRecord encuesta;
-  final VoidCallback onTap;
+
+  /// Abre el detalle; null = fila solo informativa.
+  final VoidCallback? onTap;
 
   /// Chips opcionales bajo la fecha (p. ej. "Publicado", "CDI").
   final List<String> etiquetas;
@@ -123,14 +125,16 @@ class EncuestaListCard extends StatelessWidget {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: onTap,
-                icon: const Icon(
-                  Icons.arrow_forward_ios,
-                  color: Color(0xFF265294),
-                  size: 24.0,
+              // Sin onTap es solo informativa: sin flecha.
+              if (onTap != null)
+                IconButton(
+                  onPressed: onTap,
+                  icon: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Color(0xFF265294),
+                    size: 24.0,
+                  ),
                 ),
-              ),
             ],
           ),
         ),

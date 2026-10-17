@@ -11,10 +11,6 @@ class PerfilProfesionalModel extends FlutterFlowModel<PerfilProfesionalWidget> {
 
   DateTime? selectedDate;
 
-  /// Encuesta creada por el profesional cuyos resultados se ven en la
-  /// pestaña "Encuestas creadas"; null = lista.
-  EncuestasRecord? resultadosEncuesta;
-
   ///  State fields for stateful widgets in this component.
 
   // State field(s) for TextField widget.
