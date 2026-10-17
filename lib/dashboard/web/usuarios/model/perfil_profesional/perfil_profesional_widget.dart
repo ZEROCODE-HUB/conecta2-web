@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:webviewx_plus/webviewx_plus.dart';
+
 import '/backend/backend.dart';
-import '/dashboard/web/usuarios/model/perfil_adolescente_repuesta/perfil_adolescente_repuesta_widget.dart';
-import '/dashboard/web/usuarios/perfiles/shared/encuestas_respuestas_section.dart';
+import '/components/empty_resultados_widget.dart';
+import '/dashboard/web/encuestas/resultados/resultados_widget.dart';
+import '/dashboard/web/tamizajes/resultados_tami/resultados_tami_v2_widget.dart';
+import '/dashboard/web/usuarios/perfiles/shared/encuestas_creadas_section.dart';
 import '/dashboard/web/usuarios/perfiles/shared/info_row.dart';
 import '/dashboard/web/usuarios/perfiles/shared/info_section.dart';
 import '/dashboard/web/usuarios/perfiles/shared/pacientes_section.dart';
@@ -165,7 +169,7 @@ class _PerfilProfesionalWidgetState extends State<PerfilProfesionalWidget> {
                     current: _model.slider,
                     onSelected: (value) {
                       _model.slider = value;
-                      FFAppState().showEncuesta = false;
+                      _model.resultadosEncuesta = null;
                       safeSetState(() {});
                     },
                   ),
@@ -186,27 +190,63 @@ class _PerfilProfesionalWidgetState extends State<PerfilProfesionalWidget> {
     );
   }
 
+  /// Igual que "Resultados" en Encuestas/Tamizajes: sin respuestas avisa con
+  /// el diálogo vacío; con respuestas las muestra en la pestaña.
+  Future<void> _abrirResultados(EncuestasRecord encuesta) async {
+    final alguna = await queryRespuestasRecordOnce(
+      parent: encuesta.reference,
+      singleRecord: true,
+    ).then((s) => s.firstOrNull);
+    if (!mounted) return;
+    if (alguna == null) {
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => Dialog(
+          elevation: 0,
+          insetPadding: EdgeInsets.zero,
+          backgroundColor: Colors.transparent,
+          alignment: const AlignmentDirectional(0.0, 0.0)
+              .resolve(Directionality.of(context)),
+          child: const WebViewAware(child: EmptyResultadosWidget()),
+        ),
+      );
+      return;
+    }
+    _model.resultadosEncuesta = encuesta;
+    safeSetState(() {});
+  }
+
   Widget _buildTabContent(UsersRecord user) {
     switch (_model.slider) {
       case 'Datos Personales':
         return _buildDatosPersonales(user);
       case 'Encuestas creadas':
-        if (FFAppState().showEncuesta == true && _model.refEncuestas != null) {
-          return Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(0.0, 40.0, 0.0, 0.0),
-            child: wrapWithModel(
-              model: _model.perfilAdolescenteRepuestaModel,
-              updateCallback: () => safeSetState(() {}),
-              updateOnChange: true,
-              child: PerfilAdolescenteRepuestaWidget(
-                refencuestas: _model.refEncuestas,
-                userRef: user,
-              ),
-            ),
+        final abierta = _model.resultadosEncuesta;
+        if (abierta != null) {
+          // Resultados dentro del perfil: volver regresa a la lista sin
+          // tocar FFAppState().selectUser (cerraría el perfil).
+          void cerrar() {
+            _model.resultadosEncuesta = null;
+            safeSetState(() {});
+          }
+
+          return SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.8,
+            child: abierta.tipo == 'Tamizajes'
+                ? ResultadosTamiV2Widget(
+                    key: ValueKey(abierta.reference.path),
+                    encuestaID: abierta.reference,
+                    onClose: cerrar,
+                  )
+                : ResultadosWidget(
+                    key: ValueKey(abierta.reference.path),
+                    documentID: abierta.reference,
+                    onClose: cerrar,
+                  ),
           );
         }
-        return EncuestasRespuestasSection(
-          userRef: user.reference,
+        return EncuestasCreadasSection(
+          profesionalRef: user.reference,
           selected: _model.choiceChipsValue,
           controller: _model.choiceChipsValueController ??=
               FormFieldController<List<String>>(['Encuestas']),
@@ -214,11 +254,7 @@ class _PerfilProfesionalWidgetState extends State<PerfilProfesionalWidget> {
             _model.choiceChipsValue = value;
             safeSetState(() {});
           },
-          onOpenEncuesta: (ref) {
-            _model.refEncuestas = ref;
-            FFAppState().showEncuesta = true;
-            safeSetState(() {});
-          },
+          onOpenResultados: _abrirResultados,
         );
       case 'Pacientes':
         return PacientesSection(

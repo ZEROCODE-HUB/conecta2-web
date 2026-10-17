@@ -12,10 +12,14 @@ class EncuestaListCard extends StatelessWidget {
     super.key,
     required this.encuesta,
     required this.onTap,
+    this.etiquetas = const [],
   });
 
   final EncuestasRecord encuesta;
   final VoidCallback onTap;
+
+  /// Chips opcionales bajo la fecha (p. ej. "Publicado", "CDI").
+  final List<String> etiquetas;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +85,35 @@ class EncuestaListCard extends StatelessWidget {
                                   fontSize: 14.0,
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            if (etiquetas.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6.0),
+                                child: Wrap(
+                                  spacing: 6.0,
+                                  runSpacing: 4.0,
+                                  children: [
+                                    for (final e in etiquetas)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0, vertical: 2.0),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF265294)
+                                              .withValues(alpha: 0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                        ),
+                                        child: Text(
+                                          e,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12.0,
+                                            fontWeight: FontWeight.w500,
+                                            color: const Color(0xFF265294),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                           ],

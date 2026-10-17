@@ -1,5 +1,4 @@
 import '/backend/backend.dart';
-import '/dashboard/web/usuarios/model/perfil_adolescente_repuesta/perfil_adolescente_repuesta_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'perfil_profesional_widget.dart' show PerfilProfesionalWidget;
@@ -12,7 +11,9 @@ class PerfilProfesionalModel extends FlutterFlowModel<PerfilProfesionalWidget> {
 
   DateTime? selectedDate;
 
-  DocumentReference? refEncuestas;
+  /// Encuesta creada por el profesional cuyos resultados se ven en la
+  /// pestaña "Encuestas creadas"; null = lista.
+  EncuestasRecord? resultadosEncuesta;
 
   ///  State fields for stateful widgets in this component.
 
@@ -27,20 +28,13 @@ class PerfilProfesionalModel extends FlutterFlowModel<PerfilProfesionalWidget> {
       choiceChipsValueController?.value?.firstOrNull;
   set choiceChipsValue(String? val) =>
       choiceChipsValueController?.value = val != null ? [val] : [];
-  // Model for PerfilAdolescenteRepuesta component.
-  late PerfilAdolescenteRepuestaModel perfilAdolescenteRepuestaModel;
 
   @override
-  void initState(BuildContext context) {
-    perfilAdolescenteRepuestaModel =
-        createModel(context, () => PerfilAdolescenteRepuestaModel());
-  }
+  void initState(BuildContext context) {}
 
   @override
   void dispose() {
     textFieldFocusNode?.dispose();
     textController?.dispose();
-
-    perfilAdolescenteRepuestaModel.dispose();
   }
 }

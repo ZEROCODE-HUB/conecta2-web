@@ -16,9 +16,15 @@ class ResultadosWidget extends StatefulWidget {
   const ResultadosWidget({
     super.key,
     required this.documentID,
+    this.onClose,
   });
 
   final DocumentReference? documentID;
+
+  /// Flecha "volver". Sin callback limpia `FFAppState().selectUser`, que en
+  /// la sección Encuestas regresa al listado; fuera de ella (p. ej. el
+  /// perfil del profesional) se pasa uno propio.
+  final VoidCallback? onClose;
 
   @override
   State<ResultadosWidget> createState() => _ResultadosWidgetState();
@@ -59,7 +65,11 @@ class _ResultadosWidgetState extends State<ResultadosWidget> {
   }
 
   void _resetPregunta() {
-    FFAppState().selectUser = '';
+    if (widget.onClose != null) {
+      widget.onClose!();
+    } else {
+      FFAppState().selectUser = '';
+    }
     safeSetState(() {});
     _model.tipo2 = null;
     _model.pregunta = null;
