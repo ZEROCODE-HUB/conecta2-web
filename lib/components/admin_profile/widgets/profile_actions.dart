@@ -67,16 +67,22 @@ class ProfileSaveButton extends StatelessWidget {
   const ProfileSaveButton({
     super.key,
     required this.uploadedFileUrl,
+    required this.perfilCargado,
     required this.emailController,
     required this.nameController,
     required this.phoneController,
+    required this.idController,
     required this.addressController,
   });
 
   final String uploadedFileUrl;
+
+  /// false mientras el perfil no ha llegado: guardar escribiría campos vacíos.
+  final bool perfilCargado;
   final TextEditingController emailController;
   final TextEditingController nameController;
   final TextEditingController phoneController;
+  final TextEditingController idController;
   final TextEditingController addressController;
 
   @override
@@ -90,15 +96,16 @@ class ProfileSaveButton extends StatelessWidget {
           FFButtonWidget(
             onPressed: () async {
               final ref = currentUserReference;
-              if (ref == null) return;
-              // El correo no se edita aquí: es el de acceso.
+              if (ref == null || !perfilCargado) return;
+              // El correo y el rol no se editan aquí.
               await ref.update(createUsersRecordData(
-                displayName: nameController.text,
+                displayName: nameController.text.trim(),
                 photoUrl: uploadedFileUrl.isNotEmpty
                     ? uploadedFileUrl
                     : currentUserPhoto,
-                phoneNumber: phoneController.text,
-                address: addressController.text,
+                phoneNumber: phoneController.text.trim(),
+                identidad: idController.text.trim(),
+                address: addressController.text.trim(),
               ));
               if (!context.mounted) return;
               await _showSuccess(context);

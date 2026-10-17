@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/backend.dart';
 import '/user/registration/sesion_app.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -42,34 +43,46 @@ class _AdminProfileWidgetState extends State<AdminProfileWidget> {
     super.initState();
     _model = createModel(context, () => AdminProfileModel());
 
-    _model.textController1 ??= TextEditingController(
-        text: valueOrDefault(currentUserDocument?.rol, ''));
+    _model.textController1 ??= TextEditingController();
     _model.textFieldFocusNode1 ??= FocusNode();
-
-    _model.textController2 ??=
-        TextEditingController(text: currentUserDisplayName);
+    _model.textController2 ??= TextEditingController();
     _model.textFieldFocusNode2 ??= FocusNode();
-
-    _model.emailTextController ??=
-        TextEditingController(text: correoDeAcceso);
+    _model.emailTextController ??= TextEditingController();
     _model.emailFocusNode ??= FocusNode();
-
-    _model.textController3 ??= TextEditingController(text: currentPhoneNumber);
+    _model.textController3 ??= TextEditingController();
     _model.textFieldFocusNode3 ??= FocusNode();
-
-    _model.textController4 ??= TextEditingController(
-        text: valueOrDefault(currentUserDocument?.identidad, ''));
+    _model.textController4 ??= TextEditingController();
     _model.textFieldFocusNode4 ??= FocusNode();
-
-    _model.textController5 ??= TextEditingController(
-        text: valueOrDefault(currentUserDocument?.address, ''));
+    _model.textController5 ??= TextEditingController();
     _model.textFieldFocusNode5 ??= FocusNode();
+
+    // Al recargar /web/perfil el perfil puede no haber llegado aún: los
+    // campos se llenan cuando llega (una sola vez) y "Guardar" espera.
+    _llenarSiHayPerfil();
+    _perfilSub = authenticatedUserStream.listen((_) => _llenarSiHayPerfil());
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
+  StreamSubscription<UsersRecord?>? _perfilSub;
+  bool _perfilCargado = false;
+
+  void _llenarSiHayPerfil() {
+    final doc = currentUserDocument;
+    if (_perfilCargado || doc == null) return;
+    _perfilCargado = true;
+    _model.textController1!.text = doc.rol;
+    _model.textController2!.text = doc.displayName;
+    _model.emailTextController!.text = correoDeAcceso;
+    _model.textController3!.text = doc.phoneNumber;
+    _model.textController4!.text = doc.identidad;
+    _model.textController5!.text = doc.address;
+    safeSetState(() {});
+  }
+
   @override
   void dispose() {
+    _perfilSub?.cancel();
     _model.maybeDispose();
     super.dispose();
   }
@@ -229,9 +242,11 @@ class _AdminProfileWidgetState extends State<AdminProfileWidget> {
                   ),
                   ProfileSaveButton(
                     uploadedFileUrl: _model.uploadedFileUrl_uploadData8ag,
+                    perfilCargado: _perfilCargado,
                     emailController: _model.emailTextController!,
                     nameController: _model.textController2!,
                     phoneController: _model.textController3!,
+                    idController: _model.textController4!,
                     addressController: _model.textController5!,
                   ),
                 ],

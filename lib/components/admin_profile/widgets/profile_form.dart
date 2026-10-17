@@ -82,15 +82,17 @@ class ProfileForm extends StatelessWidget {
           _row(
             left: _FieldBlock(
               label: 'Tipo de usuario',
-              hint: 'rol',
+              hint: '',
               controller: rolController,
               focusNode: rolFocusNode,
               validator: rolValidator,
               wrapInAuthStream: true,
+              readOnly: true,
+              helper: 'El tipo de usuario no se cambia desde aquí.',
             ),
             right: _FieldBlock(
               label: 'Nombres y Apellidos',
-              hint: 'Nombres y Apellidos',
+              hint: 'Escribe tu nombre completo',
               controller: nameController,
               focusNode: nameFocusNode,
               validator: nameValidator,
@@ -101,17 +103,19 @@ class ProfileForm extends StatelessWidget {
           _row(
             left: _FieldBlock(
               label: 'Correo electrónico',
-              hint: 'john@gmail.com',
+              hint: '',
               controller: emailController,
               focusNode: emailFocusNode,
               validator: emailValidator,
               wrapInAuthStream: false,
               readOnly: true,
+              helper:
+                  'Correo de acceso. Para cambiarlo, contacta al administrador.',
               widthOverride: 200.0,
             ),
             right: _FieldBlock(
               label: 'Celular',
-              hint: '948 494 132',
+              hint: 'Escribe tu número de celular',
               controller: phoneController,
               focusNode: phoneFocusNode,
               validator: phoneValidator,
@@ -123,7 +127,7 @@ class ProfileForm extends StatelessWidget {
           _row(
             left: _FieldBlock(
               label: 'Documento de identidad',
-              hint: '134534',
+              hint: 'Escribe tu número de documento',
               controller: idController,
               focusNode: idFocusNode,
               validator: idValidator,
@@ -131,7 +135,7 @@ class ProfileForm extends StatelessWidget {
             ),
             right: _FieldBlock(
               label: 'Dirección',
-              hint: 'Jiron 3044',
+              hint: 'Escribe tu dirección',
               controller: addressController,
               focusNode: addressFocusNode,
               validator: addressValidator,
@@ -170,6 +174,7 @@ class _FieldBlock extends StatelessWidget {
     this.widthOverride,
     this.labelFontSize,
     this.readOnly = false,
+    this.helper,
   });
 
   final String label;
@@ -181,8 +186,11 @@ class _FieldBlock extends StatelessWidget {
   final double? widthOverride;
   final double? labelFontSize;
 
-  /// Campo no editable (el correo de acceso).
+  /// Campo no editable (correo de acceso, tipo de usuario).
   final bool readOnly;
+
+  /// Texto de ayuda bajo el campo.
+  final String? helper;
 
   @override
   Widget build(BuildContext context) {
@@ -197,13 +205,13 @@ class _FieldBlock extends StatelessWidget {
           obscureText: false,
           decoration: InputDecoration(
             hintText: hint,
-            helperText: readOnly
-                ? 'Correo de acceso. Para cambiarlo, contacta al administrador.'
-                : null,
+            helperText: helper,
             helperMaxLines: 2,
-            hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+            // Ejemplo en gris claro y del mismo tamaño que el valor, para que
+            // no se confunda con un dato guardado.
+            hintStyle: FlutterFlowTheme.of(context).bodyMedium.override(
                   font: GoogleFonts.inter(),
-                  fontSize: 18.0,
+                  color: FlutterFlowTheme.of(context).secondaryText,
                   letterSpacing: 0.0,
                 ),
             enabledBorder: _underline(context, const Color(0x00000000)),
