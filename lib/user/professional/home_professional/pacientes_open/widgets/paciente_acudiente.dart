@@ -1,6 +1,6 @@
+import '/auth/correo_registrado.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -144,20 +144,24 @@ Future<void> showEditAcudienteDialog(
                       color: const Color(0xFF265294),
                       textColor: Colors.white,
                       onTap: () async {
+                        // Correo en minúsculas: "Mis Adolescentes" del
+                        // acudiente lo busca con su correo de acceso (Auth).
                         DocumentReference? parentRef =
                             userRecord.acudiente.ref;
-                        final correoVal = correoController.text.trim();
-                        if (correoVal.isNotEmpty &&
-                            correoVal != userRecord.acudiente.correo) {
-                          final parentUser = await queryUsersRecordOnce(
-                            queryBuilder: (usersRecord) => usersRecord
-                                .where('email', isEqualTo: correoVal)
-                                .where('rol',
-                                    whereIn: ['Acudiente', 'Padre']),
-                            singleRecord: true,
-                          ).then((s) => s.firstOrNull);
-                          if (parentUser != null) {
-                            parentRef = parentUser.reference;
+                        final correoVal =
+                            normalizarCorreo(correoController.text);
+                        if (correoVal !=
+                            normalizarCorreo(userRecord.acudiente.correo)) {
+                          // Correo nuevo: la ref es la de su cuenta o
+                          // ninguna, nunca la del acudiente anterior.
+                          parentRef = null;
+                          if (correoVal.isNotEmpty) {
+                            final perfil = await perfilConCorreo(correoVal);
+                            if (perfil != null &&
+                                (perfil.rol == 'Acudiente' ||
+                                    perfil.rol == 'Padre')) {
+                              parentRef = perfil.reference;
+                            }
                           }
                         }
 
@@ -169,6 +173,11 @@ Future<void> showEditAcudienteDialog(
                               telefono: telefonoController.text.trim(),
                               parentesco: parentescoController.text.trim(),
                               ref: parentRef,
+                              // Con clearUnsetFields: false un ref null no se
+                              // escribe: hay que borrar el anterior.
+                              fieldValues: parentRef == null
+                                  ? {'ref': FieldValue.delete()}
+                                  : const {},
                               clearUnsetFields: false,
                             ),
                           ),

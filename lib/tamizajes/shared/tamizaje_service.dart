@@ -163,6 +163,57 @@ class TamizajeService {
     }).toList();
   }
 
+  /// true si [path] es `Encuestas/{id}/Respuestas/{id}` (no
+  /// `users/{uid}/Respuestas/...`).
+  static bool esRutaRespuestaDeEncuesta(String path) {
+    final s = path.split('/');
+    return s.length == 4 && s[0] == 'Encuestas' && s[2] == 'Respuestas';
+  }
+
+  /// Todas las respuestas de [paciente] con su encuesta, de la más reciente
+  /// a la más antigua. Incluye los tamizajes manuales: se busca por
+  /// `User_respuesta` (collectionGroup), no por `Encuestas.user_Ref`, que
+  /// solo se llena cuando responde el propio adolescente. Se descartan las
+  /// respuestas cuya encuesta ya no existe.
+  static Future<List<(EncuestasRecord, RespuestasRecord)>> respuestasDePaciente(
+    DocumentReference paciente,
+  ) async {
+    final respuestas = (await queryRespuestasRecordOnce(
+      queryBuilder: (q) => q.where('User_respuesta', isEqualTo: paciente),
+    ))
+        .where((r) => esRutaRespuestaDeEncuesta(r.reference.path))
+        .toList();
+
+    final padres = {
+      for (final r in respuestas) r.reference.parent.parent!.path:
+          r.reference.parent.parent!,
+    };
+    final encuestas = <String, EncuestasRecord>{};
+    await Future.wait(padres.entries.map((e) async {
+      try {
+        final snap = await e.value.get();
+        if (snap.exists) {
+          encuestas[e.key] = EncuestasRecord.fromSnapshot(snap);
+        }
+      } catch (_) {}
+    }));
+
+    final todas = <(EncuestasRecord, RespuestasRecord)>[
+      for (final r in respuestas)
+        if (encuestas[r.reference.parent.parent!.path] case final e?) (e, r),
+    ];
+    todas.sort((a, b) => compararFechaDesc(a.$2.fecha, b.$2.fecha));
+    return todas;
+  }
+
+  /// Más reciente primero; sin fecha al final.
+  static int compararFechaDesc(DateTime? a, DateTime? b) {
+    if (a == null && b == null) return 0;
+    if (a == null) return 1;
+    if (b == null) return -1;
+    return b.compareTo(a);
+  }
+
   /// Ordena tamizajes por fecha.
   static void ordenarPorFecha(
     List<RespuestasRecord> tamizajes, {

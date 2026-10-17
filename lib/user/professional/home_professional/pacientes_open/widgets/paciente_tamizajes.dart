@@ -6,6 +6,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/index.dart';
 import '/dashboard/web/encuestas/listado_encuestas/widgets/detalle_encuesta_view.dart';
+import '/tamizajes/shared/tamizaje_service.dart';
 import '/tamizajes/shared/widgets/detalle_tamizaje_view.dart';
 import '/tamizajes/shared/widgets/tamizaje_empty_state.dart';
 import 'package:collection/collection.dart';
@@ -88,50 +89,26 @@ class PacienteTamizajesSection extends StatelessWidget {
             wrapped: true,
           ),
         ),
-        StreamBuilder<List<EncuestasRecord>>(
-          stream: queryEncuestasRecord(
-            queryBuilder: (encuestasRecord) => encuestasRecord
-                .where('user_Ref', arrayContains: pacienteRef)
-                .where('tipo', isEqualTo: _currentChoice),
-          ),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Center(
-                child: SizedBox(
-                  width: 50.0,
-                  height: 50.0,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      FlutterFlowTheme.of(context).primary,
-                    ),
-                  ),
-                ),
-              );
-            }
-            return _RespuestasPaciente(
-              encuestas: snapshot.data!,
-              user: user,
-              pacienteRef: pacienteRef,
-              choice: _currentChoice,
-            );
-          },
+        _RespuestasPaciente(
+          user: user,
+          pacienteRef: pacienteRef,
+          choice: _currentChoice,
         ),
       ],
     );
   }
 }
 
-/// Una tarjeta por cada respuesta del paciente a los cuestionarios
-/// [encuestas], de la más reciente a la más antigua.
+/// Una tarjeta por cada respuesta del paciente a los cuestionarios del tipo
+/// [choice] (incluidos los tamizajes manuales), de la más reciente a la más
+/// antigua.
 class _RespuestasPaciente extends StatefulWidget {
   const _RespuestasPaciente({
-    required this.encuestas,
     required this.user,
     required this.pacienteRef,
     required this.choice,
   });
 
-  final List<EncuestasRecord> encuestas;
   final UsersRecord user;
   final DocumentReference pacienteRef;
   final String? choice;
@@ -152,34 +129,17 @@ class _RespuestasPacienteState extends State<_RespuestasPaciente> {
   @override
   void didUpdateWidget(covariant _RespuestasPaciente oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final antes = oldWidget.encuestas.map((e) => e.reference.path).toList();
-    final ahora = widget.encuestas.map((e) => e.reference.path).toList();
     if (oldWidget.pacienteRef != widget.pacienteRef ||
-        !const ListEquality<String>().equals(antes, ahora)) {
+        oldWidget.choice != widget.choice) {
       _respuestas = _cargar();
     }
   }
 
   Future<List<(EncuestasRecord, RespuestasRecord)>> _cargar() async {
-    final porEncuesta = await Future.wait(widget.encuestas.map(
-      (e) async => (await queryRespuestasRecordOnce(
-        parent: e.reference,
-        queryBuilder: (r) =>
-            r.where('User_respuesta', isEqualTo: widget.pacienteRef),
-      ))
-          .map((r) => (e, r)),
-    ));
-    final todas = porEncuesta.expand((l) => l).toList();
-    // Más reciente primero; sin fecha al final.
-    todas.sort((a, b) {
-      final fa = a.$2.fecha;
-      final fb = b.$2.fecha;
-      if (fa == null && fb == null) return 0;
-      if (fa == null) return 1;
-      if (fb == null) return -1;
-      return fb.compareTo(fa);
-    });
-    return todas;
+    final todas = await TamizajeService.respuestasDePaciente(widget.pacienteRef);
+    return todas
+        .where((p) => widget.choice == null || p.$1.tipo == widget.choice)
+        .toList();
   }
 
   @override
@@ -286,6 +246,31 @@ class _RespuestaTile extends StatelessWidget {
     );
   }
 
+  Widget _etiqueta(
+    BuildContext context,
+    String texto, {
+    required Color fondo,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+      decoration: BoxDecoration(
+        color: fondo,
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Text(
+        texto,
+        style: FlutterFlowTheme.of(context).bodyMedium.override(
+              font: GoogleFonts.inter(fontWeight: FontWeight.w500),
+              color: color,
+              fontSize: 11.0,
+              letterSpacing: 0.0,
+              fontWeight: FontWeight.w500,
+            ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
@@ -341,7 +326,9 @@ class _RespuestaTile extends StatelessWidget {
                                   fontStyle: bodyMedium.fontStyle,
                                 ),
                               ),
-                              Row(
+                              Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                runSpacing: 4.0,
                                 children: [
                                   Text(
                                     fecha != null
@@ -363,28 +350,25 @@ class _RespuestaTile extends StatelessWidget {
                                       fontStyle: bodyMedium.fontStyle,
                                     ),
                                   ),
+                                  // Aplicado por un profesional (wizard
+                                  // manual), no respondido por el adolescente.
+                                  if (respuesta.realizadoPor != null) ...[
+                                    const SizedBox(width: 8.0),
+                                    _etiqueta(
+                                      context,
+                                      'Tamizaje manual',
+                                      fondo: const Color(0xFF265294)
+                                          .withValues(alpha: 0.1),
+                                      color: const Color(0xFF265294),
+                                    ),
+                                  ],
                                   if (respuesta.invalidado) ...[
                                     const SizedBox(width: 8.0),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0, vertical: 2.0),
-                                      decoration: BoxDecoration(
-                                        color: theme.alternate,
-                                        borderRadius:
-                                            BorderRadius.circular(12.0),
-                                      ),
-                                      child: Text(
-                                        'Invalidada',
-                                        style: bodyMedium.override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                          color: theme.secondaryText,
-                                          fontSize: 11.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
+                                    _etiqueta(
+                                      context,
+                                      'Invalidada',
+                                      fondo: theme.alternate,
+                                      color: theme.secondaryText,
                                     ),
                                   ],
                                 ],
