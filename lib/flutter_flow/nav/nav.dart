@@ -260,11 +260,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         FFRoute(
-          name: EditProfileParentsWidget.routeName,
-          path: EditProfileParentsWidget.routePath,
-          builder: (context, params) => EditProfileParentsWidget(),
-        ),
-        FFRoute(
           name: PacientesOpenWidget.routeName,
           path: PacientesOpenWidget.routePath,
           builder: (context, params) => PacientesOpenWidget(

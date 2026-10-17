@@ -38,8 +38,6 @@ export '/parents/encuestas_parents/encuestas_parents_widget.dart'
     show EncuestasParentsWidget;
 export '/parents/encuestas_parents_open/encuestas_parents_open_widget.dart'
     show EncuestasParentsOpenWidget;
-export '/parents/edit_profile_parents/edit_profile_parents_widget.dart'
-    show EditProfileParentsWidget;
 export '/user/professional/home_professional/pacientes_open/pacientes_open_widget.dart'
     show PacientesOpenWidget;
 export '/user/professional/recordatorios/recordatorios_open/recordatorios_open_widget.dart'

@@ -157,7 +157,6 @@ final parametersBuilderMap =
           'desc': getParameter<String>(data, 'desc'),
         },
       ),
-  'EditProfileParents': ParameterData.none(),
   'pacientesOpen': (data) async => ParameterData(
         allParams: {
           'idPacientes': getParameter<DocumentReference>(data, 'idPacientes'),
