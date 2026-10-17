@@ -1,3 +1,4 @@
+import '/auth/correo_registrado.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/user/registration/sesion_app.dart';
 import '/backend/backend.dart';
@@ -1077,6 +1078,23 @@ class _RegisterContinueWidgetState extends State<RegisterContinueWidget> {
                               );
                               if (user == null) {
                                 limpiarSesionApp();
+                                return;
+                              }
+
+                              // Sin sesión no se puede leer `users`: se revisa
+                              // ya con la cuenta creada. Si el correo es de
+                              // otro perfil (p. ej. registrado por un
+                              // profesional), se borra la cuenta nueva.
+                              UsersRecord? existente;
+                              try {
+                                existente = await perfilConCorreo(correo,
+                                    excluir:
+                                        UsersRecord.collection.doc(user.uid));
+                              } catch (_) {}
+                              if (existente != null) {
+                                await revertirAltaIncompleta(
+                                    context, user, 'correo en uso',
+                                    mensaje: kMensajeCorreoYaRegistradoApp);
                                 return;
                               }
 

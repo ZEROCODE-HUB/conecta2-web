@@ -1,3 +1,4 @@
+import '/auth/correo_registrado.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -175,6 +176,7 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
                             FFAppState().detalleUsuarioTemp.email,
                             FFAppState().detalleUsuarioTemp.password,
                           );
+                          final cuentaNueva = authUser != null;
                           if (authUser == null) {
                             ScaffoldMessenger.of(context).clearSnackBars();
                             authUser = await authManager.signInWithEmail(
@@ -186,6 +188,42 @@ class _RegisterContinue3WidgetState extends State<RegisterContinue3Widget> {
                               limpiarSesionApp();
                               return;
                             }
+                          }
+
+                          // Sin sesión no se puede leer `users`: se revisa
+                          // ya con la cuenta. Si el correo es de otro perfil
+                          // (p. ej. registrado por su profesional), no se
+                          // crea un segundo usuario.
+                          UsersRecord? existente;
+                          try {
+                            existente = await perfilConCorreo(
+                                FFAppState().detalleUsuarioTemp.email,
+                                excluir:
+                                    UsersRecord.collection.doc(authUser.uid));
+                          } catch (_) {}
+                          if (existente != null) {
+                            if (cuentaNueva) {
+                              await revertirAltaIncompleta(
+                                  context, authUser, 'correo en uso',
+                                  mensaje: kMensajeCorreoYaRegistradoApp);
+                            } else {
+                              // Cuenta previa (B7): no se borra; solo se
+                              // cierra la sesión.
+                              try {
+                                await authManager.signOut();
+                              } catch (_) {}
+                              limpiarSesionApp();
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                        Text(kMensajeCorreoYaRegistradoApp),
+                                    duration: Duration(seconds: 6),
+                                  ),
+                                );
+                              }
+                            }
+                            return;
                           }
 
                           // Fix: Avoid querying by email which fails due to Firestore delay.

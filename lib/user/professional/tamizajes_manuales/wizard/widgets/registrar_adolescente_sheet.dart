@@ -1,3 +1,4 @@
+import '/auth/correo_registrado.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/schema/shared/listas_fijas.dart';
@@ -57,8 +58,22 @@ class _BottomSheetRegistrarAdolescenteState
     }
     setState(() => _guardando = true);
     try {
+      // El correo es opcional; si viene, no puede ser de otro usuario.
+      final email = normalizarCorreo(_email.text);
+      if (email.isNotEmpty) {
+        final existente = await perfilConCorreo(email);
+        if (existente != null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(mensajeCorreoRegistrado(email, existente))),
+            );
+          }
+          return;
+        }
+      }
+
       DocumentReference? parentRef;
-      final parentEmail = _acudienteCorreo.text.trim();
+      final parentEmail = normalizarCorreo(_acudienteCorreo.text);
       if (parentEmail.isNotEmpty) {
         final parentUser = await queryUsersRecordOnce(
           queryBuilder: (usersRecord) => usersRecord
@@ -74,7 +89,7 @@ class _BottomSheetRegistrarAdolescenteState
       final ref = FirebaseFirestore.instance.collection('users').doc();
       final ubicacion = ubicacionDeColegio(_colegios, _colegioSeleccionado);
       final data = createUsersRecordData(
-        email: _email.text.trim(),
+        email: email,
         displayName: _nombre.text.trim(),
         phoneNumber: _telefono.text.trim(),
         rol: 'Adolescente',

@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import '/auth/correo_registrado.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
@@ -1325,6 +1326,36 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
       return;
     }
 
+    // Correo nuevo: normalizado y sin repetir el de otro usuario. Si no
+    // cambió, se guarda tal cual estaba.
+    final correoCambio = normalizarCorreo(email) !=
+        normalizarCorreo(rowUsersRecord.email);
+    final emailGuardar =
+        correoCambio ? normalizarCorreo(email) : rowUsersRecord.email;
+    if (correoCambio) {
+      UsersRecord? existente;
+      try {
+        existente =
+            await perfilConCorreo(emailGuardar, excluir: widget.documentID);
+      } catch (_) {}
+      if (existente != null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              mensajeCorreoRegistrado(emailGuardar, existente),
+              style: TextStyle(
+                color: FlutterFlowTheme.of(context).primaryBackground,
+              ),
+            ),
+            backgroundColor: FlutterFlowTheme.of(context).error,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        return;
+      }
+    }
+
     final isEditingAcudiente =
         _model.ddTipoValue == 'Acudiente' || _model.ddTipoValue == 'Padre';
     final isAdolescente = _model.ddTipoValue == 'Adolescente';
@@ -1362,7 +1393,7 @@ class _EditarUsuarioWidgetState extends State<EditarUsuarioWidget> {
     }
 
     await widget.documentID!.update(createUsersRecordData(
-      email: _model.emailTextController.text,
+      email: emailGuardar,
       displayName: _model.textFieldNombresTextController.text,
       photoUrl: _model.uploadedFileUrl_uploadImage2 != ''
           ? _model.uploadedFileUrl_uploadImage2

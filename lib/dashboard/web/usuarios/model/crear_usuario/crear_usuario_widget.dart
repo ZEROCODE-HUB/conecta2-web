@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import '/auth/correo_registrado.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
@@ -81,16 +82,8 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
   /// eliminado antes de que Eliminar borrara también la cuenta Auth).
   Future<String> _mensajeCorreoEnUso(String email) async {
     try {
-      final existente = await queryUsersRecordOnce(
-        queryBuilder: (u) => u.where('email', isEqualTo: email),
-        singleRecord: true,
-      ).then((s) => s.firstOrNull);
-      if (existente != null) {
-        final nombre = existente.displayName.isNotEmpty
-            ? existente.displayName
-            : 'otro usuario';
-        return 'El correo $email ya pertenece al usuario "$nombre".';
-      }
+      final existente = await perfilConCorreo(email);
+      if (existente != null) return mensajeCorreoRegistrado(email, existente);
     } catch (_) {}
     return 'Existe una cuenta de acceso sin perfil con el correo $email '
         '(posiblemente de un usuario eliminado). Contacta al administrador '
@@ -974,7 +967,8 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
       return;
     }
 
-    final emailVal = _model.emailTextController.text.trim();
+    // Mismo formato que Firebase Auth, para que coincida con Acudiente.correo.
+    final emailVal = normalizarCorreo(_model.emailTextController.text);
     if (emailVal.isEmpty || !emailVal.contains('@') || !emailVal.contains('.')) {
       await showDialog(
         context: context,
@@ -1053,6 +1047,34 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                 style: TextStyle(fontWeight: FontWeight.bold)),
             content: const Text(
                 'Por favor, selecciona una institución de la lista.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(alertDialogContext),
+                child: const Text('Entendido'),
+              ),
+            ],
+          ),
+        ),
+      );
+      safeSetState(() {});
+      return;
+    }
+
+    // Auth solo rechaza correos de cuentas de acceso; los adolescentes
+    // registrados por un profesional no tienen cuenta y solo se ven aquí.
+    UsersRecord? perfilExistente;
+    try {
+      perfilExistente = await perfilConCorreo(emailVal);
+    } catch (_) {}
+    if (perfilExistente != null) {
+      final mensaje = mensajeCorreoRegistrado(emailVal, perfilExistente);
+      await showDialog(
+        context: context,
+        builder: (alertDialogContext) => WebViewAware(
+          child: AlertDialog(
+            title: const Text('Correo ya registrado',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: Text(mensaje),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(alertDialogContext),

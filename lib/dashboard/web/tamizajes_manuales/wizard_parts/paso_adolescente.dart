@@ -330,11 +330,11 @@ class _DialogoRegistrarAdolescenteState
   Future<void> _guardar() async {
     final nombre = _nombre.text.trim();
     final identidad = _identidad.text.trim();
-    final email = _email.text.trim();
+    final email = normalizarCorreo(_email.text);
     final telefono = _telefono.text.trim();
     final acudienteNombre = _acudienteNombre.text.trim();
     final acudienteTelefono = _acudienteTelefono.text.trim();
-    final acudienteCorreo = _acudienteCorreo.text.trim();
+    final acudienteCorreo = normalizarCorreo(_acudienteCorreo.text);
     
     if (nombre.isEmpty ||
         identidad.isEmpty ||
@@ -362,20 +362,16 @@ class _DialogoRegistrarAdolescenteState
 
     setState(() => _guardando = true);
     try {
-      // Verificar si el correo ya existe
-      final usuariosExistentes = await queryUsersRecordOnce(
-        queryBuilder: (q) => q.where('email', isEqualTo: email),
-        limit: 1,
-      );
-      
-      if (usuariosExistentes.isNotEmpty) {
-         if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('El correo ingresado ya se encuentra registrado')),
-            );
-            setState(() => _guardando = false);
-         }
-         return;
+      // Verificar si el correo ya existe (con o sin cuenta de acceso)
+      final existente = await perfilConCorreo(email);
+      if (existente != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(mensajeCorreoRegistrado(email, existente))),
+          );
+          setState(() => _guardando = false);
+        }
+        return;
       }
 
       DocumentReference? parentRef;

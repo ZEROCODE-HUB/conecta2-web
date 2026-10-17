@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 /// Alta a medias: la cuenta de Firebase Auth se creó pero falló el `set()`
 /// del perfil en `users`. Borra la cuenta recién creada para no dejar el
 /// correo bloqueado ("ya está registrado") y avisa al usuario.
+/// [mensaje] reemplaza el aviso genérico.
 Future<void> revertirAltaIncompleta(
   BuildContext context,
   BaseAuthUser user,
-  Object error,
-) async {
+  Object error, {
+  String? mensaje,
+}) async {
   try {
     await user.delete();
   } catch (_) {}
@@ -20,7 +22,7 @@ Future<void> revertirAltaIncompleta(
   if (!context.mounted) return;
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(
+      content: Text(mensaje ??
           'No se pudo completar el registro. Intenta de nuevo. ($error)'),
       duration: const Duration(seconds: 6),
     ),
