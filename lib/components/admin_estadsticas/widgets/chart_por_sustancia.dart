@@ -28,7 +28,6 @@ class ChartPorSustancia extends StatelessWidget {
           : GroupedBarChart(
               categorias: sustancias,
               niveles: [if (haySinAlerta) kSinAlerta, ...kNivelesAssist],
-              sinAlertaGris: true,
               data: stats.porSustancia,
               tooltipCategoryLabel: (c) => c,
             ),

@@ -177,12 +177,18 @@ void main() {
         TamizajeTipo.autoestima,
       ]) {
         expect(t.niveles.first, 'Sin alerta');
-        expect(t.sinAlertaFueraDeRango, isTrue);
       }
-      expect(TamizajeTipo.srq.sinAlertaFueraDeRango, isFalse);
-      expect(StatsColors.forNivel('Sin alerta', sinAlertaGris: true),
-          StatsColors.gris);
-      expect(StatsColors.forNivel('Sin alerta'), StatsColors.verde);
+    });
+
+    test('"Sin alerta" es gris en todos los tipos; los sanos siguen verdes',
+        () {
+      for (final t in TamizajeTipo.values) {
+        expect(t.niveles.first, 'Sin alerta');
+        expect(StatsColors.forNivel(t.niveles.first), StatsColors.gris);
+      }
+      expect(StatsColors.forNivel('Sin sintomatología'), StatsColors.verde);
+      expect(StatsColors.forNivel('Mínima'), StatsColors.verde);
+      expect(StatsColors.forNivel('Elevada'), StatsColors.verde);
     });
   });
 

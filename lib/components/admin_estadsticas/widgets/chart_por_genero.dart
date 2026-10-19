@@ -19,7 +19,6 @@ class ChartPorGenero extends StatelessWidget {
           : GroupedBarChart(
               categorias: kGeneros,
               niveles: stats.niveles,
-              sinAlertaGris: stats.tipo.sinAlertaFueraDeRango,
               data: stats.porGenero,
               tooltipCategoryLabel: (c) => c,
             ),

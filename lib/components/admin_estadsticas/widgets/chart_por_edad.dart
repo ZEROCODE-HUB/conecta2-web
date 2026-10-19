@@ -19,7 +19,6 @@ class ChartPorEdad extends StatelessWidget {
           : GroupedBarChart(
               categorias: kRangosEdad,
               niveles: stats.niveles,
-              sinAlertaGris: stats.tipo.sinAlertaFueraDeRango,
               data: stats.porEdad,
               tooltipCategoryLabel: (c) => '$c años',
             ),
