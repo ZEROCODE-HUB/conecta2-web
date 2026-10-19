@@ -34,19 +34,13 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                 ),
               ],
             ),
-            child: FutureBuilder<Map<String, dynamic>>(
-              future: _getInstitucionStats(institucion['nombre']),
-              builder: (context, snapshot) {
-                final stats = snapshot.data ??
-                    {
-                      'totalUsuarios': 0,
-                      'respuestasPorTamizaje': {},
-                      'tamizajesRespondidos': [],
-                    };
-                final respuestasPorTamizaje =
-                    stats['respuestasPorTamizaje'] as Map<String, int>;
-                final tamizajesRespondidos =
-                    stats['tamizajesRespondidos'] as List<dynamic>;
+            child: Builder(
+              builder: (context) {
+                final clave = institucion['clave'] as String;
+                final totalUsuarios =
+                    adolescentesPorColegio[clave]?.length ?? 0;
+                final porTamizaje =
+                    estudiantesPorTamizaje(respuestas, clave, anoSeleccionado);
 
                 return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -97,275 +91,215 @@ extension _MapaInstitucionesHelpers on _MapaInstitucionesEducativasState {
                     ),
                     // Content
                     Flexible(
-                      child: snapshot.connectionState == ConnectionState.waiting
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        darkYellow),
-                                  ),
-                                  SizedBox(height: 16),
-                                  Text(
-                                    'Cargando estadísticas...',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
+                      child: SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Nombre de la institución
+                            Text(
+                              institucion['nombre'],
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                                height: 1.3,
                               ),
-                            )
-                          : SingleChildScrollView(
-                              physics: ClampingScrollPhysics(),
-                              padding: EdgeInsets.all(20),
+                            ),
+                            SizedBox(height: 6),
+                            // Dirección
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.location_on_outlined,
+                                  size: 16,
+                                  color: Colors.grey[600],
+                                ),
+                                SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    '${institucion['direccion']}, ${institucion['barrio']}, ${institucion['municipio']}, Colombia',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey[700],
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 24),
+
+                            // Total de adolescentes
+                            Text(
+                              'Total de adolescentes',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: darkYellow.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: darkYellow.withOpacity(0.3),
+                                ),
+                              ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Nombre de la institución
                                   Text(
-                                    institucion['nombre'],
+                                    '$totalUsuarios',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 32,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                      height: 1.3,
+                                      color: darkYellow,
                                     ),
                                   ),
-                                  SizedBox(height: 6),
-                                  // Dirección
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        size: 16,
-                                        color: Colors.grey[600],
-                                      ),
-                                      SizedBox(width: 6),
-                                      Expanded(
-                                        child: Text(
-                                          '${institucion['direccion']}, ${institucion['barrio']}, ${institucion['municipio']}, Colombia',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.grey[700],
-                                            height: 1.4,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 24),
-
-                                  // Total de adolescentes
                                   Text(
-                                    'Total de adolescentes',
+                                    'Estudiantes',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  SizedBox(height: 12),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: darkYellow.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: darkYellow.withOpacity(0.3),
-                                      ),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          '${stats['totalUsuarios']}',
-                                          style: TextStyle(
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
-                                            color: darkYellow,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Estudiantes',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(height: 24),
-
-                                  // Tamizajes respondidos
-                                  Text(
-                                    'Tamizajes respondidos',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  SizedBox(height: 12),
-
-                                  if (tamizajesRespondidos.isEmpty)
-                                    Container(
-                                      padding: EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[50],
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                            color: Colors.grey[300]!),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.info_outline,
-                                            color: Colors.grey[600],
-                                            size: 20,
-                                          ),
-                                          SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              'No hay tamizajes respondidos por estudiantes de esta institución',
-                                              style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  else
-                                    ...tamizajesRespondidos
-                                        .map((nombreTamizaje) {
-                                      final respuestas = respuestasPorTamizaje[
-                                              nombreTamizaje] ??
-                                          0;
-                                      final porcentaje =
-                                          stats['totalUsuarios'] > 0
-                                              ? (respuestas /
-                                                      stats['totalUsuarios'] *
-                                                      100)
-                                                  .clamp(0, 100)
-                                                  .toStringAsFixed(1)
-                                              : '0.0';
-
-                                      return Container(
-                                        margin: EdgeInsets.only(bottom: 12),
-                                        padding: EdgeInsets.all(14),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                              color: Colors.grey[300]!),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          color: Colors.white,
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.assignment_turned_in,
-                                                  size: 18,
-                                                  color: darkYellow,
-                                                ),
-                                                SizedBox(width: 8),
-                                                Expanded(
-                                                  child: Text(
-                                                    nombreTamizaje,
-                                                    style: TextStyle(
-                                                      fontSize: 13,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Colors.black87,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(height: 8),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  '$respuestas ${respuestas == 1 ? 'estudiante' : 'estudiantes'}',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: darkYellow,
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: darkYellow
-                                                        .withOpacity(0.1),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            4),
-                                                  ),
-                                                  // child: Text(
-                                                  //   '$porcentaje%',
-                                                  //   style: TextStyle(
-                                                  //     fontSize: 13,
-                                                  //     fontWeight:
-                                                  //         FontWeight.w600,
-                                                  //     color: darkYellow,
-                                                  //   ),
-                                                  // ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    }).toList(),
-
-                                  SizedBox(height: 20),
-
-                                  // Información adicional
-                                  Container(
-                                    padding: EdgeInsets.all(14),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        _buildInfoItem(
-                                            'Tipo',
-                                            institucion['tipo'] ??
-                                                'DESCONOCIDO'),
-                                        SizedBox(height: 8),
-                                        _buildInfoItem(
-                                            'Código DANE',
-                                            institucion['codigo'] ??
-                                                'Sin código'),
-                                        SizedBox(height: 8),
-                                        _buildInfoItem(
-                                            'Barrio',
-                                            institucion['barrio'] ??
-                                                'Sin barrio'),
-                                      ],
+                                      color: Colors.grey[700],
                                     ),
                                   ),
                                 ],
                               ),
                             ),
+                            SizedBox(height: 24),
+
+                            // Tamizajes respondidos
+                            Text(
+                              anoSeleccionado == null
+                                  ? 'Tamizajes respondidos'
+                                  : 'Tamizajes respondidos en $anoSeleccionado',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            SizedBox(height: 12),
+
+                            if (porTamizaje.isEmpty)
+                              Container(
+                                padding: EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey[300]!),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline,
+                                      color: Colors.grey[600],
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        anoSeleccionado == null
+                                            ? 'No hay tamizajes respondidos por estudiantes de esta institución'
+                                            : 'No hay tamizajes respondidos en $anoSeleccionado por estudiantes de esta institución',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              ...porTamizaje.map((entrada) {
+                                final nombreTamizaje = entrada.key;
+                                final estudiantes = entrada.value;
+                                return Container(
+                                  margin: EdgeInsets.only(bottom: 12),
+                                  padding: EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    border:
+                                        Border.all(color: Colors.grey[300]!),
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: Colors.white,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.assignment_turned_in,
+                                            size: 18,
+                                            color: darkYellow,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              nombreTamizaje,
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            '$estudiantes ${estudiantes == 1 ? 'estudiante' : 'estudiantes'}',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: darkYellow,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+
+                            SizedBox(height: 20),
+
+                            // Información adicional
+                            Container(
+                              padding: EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildInfoItem('Tipo',
+                                      institucion['tipo'] ?? 'DESCONOCIDO'),
+                                  SizedBox(height: 8),
+                                  _buildInfoItem('Código DANE',
+                                      institucion['codigo'] ?? 'Sin código'),
+                                  SizedBox(height: 8),
+                                  _buildInfoItem('Barrio',
+                                      institucion['barrio'] ?? 'Sin barrio'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 );

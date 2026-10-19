@@ -18,11 +18,17 @@ import '/flutter_flow/custom_functions.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gm;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/auth/firebase_auth/auth_util.dart';
-
+import '/tamizajes/shared/tamizaje_service.dart';
+import 'mapa_helpers.dart';
 
 part 'mapa_barrio_dialog.dart';
 part 'mapa_detalle_helpers.dart';
 
+/// Mapa de intervención (Estadísticas → Mapa del panel web).
+///
+/// Un colegio está "intervenido" si alguno de sus adolescentes visibles (todos
+/// para el administrador; los asignados para el profesional) tiene al menos un
+/// tamizaje respondido y no invalidado, incluidos los tamizajes manuales.
 class MapaInstitucionesEducativas extends StatefulWidget {
   const MapaInstitucionesEducativas({
     Key? key,
@@ -42,611 +48,353 @@ class MapaInstitucionesEducativas extends StatefulWidget {
 
 class _MapaInstitucionesEducativasState
     extends State<MapaInstitucionesEducativas> {
+  // Centro inicial mientras cargan los colegios (todos están en Cartagena).
+  static const _centroInicial = gm.LatLng(10.3932, -75.4832);
+
   gm.GoogleMapController? mapController;
   Set<gm.Marker> markers = {};
 
+  /// Municipio y barrio elegidos, normalizados con [normalizarTexto].
   String? municipioSeleccionado;
   String? barrioSeleccionado;
   int? anoSeleccionado;
-  bool isLoadingData = true;
+  bool isLoading = true;
+  bool errorCarga = false;
   bool isDialogOpen = false;
 
-  // Lista de instituciones cargadas desde Firebase
+  /// Colegios del catálogo con coordenadas válidas, uno por nombre.
   List<Map<String, dynamic>> instituciones = [];
-  bool isLoadingInstituciones = true;
 
-  // Lista de barrios cargados desde Firebase
-  List<Map<String, dynamic>> barrios = [];
-  bool isLoadingBarrios = true;
+  /// Colegios del catálogo con coordenadas inválidas: clave → datos.
+  Map<String, Map<String, dynamic>> colegiosSinCoordenadas = {};
 
-  // Datos de municipios con coordenadas específicas
-  final Map<String, Map<String, dynamic>> municipios = {
-    'Cartagena': {
-      'centro': gm.LatLng(10.3932, -75.4832),
-      'zoom': 12.5,
-    },
-    'Bucaramanga': {
-      'centro': gm.LatLng(7.1193, -73.1227),
-      'zoom': 12.5,
-    },
-    'Montería': {
-      'centro': gm.LatLng(8.7479, -75.8814),
-      'zoom': 12.5,
-    },
-    'Cúcuta': {
-      'centro': gm.LatLng(7.8939, -72.5078),
-      'zoom': 12.5,
-    },
-    'Barrancabermeja': {
-      'centro': gm.LatLng(7.0653, -73.8547),
-      'zoom': 12.5,
-    },
-  };
+  /// Nombre del colegio tal como lo escribió el adolescente: clave → nombre.
+  Map<String, String> nombreColegioAdolescente = {};
 
-  // Color primario por defecto para evitar valores nulos
-  Color get primaryColor => FlutterFlowTheme.of(context).primary ?? Colors.blue;
+  /// Adolescentes visibles por colegio: clave → rutas `users/{id}`.
+  Map<String, Set<String>> adolescentesPorColegio = {};
+
+  /// Respuestas válidas de tamizaje de los adolescentes visibles.
+  List<RespuestaMapa> respuestas = [];
+
+  Color get primaryColor => FlutterFlowTheme.of(context).primary;
 
   @override
   void initState() {
     super.initState();
-
-    // Test de parseo de coordenadas
-    print('🧪 Probando parseo de coordenadas:');
-    print('  "1.039.606" -> ${_parseCoordinate("1.039.606")}');
-    print('  "-7.546.132" -> ${_parseCoordinate("-7.546.132")}');
-    print('  "10.39033" -> ${_parseCoordinate("10.39033")}');
-
-    _cargarBarrios();
-    _cargarInstituciones();
+    _cargarDatos();
   }
 
-  // Función para obtener colegios que tienen tamizajes (lugares intervenidos)
-  Future<Set<String>> _obtenerColegiosConTamizaje() async {
-    Set<String> colegiosConTamizaje = {};
+  Future<void> _cargarDatos() async {
     try {
-      print('📋 Buscando colegios con tamizajes (filtrado por rol)...');
-      
-      // Obtener rol del usuario actual
-      final userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserUid).get();
-      final userRol = userDoc.data()?['rol'] as String?;
+      final yo = currentUserReference;
+      final rol = currentUserDocument?.rol ??
+          (yo == null ? '' : (await UsersRecord.getDocumentOnce(yo)).rol);
+      final esProfesional = rol == FFAppConstants.Profesional && yo != null;
 
-      final tamizajesSnapshot = await FirebaseFirestore.instance
-          .collection('Encuestas')
-          .where('Publicado', isEqualTo: true)
-          .get();
+      final colegiosFuture =
+          FirebaseFirestore.instance.collection('colegios').get();
+      final tamizajesFuture = queryEncuestasRecordOnce(
+        queryBuilder: (q) => q.where('tipo', isEqualTo: 'Tamizajes'),
+      );
+      final usuariosFuture = queryUsersRecordOnce(
+        queryBuilder: (q) => esProfesional
+            ? q.where('Profesionales.Ref', isEqualTo: yo)
+            : q.where('rol', isEqualTo: FFAppConstants.adolescente),
+      );
 
-      Set<String> userPaths = {};
-      for (var doc in tamizajesSnapshot.docs) {
+      final adolescentes = (await usuariosFuture)
+          .where((u) => u.rol == FFAppConstants.adolescente)
+          .toList();
+      final colegioPorUsuario = <String, String>{};
+      final porColegio = <String, Set<String>>{};
+      final nombresAdolescentes = <String, String>{};
+      for (final u in adolescentes) {
+        final clave = normalizarTexto(u.colegio);
+        if (clave.isEmpty) continue;
+        colegioPorUsuario[u.reference.path] = clave;
+        porColegio.putIfAbsent(clave, () => {}).add(u.reference.path);
+        nombresAdolescentes.putIfAbsent(clave, () => u.colegio.trim());
+      }
+
+      final tituloPorTamizaje = {
+        for (final e in await tamizajesFuture) e.reference.id: e.titulo.trim(),
+      };
+      final idsTamizaje = tituloPorTamizaje.keys.toSet();
+
+      // Respuestas de los adolescentes, en lotes de 30 (límite de whereIn).
+      final refs = adolescentes.map((u) => u.reference).toList();
+      final lotes = await Future.wait([
+        for (var i = 0; i < refs.length; i += 30)
+          queryRespuestasRecordOnce(
+            queryBuilder: (q) => q.where(
+              'User_respuesta',
+              whereIn:
+                  refs.sublist(i, i + 30 > refs.length ? refs.length : i + 30),
+            ),
+          ),
+      ]);
+      final respuestasTemp = <RespuestaMapa>[];
+      for (final r in lotes.expand((l) => l)) {
+        if (r.invalidado) continue;
+        if (!TamizajeService.esRespuestaDeTamizaje(r, idsTamizaje)) continue;
+        final usuario = r.userRespuesta?.path;
+        final colegio = colegioPorUsuario[usuario];
+        if (usuario == null || colegio == null) continue;
+        final titulo = tituloPorTamizaje[r.reference.parent.parent!.id] ?? '';
+        respuestasTemp.add(RespuestaMapa(
+          usuario: usuario,
+          colegio: colegio,
+          tamizaje: (titulo.isNotEmpty ? titulo : r.titlo.trim()).toUpperCase(),
+          fecha: r.fecha,
+        ));
+      }
+
+      final institucionesTemp = <Map<String, dynamic>>[];
+      final sinCoordenadas = <String, Map<String, dynamic>>{};
+      final vistos = <String>{};
+      for (final doc in (await colegiosFuture).docs) {
         final data = doc.data();
-        final tipo = data['tipo']?.toString().toLowerCase() ?? '';
-        if (tipo.contains('tamizaje')) {
-          final userRefList = data['user_Ref'] as List<dynamic>? ?? [];
-          for (var userRef in userRefList) {
-            if (userRef is DocumentReference) {
-              userPaths.add(userRef.path);
-            }
-          }
+        final nombre = data['nombre']?.toString().trim() ?? '';
+        final clave = normalizarTexto(nombre);
+        if (clave.isEmpty || vistos.contains(clave)) continue;
+        final latitud = parseCoordenada(data['latitud'], esLatitud: true);
+        final longitud = parseCoordenada(data['longitud'], esLatitud: false);
+        final institucion = {
+          'id': doc.id,
+          'clave': clave,
+          'nombre': nombre,
+          'tipo': data['sector']?.toString().trim() ?? 'DESCONOCIDO',
+          'barrio': data['barrio']?.toString().trim() ?? 'Sin barrio',
+          'direccion': data['direccion']?.toString().trim() ?? 'Sin dirección',
+          'codigo': data['cod_dane']?.toString().trim() ?? '',
+          'municipio': data['municipio']?.toString().trim() ?? '',
+          'latitudTexto': data['latitud']?.toString() ?? '',
+          'longitudTexto': data['longitud']?.toString() ?? '',
+          'latitud': latitud,
+          'longitud': longitud,
+        };
+        if (latitud == null || longitud == null) {
+          // Puede haber otra copia del colegio con coordenadas válidas.
+          sinCoordenadas.putIfAbsent(clave, () => institucion);
+          continue;
         }
+        vistos.add(clave);
+        sinCoordenadas.remove(clave);
+        institucionesTemp.add(institucion);
       }
 
-      print('👥 Usuarios únicos con tamizajes: ${userPaths.length}');
-
-      if (userPaths.isEmpty) return {};
-
-      Query usuariosQuery = FirebaseFirestore.instance.collection('users');
-      if (userRol == 'Profesional') {
-        usuariosQuery = usuariosQuery.where('Profesionales.Ref', isEqualTo: userDoc.reference);
-      } else {
-        usuariosQuery = usuariosQuery.where('rol', isEqualTo: 'Adolescente');
-      }
-
-      final usersSnapshot = await usuariosQuery.get();
-      
-      for (var doc in usersSnapshot.docs) {
-        if (userPaths.contains(doc.reference.path)) {
-          final data = doc.data() as Map<String, dynamic>?;
-          if (data != null) {
-            final colegio = data['colegio']?.toString().trim().toLowerCase();
-            if (colegio != null && colegio.isNotEmpty) {
-              colegiosConTamizaje.add(colegio);
-            }
-          }
-        }
-      }
-      
-      print('🏫 Colegios con tamizajes encontrados: ${colegiosConTamizaje.length}');
-      
-    } catch (e) {
-      print('❌ Error obteniendo colegios con tamizaje: $e');
-    }
-    return colegiosConTamizaje;
-  }
-
-  // Función para cargar barrios desde Firebase
-  Future<void> _cargarBarrios() async {
-    try {
-      setState(() {
-        isLoadingBarrios = true;
-      });
-
-      final querySnapshot =
-          await FirebaseFirestore.instance.collection('barrios').get();
-
-      List<Map<String, dynamic>> barriosTemp = [];
-
-      for (var doc in querySnapshot.docs) {
-        final data = doc.data();
-        barriosTemp.add({
-          'nombre': data['nombre'] ?? 'Sin nombre',
-          'municipio': data['municipio'] ?? 'Desconocido',
-        });
-      }
-
-      print('✅ Total barrios cargados: ${barriosTemp.length}');
-
-      setState(() {
-        barrios = barriosTemp;
-        isLoadingBarrios = false;
-      });
-    } catch (e) {
-      print('Error cargando barrios: $e');
-      setState(() {
-        isLoadingBarrios = false;
-      });
-    }
-  }
-
-  // Función para cargar instituciones desde Firebase
-  Future<void> _cargarInstituciones() async {
-    try {
-      setState(() {
-        isLoadingInstituciones = true;
-      });
-
-      // Obtener colegios intervenidos (con tamizajes)
-      Set<String> colegiosConTamizaje = await _obtenerColegiosConTamizaje();
-
-      final querySnapshot =
-          await FirebaseFirestore.instance.collection('colegios').get();
-
-      List<Map<String, dynamic>> institucionesTemp = [];
-
-      for (var doc in querySnapshot.docs) {
-        final data = doc.data();
-        final nombreColegio = data['nombre']?.toString().trim() ?? 'Sin nombre';
-
-        // Filtrar: Solo agregar si el colegio está en la lista de colegios con tamizaje
-        if (!colegiosConTamizaje.contains(nombreColegio.toLowerCase())) continue;
-
-        // Parsear latitud y longitud desde strings
-        double? latitud = _parseCoordinate(data['latitud']);
-        double? longitud = _parseCoordinate(data['longitud']);
-
-        // Solo agregar si tiene coordenadas válidas y dentro de rangos razonables para Colombia
-        if (latitud != null &&
-            longitud != null &&
-            _esCoordenadaValida(latitud, longitud)) {
-          institucionesTemp.add({
-            'nombre': data['nombre']?.toString().trim() ?? 'Sin nombre',
-            'tipo': data['sector']?.toString().trim() ?? 'DESCONOCIDO',
-            'barrio': data['barrio']?.toString().trim() ?? 'Sin barrio',
-            'direccion':
-                data['direccion']?.toString().trim() ?? 'Sin dirección',
-            'codigo': data['cod_dane']?.toString().trim() ?? '',
-            'municipio': data['municipio']?.toString().trim() ?? 'Desconocido',
-            'latitud': latitud,
-            'longitud': longitud,
-            'id': doc.id, // Agregar ID del documento para mayor control
-          });
-        } else {
-          print(
-              '⚠️ Coordenadas inválidas para: ${data['nombre']} - Lat: $latitud, Lng: $longitud');
-        }
-      }
-
-      print('✅ Total instituciones cargadas: ${institucionesTemp.length}');
-      print('📊 Primeras 3 instituciones:');
-      for (int i = 0;
-          i < (institucionesTemp.length < 3 ? institucionesTemp.length : 3);
-          i++) {
-        print('   ${i + 1}. ${institucionesTemp[i]['nombre']}');
-        print(
-            '      Lat: ${institucionesTemp[i]['latitud']}, Lng: ${institucionesTemp[i]['longitud']}');
-        print('      Barrio: ${institucionesTemp[i]['barrio']}');
-        print('      Municipio: ${institucionesTemp[i]['municipio']}');
-      }
-
+      if (!mounted) return;
       setState(() {
         instituciones = institucionesTemp;
-        isLoadingInstituciones = false;
+        colegiosSinCoordenadas = sinCoordenadas;
+        nombreColegioAdolescente = nombresAdolescentes;
+        adolescentesPorColegio = porColegio;
+        respuestas = respuestasTemp;
+        isLoading = false;
       });
-
       _updateMarkers();
     } catch (e) {
-      print('Error cargando instituciones: $e');
+      debugPrint('Mapa de intervención: error al cargar: $e');
+      if (!mounted) return;
       setState(() {
-        isLoadingInstituciones = false;
+        isLoading = false;
+        errorCarga = true;
       });
     }
   }
 
-  // Función para validar si las coordenadas están dentro de rangos razonables para Colombia
-  bool _esCoordenadaValida(double latitud, double longitud) {
-    // Colombia está aproximadamente entre latitud -4 y 13, longitud -79 y -67
-    return latitud >= -4.0 &&
-        latitud <= 13.0 &&
-        longitud >= -79.0 &&
-        longitud <= -67.0;
-  }
-
-  // Función auxiliar para parsear coordenadas
-  double? _parseCoordinate(dynamic value) {
-    if (value == null) return null;
-
-    try {
-      // Si ya es un número
-      if (value is num) return value.toDouble();
-
-      // Si es string, limpiar y convertir
-      if (value is String) {
-        String cleaned = value.trim();
-
-        // Si está vacío, retornar null
-        if (cleaned.isEmpty) return null;
-
-        // El formato parece ser: "1.039.606" para latitud y "-7.546.132" para longitud
-        // Esto significa: latitud = 1.039606 y longitud = -75.46132
-
-        // Contar puntos
-        int puntoCount = '.'.allMatches(cleaned).length;
-
-        if (puntoCount <= 1) {
-          // Formato normal de decimal
-          return double.parse(cleaned);
-        } else {
-          // Múltiples puntos - son separadores de miles
-          // Simplemente remover todos los puntos excepto el último
-
-          // Guardar el signo si existe
-          bool isNegative = cleaned.startsWith('-');
-          if (isNegative) {
-            cleaned = cleaned.substring(1);
-          }
-
-          // Encontrar la posición del último punto
-          int lastDotIndex = cleaned.lastIndexOf('.');
-
-          // Remover todos los puntos
-          String sinPuntos = cleaned.replaceAll('.', '');
-
-          // Calcular cuántos dígitos decimales había después del último punto
-          int decimales = cleaned.length - lastDotIndex - 1;
-
-          // Insertar el punto decimal en la posición correcta
-          String resultado;
-          if (decimales > 0 && sinPuntos.length > decimales) {
-            int posicionDecimal = sinPuntos.length - decimales;
-            resultado = sinPuntos.substring(0, posicionDecimal) +
-                '.' +
-                sinPuntos.substring(posicionDecimal);
-          } else {
-            resultado = sinPuntos;
-          }
-
-          double valor = double.parse(resultado);
-          return isNegative ? -valor : valor;
-        }
-      }
-    } catch (e) {
-      print('❌ Error parseando coordenada: $value - $e');
-    }
-
-    return null;
-  }
-
+  /// Colegios intervenidos en el año elegido, con municipio y barrio
+  /// filtrados.
   List<Map<String, dynamic>> get institucionesFiltradas {
+    final intervenidos = colegiosIntervenidos(respuestas, anoSeleccionado);
     return instituciones.where((institucion) {
-      bool matchMunicipio = municipioSeleccionado == null ||
-          (institucion['municipio']?.toString().toUpperCase() ==
-              municipioSeleccionado?.toUpperCase());
-
-      bool matchBarrio = barrioSeleccionado == null ||
-          (institucion['barrio']?.toString().toUpperCase() ==
-              barrioSeleccionado?.toUpperCase());
-
+      if (!intervenidos.contains(institucion['clave'])) return false;
+      final matchMunicipio = municipioSeleccionado == null ||
+          normalizarTexto(institucion['municipio']) == municipioSeleccionado;
+      final matchBarrio = barrioSeleccionado == null ||
+          normalizarTexto(institucion['barrio']) == barrioSeleccionado;
       return matchMunicipio && matchBarrio;
     }).toList();
   }
 
-  /// Anos disponibles basados en created_time de los usuarios. Por defecto
-  /// usa los ultimos 5 anos desde hoy para no requerir query adicional.
-  List<int> get anosDisponibles {
-    final currentYear = DateTime.now().year;
-    return List<int>.generate(5, (i) => currentYear - i);
-  }
-
-  List<String> get barriosDisponibles {
-    if (municipioSeleccionado == null) return [];
-
-    // Obtener barrios desde la colección "barrios" filtrados por municipio
-    final barriosFiltrados = barrios
-        .where((barrio) =>
-            barrio['municipio']?.toString().toUpperCase() ==
-            municipioSeleccionado?.toUpperCase())
-        .map((barrio) => barrio['nombre'] as String)
-        .toSet()
-        .toList();
-
-    barriosFiltrados.sort();
-    return barriosFiltrados;
-  }
-
-  // MÉTODO OPTIMIZADO Y CORREGIDO: Obtener estadísticas de la institución
-  Future<Map<String, dynamic>> _getInstitucionStats(
-      String nombreInstitucion) async {
-    try {
-      print('🔍 Obteniendo estadísticas para: $nombreInstitucion');
-
-      // Obtener rol del usuario actual
-      final userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserUid).get();
-      final userRol = userDoc.data()?['rol'] as String?;
-
-      List<QueryDocumentSnapshot> usuariosInstitucion = [];
-
-      if (userRol == 'Profesional') {
-        // Filtrar solo los pacientes asignados
-        final pacientesSnap = await FirebaseFirestore.instance
-            .collection('users')
-            .where('Profesionales.Ref', isEqualTo: userDoc.reference)
-            .get();
-            
-        // Filtrar los que pertenecen a esta institución (ignorando espacios/mayúsculas)
-        usuariosInstitucion = pacientesSnap.docs.where((doc) {
-          final data = doc.data() as Map<String, dynamic>?;
-          if (data == null) return false;
-          final col = (data['colegio']?.toString() ?? '').trim().toLowerCase();
-          return col == nombreInstitucion.trim().toLowerCase();
-        }).toList();
-      } else {
-        // Para Administrador (u otros): buscar TODOS los estudiantes de esta institución
-        // Como 'colegio' puede tener espacios extras, usamos una consulta más amplia
-        final allUsersSnap = await FirebaseFirestore.instance
-            .collection('users')
-            .where('rol', isEqualTo: 'Adolescente')
-            .get();
-            
-        usuariosInstitucion = allUsersSnap.docs.where((doc) {
-          final data = doc.data() as Map<String, dynamic>?;
-          if (data == null) return false;
-          final col = (data['colegio']?.toString() ?? '').trim().toLowerCase();
-          return col == nombreInstitucion.trim().toLowerCase();
-        }).toList();
-      }
-
-      print('👥 Usuarios encontrados en la institución ($userRol): ${usuariosInstitucion.length}');
-
-      // Filtrar por año si está seleccionado
-      List<QueryDocumentSnapshot> usuariosFiltrados = usuariosInstitucion;
-      if (anoSeleccionado != null) {
-        usuariosFiltrados = usuariosInstitucion.where((doc) {
-          final data = doc.data() as Map<String, dynamic>?;
-          if (data == null) return false;
-          final createdTime = data['created_time'] as Timestamp?;
-          if (createdTime != null) {
-            return createdTime.toDate().year == anoSeleccionado;
-          }
-          return false;
-        }).toList();
-        print(
-            '📅 Usuarios filtrados por año $anoSeleccionado: ${usuariosFiltrados.length}');
-      }
-
-      final totalUsuariosFiltrados = usuariosFiltrados.length;
-      final userPaths =
-          usuariosFiltrados.map((doc) => doc.reference.path).toSet();
-
-      print('🔍 User paths a buscar: ${userPaths.length}');
-
-      // 2. Buscar tamizajes respondidos por estos usuarios
-      final patientRefs = usuariosFiltrados.map((doc) => doc.reference).toList();
-      final List<QueryDocumentSnapshot<Map<String, dynamic>>> allRespuestas = [];
-
-      const chunkSize = 30;
-      final chunks = <List<DocumentReference>>[];
-      for (var i = 0; i < patientRefs.length; i += chunkSize) {
-        chunks.add(patientRefs.sublist(
-          i,
-          i + chunkSize > patientRefs.length ? patientRefs.length : i + chunkSize,
-        ));
-      }
-
-      print('📋 Buscando respuestas para ${patientRefs.length} usuarios en ${chunks.length} lotes...');
-
-      Set<String> validTamizajeTitles = {};
-      // Ids de las Encuestas de tipo tamizaje: una respuesta que cuelga de
-      // otra Encuesta (p. ej. tipo 'Encuestas') no cuenta aunque comparta
-      // título con un tamizaje.
-      Set<String> validTamizajeIds = {};
-
-      if (patientRefs.isNotEmpty) {
-        // 1. Obtener títulos válidos (para filtrar respuestas a cuestionarios generales)
-        final tamizajesSnap = await FirebaseFirestore.instance
-            .collection('Encuestas')
-            .get();
-            
-        final tamizajeDocs = tamizajesSnap.docs.where((doc) {
-          final data = doc.data();
-          final tipo = data['tipo']?.toString().toLowerCase() ?? '';
-          return tipo.contains('tamizaje');
-        }).toList();
-        validTamizajeIds = tamizajeDocs.map((doc) => doc.id).toSet();
-        validTamizajeTitles = tamizajeDocs.map((doc) {
-          final data = doc.data();
-          return (data['titulo'] ?? data['Titulo'] ?? '').toString().trim().toLowerCase();
-        }).where((t) => t.isNotEmpty).toSet();
-
-        // 2. Obtener las respuestas de los usuarios de la institución
-        final queryTasks = chunks.map((chunk) {
-          return FirebaseFirestore.instance
-              .collectionGroup('Respuestas')
-              .where('User_respuesta', whereIn: chunk)
-              .get();
-        });
-
-        final queryResults = await Future.wait(queryTasks);
-        for (var res in queryResults) {
-          allRespuestas.addAll(res.docs);
-        }
-      }
-
-      Map<String, Set<String>> uniqueUsersPerTamizaje = {};
-      Set<String> uniqueRespondedUsers = {};
-
-      for (var respuestaDoc in allRespuestas) {
-        final data = respuestaDoc.data();
-        if ((data['invalidado'] as bool?) == true) continue;
-
-        final tituloRaw = (data['Titlo'] ?? data['titlo'] ?? '').toString().trim();
-        if (tituloRaw.isEmpty) continue;
-
-        // Ignorar encuestas/cuestionarios que no son 'Tamizajes'
-        if (!validTamizajeTitles.contains(tituloRaw.toLowerCase())) continue;
-        final padre = respuestaDoc.reference.parent.parent;
-        if (padre != null &&
-            padre.parent.id == 'Encuestas' &&
-            !validTamizajeIds.contains(padre.id)) {
-          continue;
-        }
-
-        // Normalizar el título a mayúsculas para evitar duplicados por case
-        final titulo = tituloRaw.toUpperCase();
-
-        final userRef = data['User_respuesta'] as DocumentReference?;
-        if (userRef == null) continue;
-
-        uniqueRespondedUsers.add(userRef.path);
-
-        if (!uniqueUsersPerTamizaje.containsKey(titulo)) {
-          uniqueUsersPerTamizaje[titulo] = {};
-        }
-        uniqueUsersPerTamizaje[titulo]!.add(userRef.path);
-      }
-
-      // Extraer listas para retornar
-      Map<String, int> respuestasPorTamizaje = {};
-      List<String> tamizajesRespondidos = [];
-
-      uniqueUsersPerTamizaje.forEach((titulo, userPathsSet) {
-        respuestasPorTamizaje[titulo] = userPathsSet.length;
-        tamizajesRespondidos.add(titulo);
-      });
-
-      print('📊 Resultado final para $nombreInstitucion:');
-      print('   - Total usuarios adolescentes (registrados): $totalUsuariosFiltrados');
-      print('   - Tamizajes respondidos: ${tamizajesRespondidos.length}');
-      print('   - Respuestas por tamizaje (usuarios únicos): $respuestasPorTamizaje');
-
-      return {
-        'totalUsuarios': totalUsuariosFiltrados,
-        'respuestasPorTamizaje': respuestasPorTamizaje,
-        'tamizajesRespondidos': tamizajesRespondidos,
-      };
-    } catch (e) {
-      print('❌ Error getting institution stats: $e');
-      return {
-        'totalUsuarios': 0,
-        'respuestasPorTamizaje': {},
-        'tamizajesRespondidos': [],
-      };
+  /// Municipios de los colegios intervenidos: clave → nombre para mostrar.
+  Map<String, String> get municipiosDisponibles {
+    final intervenidos = colegiosIntervenidos(respuestas, null);
+    final resultado = <String, String>{};
+    for (final i in instituciones) {
+      if (!intervenidos.contains(i['clave'])) continue;
+      final clave = normalizarTexto(i['municipio']);
+      if (clave.isEmpty) continue;
+      resultado.putIfAbsent(clave, () => enFormatoTitulo(i['municipio']));
     }
+    return Map.fromEntries(
+        resultado.entries.toList()..sort((a, b) => a.value.compareTo(b.value)));
+  }
+
+  /// Barrios de los colegios intervenidos del municipio elegido: clave →
+  /// nombre para mostrar.
+  Map<String, String> get barriosDisponibles {
+    if (municipioSeleccionado == null) return {};
+    final intervenidos = colegiosIntervenidos(respuestas, anoSeleccionado);
+    final resultado = <String, String>{};
+    for (final i in instituciones) {
+      if (!intervenidos.contains(i['clave'])) continue;
+      if (normalizarTexto(i['municipio']) != municipioSeleccionado) continue;
+      final clave = normalizarTexto(i['barrio']);
+      if (clave.isEmpty) continue;
+      resultado.putIfAbsent(clave, () => (i['barrio'] as String).trim());
+    }
+    return Map.fromEntries(
+        resultado.entries.toList()..sort((a, b) => a.value.compareTo(b.value)));
+  }
+
+  List<int> get anosDisponibles => anosConRespuestas(respuestas);
+
+  /// Colegios intervenidos en el año elegido que no se pueden poner en el
+  /// mapa, con el motivo.
+  List<({String nombre, String motivo})> get colegiosSinUbicar {
+    final ubicados = instituciones.map((i) => i['clave'] as String).toSet();
+    final resultado = <({String nombre, String motivo})>[];
+    for (final clave in colegiosIntervenidos(respuestas, anoSeleccionado)) {
+      if (ubicados.contains(clave)) continue;
+      final sinCoordenadas = colegiosSinCoordenadas[clave];
+      resultado.add(sinCoordenadas != null
+          ? (
+              nombre: sinCoordenadas['nombre'] as String,
+              motivo: 'Coordenadas inválidas en Instituciones '
+                  '(latitud "${sinCoordenadas['latitudTexto']}", '
+                  'longitud "${sinCoordenadas['longitudTexto']}").',
+            )
+          : (
+              nombre: nombreColegioAdolescente[clave] ?? clave,
+              motivo: 'El colegio del adolescente no está en el catálogo de '
+                  'Instituciones.',
+            ));
+    }
+    return resultado..sort((a, b) => a.nombre.compareTo(b.nombre));
   }
 
   void _updateMarkers() {
-    final institucionesMostrar = institucionesFiltradas;
-
-    print('🗺️ Actualizando marcadores...');
-    print('   Instituciones filtradas: ${institucionesMostrar.length}');
-    print('   Total instituciones en base: ${instituciones.length}');
-
-    Set<gm.Marker> newMarkers = {};
-
-    for (var institucion in institucionesMostrar) {
-      // Crear marcador único con ID que incluya el ID del documento
-      String markerId = '${institucion['id']}_${institucion['nombre']}';
-
-      newMarkers.add(
+    final newMarkers = <gm.Marker>{
+      for (final institucion in institucionesFiltradas)
         gm.Marker(
-          markerId: gm.MarkerId(markerId),
-          position: gm.LatLng(
-            institucion['latitud'],
-            institucion['longitud'],
-          ),
+          markerId: gm.MarkerId(institucion['id']),
+          position: gm.LatLng(institucion['latitud'], institucion['longitud']),
           icon: gm.BitmapDescriptor.defaultMarker,
           onTap: () {
-            if (!isDialogOpen) {
-              _mostrarDetalleInstitucion(institucion);
-            }
+            if (!isDialogOpen) _mostrarDetalleInstitucion(institucion);
           },
           infoWindow: gm.InfoWindow(
             title: institucion['nombre'],
             snippet: 'Toca para ver detalles',
             onTap: () {
-              if (!isDialogOpen) {
-                _mostrarDetalleInstitucion(institucion);
-              }
+              if (!isDialogOpen) _mostrarDetalleInstitucion(institucion);
             },
           ),
         ),
-      );
-    }
-
-    print('   ✅ Total marcadores creados: ${newMarkers.length}');
-
+    };
     setState(() {
       markers = newMarkers;
     });
-
-    if (municipioSeleccionado != null && mapController != null) {
-      final dataMunicipio = municipios[municipioSeleccionado];
-      if (dataMunicipio != null) {
-        mapController!.animateCamera(
-          gm.CameraUpdate.newCameraPosition(
-            gm.CameraPosition(
-              target: dataMunicipio['centro'],
-              zoom: dataMunicipio['zoom'],
-            ),
-          ),
-        );
-      }
-    }
+    _encuadrarMarcadores();
   }
 
+  /// Mueve la cámara para que se vean todos los marcadores.
+  void _encuadrarMarcadores() {
+    final controller = mapController;
+    if (controller == null || markers.isEmpty) return;
+    final posiciones = markers.map((m) => m.position).toList();
+    if (posiciones.length == 1) {
+      controller
+          .animateCamera(gm.CameraUpdate.newLatLngZoom(posiciones.first, 15));
+      return;
+    }
+    var sur = posiciones.first.latitude, norte = sur;
+    var oeste = posiciones.first.longitude, este = oeste;
+    for (final p in posiciones) {
+      if (p.latitude < sur) sur = p.latitude;
+      if (p.latitude > norte) norte = p.latitude;
+      if (p.longitude < oeste) oeste = p.longitude;
+      if (p.longitude > este) este = p.longitude;
+    }
+    controller.animateCamera(gm.CameraUpdate.newLatLngBounds(
+      gm.LatLngBounds(
+        southwest: gm.LatLng(sur, oeste),
+        northeast: gm.LatLng(norte, este),
+      ),
+      80,
+    ));
+  }
 
   void _onMapCreated(gm.GoogleMapController controller) {
     mapController = controller;
+    _encuadrarMarcadores();
   }
 
   // Método para mostrar el selector de barrios con búsqueda
   void _mostrarSelectorBarrios() {
+    final disponibles = barriosDisponibles;
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return SearchableBarrioDialog(
-          barrios: barriosDisponibles,
-          barrioSeleccionado: barrioSeleccionado,
+          barrios: disponibles.values.toList(),
+          barrioSeleccionado: disponibles[barrioSeleccionado],
           onBarrioSelected: (String? barrio) {
-            setState(() {
-              barrioSeleccionado = barrio;
-              _updateMarkers();
-            });
+            barrioSeleccionado =
+                barrio == null ? null : normalizarTexto(barrio);
+            _updateMarkers();
           },
         );
       },
     );
   }
 
+  void _mostrarColegiosSinUbicar() {
+    final lista = colegiosSinUbicar;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Colegios intervenidos sin ubicar'),
+        content: SizedBox(
+          width: 420,
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Text(
+                'Tienen tamizajes pero no se pueden mostrar en el mapa. '
+                'Corrígelos en Instituciones.',
+                style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+              ),
+              SizedBox(height: 12),
+              for (final c in lista)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.warning_amber_rounded,
+                      color: Colors.orange[700]),
+                  title: Text(c.nombre, style: TextStyle(fontSize: 14)),
+                  subtitle: Text(c.motivo, style: TextStyle(fontSize: 12)),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final municipios = municipiosDisponibles;
+    final barrios = barriosDisponibles;
+    final anos = anosDisponibles;
+    final sinUbicar = colegiosSinUbicar;
     return Container(
       width: widget.width,
       height: widget.height,
@@ -657,12 +405,12 @@ class _MapaInstitucionesEducativasState
             child: gm.GoogleMap(
               onMapCreated: _onMapCreated,
               initialCameraPosition: gm.CameraPosition(
-                target: municipios['Cartagena']!['centro'],
-                zoom: municipios['Cartagena']!['zoom'],
+                target: _centroInicial,
+                zoom: 12.5,
               ),
               markers: markers,
               mapType: gm.MapType.normal,
-              myLocationButtonEnabled: !isDialogOpen,
+              myLocationButtonEnabled: false,
               zoomControlsEnabled: !isDialogOpen,
               compassEnabled: !isDialogOpen,
               zoomGesturesEnabled: !isDialogOpen,
@@ -675,7 +423,7 @@ class _MapaInstitucionesEducativasState
             Container(
               color: Colors.black54,
             ),
-          if (isLoadingInstituciones || isLoadingBarrios)
+          if (isLoading || errorCarga || (!isLoading && markers.isEmpty))
             Positioned(
               top: 80,
               left: 0,
@@ -696,16 +444,23 @@ class _MapaInstitucionesEducativasState
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                      if (isLoading) ...[
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(primaryColor),
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 8),
-                      Text('Cargando lugares intervenidos...'),
+                        SizedBox(width: 8),
+                      ],
+                      Text(isLoading
+                          ? 'Cargando lugares intervenidos...'
+                          : errorCarga
+                              ? 'No se pudieron cargar los datos del mapa.'
+                              : 'No hay colegios intervenidos con estos filtros.'),
                     ],
                   ),
                 ),
@@ -727,7 +482,9 @@ class _MapaInstitucionesEducativasState
                     Expanded(
                       flex: 2,
                       child: DropdownButtonFormField<String>(
-                        value: municipioSeleccionado,
+                        value: municipios.containsKey(municipioSeleccionado)
+                            ? municipioSeleccionado
+                            : null,
                         decoration: InputDecoration(
                           labelText: 'Municipio',
                           prefixIcon: Icon(Icons.location_city, size: 20),
@@ -744,20 +501,17 @@ class _MapaInstitucionesEducativasState
                             child:
                                 Text('Todos', style: TextStyle(fontSize: 14)),
                           ),
-                          ...municipios.keys.map((String municipio) {
-                            return DropdownMenuItem<String>(
-                              value: municipio,
-                              child: Text(municipio,
-                                  style: TextStyle(fontSize: 14)),
-                            );
-                          }).toList(),
+                          for (final m in municipios.entries)
+                            DropdownMenuItem<String>(
+                              value: m.key,
+                              child:
+                                  Text(m.value, style: TextStyle(fontSize: 14)),
+                            ),
                         ],
                         onChanged: (String? newValue) {
-                          setState(() {
-                            municipioSeleccionado = newValue;
-                            barrioSeleccionado = null;
-                            _updateMarkers();
-                          });
+                          municipioSeleccionado = newValue;
+                          barrioSeleccionado = null;
+                          _updateMarkers();
                         },
                       ),
                     ),
@@ -776,14 +530,10 @@ class _MapaInstitucionesEducativasState
                             suffixIcon: barrioSeleccionado != null
                                 ? IconButton(
                                     icon: Icon(Icons.clear, size: 18),
-                                    onPressed: municipioSeleccionado == null
-                                        ? null
-                                        : () {
-                                            setState(() {
-                                              barrioSeleccionado = null;
-                                              _updateMarkers();
-                                            });
-                                          },
+                                    onPressed: () {
+                                      barrioSeleccionado = null;
+                                      _updateMarkers();
+                                    },
                                     padding: EdgeInsets.zero,
                                   )
                                 : Icon(Icons.arrow_drop_down, size: 20),
@@ -796,7 +546,7 @@ class _MapaInstitucionesEducativasState
                             enabled: municipioSeleccionado != null,
                           ),
                           child: Text(
-                            barrioSeleccionado ?? 'Todos',
+                            barrios[barrioSeleccionado] ?? 'Todos',
                             style: TextStyle(
                               fontSize: 14,
                               color: municipioSeleccionado == null
@@ -812,9 +562,11 @@ class _MapaInstitucionesEducativasState
                     Expanded(
                       flex: 1,
                       child: DropdownButtonFormField<int>(
-                        value: anoSeleccionado,
+                        value: anos.contains(anoSeleccionado)
+                            ? anoSeleccionado
+                            : null,
                         decoration: InputDecoration(
-                          labelText: 'Año',
+                          labelText: 'Año del tamizaje',
                           prefixIcon: Icon(Icons.calendar_today, size: 20),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -829,50 +581,89 @@ class _MapaInstitucionesEducativasState
                             child:
                                 Text('Todos', style: TextStyle(fontSize: 14)),
                           ),
-                          ...anosDisponibles.map((int ano) {
-                            return DropdownMenuItem<int>(
+                          for (final ano in anos)
+                            DropdownMenuItem<int>(
                               value: ano,
                               child:
                                   Text('$ano', style: TextStyle(fontSize: 14)),
-                            );
-                          }).toList(),
+                            ),
                         ],
                         onChanged: (int? newValue) {
-                          setState(() {
-                            anoSeleccionado = newValue;
-                            _updateMarkers();
-                          });
+                          anoSeleccionado = newValue;
+                          if (!barriosDisponibles
+                              .containsKey(barrioSeleccionado)) {
+                            barrioSeleccionado = null;
+                          }
+                          _updateMarkers();
                         },
                       ),
                     ),
                     SizedBox(width: 8),
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.school,
-                            color: primaryColor,
-                            size: 18,
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            '${institucionesFiltradas.length}',
-                            style: TextStyle(
-                              fontSize: 16,
+                    Tooltip(
+                      message: 'Colegios intervenidos en el mapa',
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.school,
                               color: primaryColor,
-                              fontWeight: FontWeight.bold,
+                              size: 18,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 6),
+                            Text(
+                              '${markers.length}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+                    if (sinUbicar.isNotEmpty) ...[
+                      SizedBox(width: 8),
+                      Tooltip(
+                        message: 'Colegios intervenidos que no se pueden '
+                            'mostrar en el mapa',
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: _mostrarColegiosSinUbicar,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.warning_amber_rounded,
+                                    color: Colors.orange[800], size: 18),
+                                SizedBox(width: 6),
+                                Text(
+                                  '${sinUbicar.length} sin ubicar',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.orange[900],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -889,5 +680,3 @@ class _MapaInstitucionesEducativasState
     super.dispose();
   }
 }
-
-// Widget de diálogo con búsqueda para barrios
