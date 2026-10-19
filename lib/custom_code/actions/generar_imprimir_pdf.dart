@@ -12,6 +12,7 @@ import '/tamizajes/shared/assist_utils.dart'
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/informe_pdf/helpers/pdf_identificacion.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -260,9 +261,8 @@ Future<Map<String, dynamic>?> _obtenerDatosPacienteFirestoreSeguro(
     return {
       'nombres': nombres,
       'apellidos': apellidos,
-      'tipoIdentificacion': 'CC',
-      'numeroIdentificacion':
-          userUid.length >= 10 ? userUid.substring(0, 10) : userUid,
+      'tipoIdentificacion': kTipoIdentificacionPdf,
+      'numeroIdentificacion': numeroIdentificacionPdf(data),
       'edad': edad,
       'genero': data['genero']?.toString() ?? 'No especificado',
       'municipio': data['municipio']?.toString() ?? 'No registrado',
@@ -306,9 +306,8 @@ Map<String, dynamic> _generarDatosPersonalesPorDefecto(String userUid) {
   return {
     'nombres': 'Usuario',
     'apellidos': 'No Encontrado',
-    'tipoIdentificacion': 'N/A',
-    'numeroIdentificacion':
-        userUid.length >= 10 ? userUid.substring(0, 10) : userUid,
+    'tipoIdentificacion': kTipoIdentificacionPdf,
+    'numeroIdentificacion': numeroIdentificacionPdf(null),
     'edad': 'N/A',
     'genero': 'No especificado',
     'municipio': 'No registrado',
@@ -555,7 +554,8 @@ Future<Uint8List> _crearInformeIndividualPDFSeguro(
     String apellidos =
         datosPersonales['apellidos']?.toString() ?? 'No registrado';
     String tipoIdentificacion =
-        datosPersonales['tipoIdentificacion']?.toString() ?? 'CC';
+        datosPersonales['tipoIdentificacion']?.toString() ??
+            kTipoIdentificacionPdf;
     String numeroIdentificacion =
         datosPersonales['numeroIdentificacion']?.toString() ?? 'No registrado';
     String edad = datosPersonales['edad']?.toString() ?? 'No registrada';

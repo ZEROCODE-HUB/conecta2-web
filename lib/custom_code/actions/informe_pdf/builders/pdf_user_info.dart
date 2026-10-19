@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../helpers/pdf_identificacion.dart';
 import '../helpers/pdf_styles.dart';
 
 DateTime _extraerFechaSegura(dynamic fecha) {
@@ -81,9 +82,8 @@ Future<Map<String, dynamic>?> obtenerDatosPacienteFirestoreSeguro(
     return {
       'nombres': nombres,
       'apellidos': apellidos,
-      'tipoIdentificacion': 'TARJETA DE IDENTIDAD',
-      'numeroIdentificacion':
-          userUid.length >= 10 ? userUid.substring(0, 10) : userUid,
+      'tipoIdentificacion': kTipoIdentificacionPdf,
+      'numeroIdentificacion': numeroIdentificacionPdf(data),
       'edad': edad,
       'genero': data['genero']?.toString() ?? 'NO ESPECIFICADO',
       'municipio': data['municipio']?.toString() ?? 'NO REGISTRADO',
@@ -113,9 +113,8 @@ Map<String, dynamic> generarDatosPersonalesPorDefecto(String userUid) {
   return {
     'nombres': 'Usuario',
     'apellidos': 'No Encontrado',
-    'tipoIdentificacion': 'TARJETA DE IDENTIDAD',
-    'numeroIdentificacion':
-        userUid.length >= 10 ? userUid.substring(0, 10) : userUid,
+    'tipoIdentificacion': kTipoIdentificacionPdf,
+    'numeroIdentificacion': numeroIdentificacionPdf(null),
     'edad': 'N/A',
     'genero': 'NO ESPECIFICADO',
     'municipio': 'NO REGISTRADO',
@@ -165,7 +164,7 @@ pw.Widget buildPatientHeaderBlock(Map<String, dynamic> datos) {
             ),
             pw.SizedBox(height: 6),
             pw.Text(
-              'TARJETA DE IDENTIDAD: $numeroId',
+              'DOCUMENTO: $numeroId',
               style: pw.TextStyle(
                 fontSize: 8.5,
                 color: PdfColors.black,
